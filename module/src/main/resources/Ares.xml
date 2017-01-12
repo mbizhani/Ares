@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE module PUBLIC
+		"Devocative/Demeter Module"
+		"http://www.devocative.org/dtd/demeter-module.dtd">
+
+<module
+		shortName="ARS"
+		mainClass="org.devocative.ares.module.AresDModule"
+		mainResource="org.devocative.ares.web.AresDModule"
+		configKeysClass="org.devocative.ares.AresConfigKey">
+
+	<entities>
+	</entities>
+
+	<tasks>
+	</tasks>
+
+	<dPages>
+		<dPage type=""
+			   title="KEY:"
+			   uri="/"
+			   inMenu=""/>
+	</dPages>
+</module>

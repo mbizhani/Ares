@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE meta PUBLIC
+		"Meta Data"
+		"http://www.devocative.org/dtd/devolcano-metadata.dtd">
+
+<meta>
+	<filterClass>targetClass.entity</filterClass>
+
+	<classes>
+
+	</classes>
+</meta>

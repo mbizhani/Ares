@@ -1,0 +1,142 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+		 xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+
+	<modelVersion>4.0.0</modelVersion>
+	<parent>
+		<groupId>org.devocative</groupId>
+		<artifactId>ares-parent</artifactId>
+		<version>1.0-SNAPSHOT</version>
+	</parent>
+	<artifactId>ares-web</artifactId>
+	<packaging>jar</packaging>
+
+	<name>Ares Web</name>
+
+	<dependencies>
+		<dependency>
+			<groupId>org.devocative</groupId>
+			<artifactId>ares-common</artifactId>
+			<version>1.0-SNAPSHOT</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.devocative</groupId>
+			<artifactId>ares-module</artifactId>
+			<version>1.0-SNAPSHOT</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.devocative</groupId>
+			<artifactId>demeter-web</artifactId>
+			<version>${d.demeter.ver}</version>
+		</dependency>
+
+		<dependency>
+			<groupId>javax.servlet</groupId>
+			<artifactId>javax.servlet-api</artifactId>
+			<version>${d.servlet.ver}</version>
+			<scope>provided</scope>
+		</dependency>
+
+		<!-- TEST SCOPED -->
+
+		<dependency>
+			<groupId>org.devocative</groupId>
+			<artifactId>ares-service</artifactId>
+			<version>1.0-SNAPSHOT</version>
+			<scope>test</scope>
+		</dependency>
+
+		<dependency>
+			<groupId>org.devocative</groupId>
+			<artifactId>demeter-service</artifactId>
+			<version>${d.demeter.ver}</version>
+			<scope>test</scope>
+		</dependency>
+	</dependencies>
+
+	<build>
+		<resources>
+			<resource>
+				<filtering>false</filtering>
+				<directory>src/main/resources</directory>
+			</resource>
+			<resource>
+				<filtering>false</filtering>
+				<directory>src/main/java</directory>
+				<includes>
+					<include>**</include>
+				</includes>
+				<excludes>
+					<exclude>**/*.java</exclude>
+				</excludes>
+			</resource>
+		</resources>
+		<testResources>
+			<testResource>
+				<filtering>false</filtering>
+				<directory>src/test/resources</directory>
+			</testResource>
+			<testResource>
+				<filtering>false</filtering>
+				<directory>src/test/java</directory>
+				<includes>
+					<include>**</include>
+				</includes>
+				<excludes>
+					<exclude>**/*.java</exclude>
+				</excludes>
+			</testResource>
+		</testResources>
+
+		<plugins>
+			<!-- Jetty -->
+			<plugin>
+				<groupId>org.eclipse.jetty</groupId>
+				<artifactId>jetty-maven-plugin</artifactId>
+				<version>${p.jetty.ver}</version>
+				<configuration>
+					<useTestScope>true</useTestScope>
+					<webAppSourceDirectory>src/test/webapp</webAppSourceDirectory>
+					<webApp>
+						<contextPath>${jetty.context}</contextPath>
+					</webApp>
+					<httpConnector>
+						<port>${jetty.port}</port>
+					</httpConnector>
+				</configuration>
+			</plugin>
+
+			<!-- Remote Resource -->
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-remote-resources-plugin</artifactId>
+				<version>1.5</version>
+				<configuration>
+					<outputDirectory>src/test/webapp</outputDirectory>
+					<resourceBundles>
+						<resourceBundle>org.devocative:diadem:1.0-SNAPSHOT</resourceBundle>
+					</resourceBundles>
+				</configuration>
+				<executions>
+					<execution>
+						<phase>initialize</phase>
+						<goals>
+							<goal>process</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+
+			<!-- Demeter Helper Plugin -->
+			<plugin>
+				<groupId>org.devocative</groupId>
+				<artifactId>demeter-maven-plugin</artifactId>
+				<version>1.0-SNAPSHOT</version>
+			</plugin>
+
+		</plugins>
+	</build>
+</project>
