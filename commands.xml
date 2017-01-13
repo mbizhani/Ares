@@ -1,0 +1,34 @@
+<services>
+	<service name="Oracle" type="Database">
+		<commands>
+			<command name="copySchema">
+				<params>
+					<parameter name="sourceSchema" type="string"/>
+					<parameter name="destSchema" type="string"/>
+					<parameter name="dbService" type="Service('Oracle')"/>
+				</params>
+				<body>
+					<![CDATA[
+if(!cmd.exec("checkDBUser", [dbService:dbService, username:sourceSchema])) {
+	error("No user ${sourceSchema} to export dump from")
+}
+
+if(!cmd.exec("checkDBUser", [dbService:dbService, username:destSchema])) {
+	error("No user ${destSchema.username} to import dump to")
+}
+
+cmd.exec("truncateDBUser", [dbService:dbService, username:destSchema])
+
+def osService = dbService.fromRelated("OS.Linux");
+
+cmd.ssh("su - oracle -c 'expdp ${dbService.username}/${dbService.password} schemas=${sourceSchema} directory=${dbService.prop.dbDir} dumpfile=${sourceSchema}.dmp logfile=${sourceSchema}.log'", osService)
+
+cmd.ssh("su - oracle -c 'impdp ${dbService.username}/${dbService.password} remap_schema=${sourceSchema}:${destSchema} directory=${dbService.prop.dbDir} dumpfile=${destSchema}.dmp logfile=${destSchema}.log'", osService)
+
+return true
+]]>
+				</body>
+			</command>
+		</commands>
+	</service>
+</services>

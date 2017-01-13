@@ -11,15 +11,26 @@
 		configKeysClass="org.devocative.ares.AresConfigKey">
 
 	<entities>
+		<entity type="org.devocative.ares.entity.command.Command"/>
+		<entity type="org.devocative.ares.entity.command.CommandLog"/>
+		<entity type="org.devocative.ares.entity.command.ConfigLob"/>
+
+		<entity type="org.devocative.ares.entity.Server"/>
+
+		<entity type="org.devocative.ares.entity.service.Service"/>
+		<entity type="org.devocative.ares.entity.service.ServiceInstance"/>
+		<entity type="org.devocative.ares.entity.service.ServiceProperty"/>
+		<entity type="org.devocative.ares.entity.service.SIPropertyValue"/>
+		<entity type="org.devocative.ares.entity.service.SIUser"/>
 	</entities>
 
 	<tasks>
 	</tasks>
 
 	<dPages>
-		<dPage type=""
+		<!--<dPage type=""
 			   title="KEY:"
 			   uri="/"
-			   inMenu=""/>
+			   inMenu=""/>-->
 	</dPages>
 </module>
