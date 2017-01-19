@@ -1,4 +1,4 @@
-package org.devocative.ares.entity.service;
+package org.devocative.ares.entity.oservice;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -6,16 +6,16 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class EServiceType implements Serializable {
+public class EOServiceType implements Serializable {
 	private static final long serialVersionUID = 6855672403227289533L;
 
 	private static final Map<Integer, String> ID_TO_NAME = new HashMap<>();
-	private static final List<EServiceType> ALL = new ArrayList<>();
+	private static final List<EOServiceType> ALL = new ArrayList<>();
 
 	// ------------------------------
 
-	public static final EServiceType OS = new EServiceType(1, "OS");
-	public static final EServiceType DATABASE = new EServiceType(2, "Database");
+	public static final EOServiceType OS = new EOServiceType(1, "OS");
+	public static final EOServiceType DATABASE = new EOServiceType(2, "Database");
 
 	// ------------------------------
 
@@ -23,14 +23,14 @@ public class EServiceType implements Serializable {
 
 	// ------------------------------
 
-	private EServiceType(Integer id, String name) {
+	private EOServiceType(Integer id, String name) {
 		this.id = id;
 
 		ID_TO_NAME.put(id, name);
 		ALL.add(this);
 	}
 
-	public EServiceType() {
+	public EOServiceType() {
 	}
 
 	public Integer getId() {
@@ -46,9 +46,9 @@ public class EServiceType implements Serializable {
 	@Override
 	public boolean equals(Object o) {
 		if (this == o) return true;
-		if (!(o instanceof EServiceType)) return false;
+		if (!(o instanceof EOServiceType)) return false;
 
-		EServiceType that = (EServiceType) o;
+		EOServiceType that = (EOServiceType) o;
 
 		if (getId() != null ? !getId().equals(that.getId()) : that.getId() != null) return false;
 
@@ -67,7 +67,17 @@ public class EServiceType implements Serializable {
 
 	// ------------------------------
 
-	public static List<EServiceType> list() {
+	public static List<EOServiceType> list() {
 		return new ArrayList<>(ALL);
+	}
+
+	public static EOServiceType findByName(String name) {
+		for (EOServiceType serviceType : ALL) {
+			if (serviceType.getName().equals(name)) {
+				return serviceType;
+			}
+		}
+
+		return null;
 	}
 }

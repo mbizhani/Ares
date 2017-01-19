@@ -1,4 +1,4 @@
-package org.devocative.ares.entity.service;
+package org.devocative.ares.entity.oservice;
 
 import org.devocative.demeter.entity.*;
 
@@ -6,30 +6,31 @@ import javax.persistence.*;
 import java.util.Date;
 
 @Entity
-@Table(name = "t_ars_service_prop")
-public class ServiceProperty implements ICreationDate, ICreatorUser, IModificationDate, IModifierUser {
-	private static final long serialVersionUID = -7345944329689292247L;
+@Table(name = "t_ars_service_inst_prop_val")
+public class OSIPropertyValue implements ICreationDate, ICreatorUser, IModificationDate, IModifierUser {
+	private static final long serialVersionUID = 8592429112321349167L;
 
 	@Id
-	@GeneratedValue(generator = "ars_service_prop")
-	@org.hibernate.annotations.GenericGenerator(name = "ars_service_prop", strategy = "org.hibernate.id.enhanced.SequenceStyleGenerator",
+	@GeneratedValue(generator = "ars_service_inst_prop_val")
+	@org.hibernate.annotations.GenericGenerator(name = "ars_service_inst_prop_val", strategy = "org.hibernate.id.enhanced.SequenceStyleGenerator",
 		parameters = {
 			//@org.hibernate.annotations.Parameter(name = "optimizer", value = "pooled"),
 			@org.hibernate.annotations.Parameter(name = "initial_value", value = "1"),
 			@org.hibernate.annotations.Parameter(name = "increment_size", value = "1"),
-			@org.hibernate.annotations.Parameter(name = "sequence_name", value = "ars_service_prop")
+			@org.hibernate.annotations.Parameter(name = "sequence_name", value = "ars_service_inst_prop_val")
 		})
 	private Long id;
 
-	@Column(name = "c_name", nullable = false)
-	private String name;
+	@Column(name = "c_value", nullable = false)
+	private String value;
 
-	@Column(name = "b_required", nullable = false)
-	private Boolean required;
+	@ManyToOne(fetch = FetchType.EAGER)
+	@JoinColumn(name = "f_property", nullable = false, foreignKey = @ForeignKey(name = "siPropVal2property"))
+	private OServiceProperty property;
 
 	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "f_service", nullable = false, foreignKey = @ForeignKey(name = "srvcprop2service"))
-	private Service service;
+	@JoinColumn(name = "f_service_inst", nullable = false, foreignKey = @ForeignKey(name = "siPropVal2serviceInstance"))
+	private OServiceInstance serviceInstance;
 
 	// --------------- CREATE / MODIFY
 
@@ -40,7 +41,7 @@ public class ServiceProperty implements ICreationDate, ICreatorUser, IModificati
 	//@NotAudited
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "f_creator_user", insertable = false, updatable = false,
-		foreignKey = @ForeignKey(name = "_crtrusr2user"))
+		foreignKey = @ForeignKey(name = "siPropVal_crtrUsr2user"))
 	private User creatorUser;
 
 	//@NotAudited
@@ -52,7 +53,7 @@ public class ServiceProperty implements ICreationDate, ICreatorUser, IModificati
 
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "f_modifier_user", insertable = false, updatable = false,
-		foreignKey = @ForeignKey(name = "_mdfrusr2user"))
+		foreignKey = @ForeignKey(name = "siPropVal_mdfrUsr2user"))
 	private User modifierUser;
 
 	@Column(name = "f_modifier_user")
@@ -72,28 +73,28 @@ public class ServiceProperty implements ICreationDate, ICreatorUser, IModificati
 		this.id = id;
 	}
 
-	public String getName() {
-		return name;
+	public String getValue() {
+		return value;
 	}
 
-	public void setName(String name) {
-		this.name = name;
+	public void setValue(String value) {
+		this.value = value;
 	}
 
-	public Boolean getRequired() {
-		return required;
+	public OServiceProperty getProperty() {
+		return property;
 	}
 
-	public void setRequired(Boolean required) {
-		this.required = required;
+	public void setProperty(OServiceProperty property) {
+		this.property = property;
 	}
 
-	public Service getService() {
-		return service;
+	public OServiceInstance getServiceInstance() {
+		return serviceInstance;
 	}
 
-	public void setService(Service service) {
-		this.service = service;
+	public void setServiceInstance(OServiceInstance serviceInstance) {
+		this.serviceInstance = serviceInstance;
 	}
 
 	// --------------- CREATE / MODIFY
@@ -169,9 +170,9 @@ public class ServiceProperty implements ICreationDate, ICreatorUser, IModificati
 	@Override
 	public boolean equals(Object o) {
 		if (this == o) return true;
-		if (!(o instanceof ServiceProperty)) return false;
+		if (!(o instanceof OSIPropertyValue)) return false;
 
-		ServiceProperty that = (ServiceProperty) o;
+		OSIPropertyValue that = (OSIPropertyValue) o;
 
 		return !(getId() != null ? !getId().equals(that.getId()) : that.getId() != null);
 
@@ -184,6 +185,6 @@ public class ServiceProperty implements ICreationDate, ICreatorUser, IModificati
 
 	@Override
 	public String toString() {
-		return getName();
+		return String.format("%s = %s", getProperty(), getValue());
 	}
 }

@@ -15,13 +15,13 @@
 		<entity type="org.devocative.ares.entity.command.CommandLog"/>
 		<entity type="org.devocative.ares.entity.command.ConfigLob"/>
 
-		<entity type="org.devocative.ares.entity.Server"/>
+		<entity type="org.devocative.ares.entity.OServer"/>
 
-		<entity type="org.devocative.ares.entity.service.Service"/>
-		<entity type="org.devocative.ares.entity.service.ServiceInstance"/>
-		<entity type="org.devocative.ares.entity.service.ServiceProperty"/>
-		<entity type="org.devocative.ares.entity.service.SIPropertyValue"/>
-		<entity type="org.devocative.ares.entity.service.SIUser"/>
+		<entity type="org.devocative.ares.entity.oservice.OService"/>
+		<entity type="org.devocative.ares.entity.oservice.OServiceInstance"/>
+		<entity type="org.devocative.ares.entity.oservice.OServiceProperty"/>
+		<entity type="org.devocative.ares.entity.oservice.OSIPropertyValue"/>
+		<entity type="org.devocative.ares.entity.oservice.OSIUser"/>
 	</entities>
 
 	<tasks>

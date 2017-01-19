@@ -1,4 +1,4 @@
-package org.devocative.ares.entity.service;
+package org.devocative.ares.entity.oservice;
 
 import org.devocative.demeter.entity.*;
 
@@ -6,32 +6,39 @@ import javax.persistence.*;
 import java.util.Date;
 
 @Entity
-@Table(name = "t_ars_service", uniqueConstraints = {
-	@UniqueConstraint(name = "uk_ars_service", columnNames = {"c_name"})
-})
-public class Service implements ICreationDate, ICreatorUser, IModificationDate, IModifierUser {
-	private static final long serialVersionUID = -110639388094098969L;
+@Table(name = "t_ars_service_inst_user")
+public class OSIUser implements ICreationDate, ICreatorUser, IModificationDate, IModifierUser {
+	private static final long serialVersionUID = 753142909119873415L;
 
 	@Id
-	@GeneratedValue(generator = "ars_service")
-	@org.hibernate.annotations.GenericGenerator(name = "ars_service", strategy = "org.hibernate.id.enhanced.SequenceStyleGenerator",
+	@GeneratedValue(generator = "ars_service_inst_user")
+	@org.hibernate.annotations.GenericGenerator(name = "ars_service_inst_user", strategy = "org.hibernate.id.enhanced.SequenceStyleGenerator",
 		parameters = {
 			//@org.hibernate.annotations.Parameter(name = "optimizer", value = "pooled"),
 			@org.hibernate.annotations.Parameter(name = "initial_value", value = "1"),
 			@org.hibernate.annotations.Parameter(name = "increment_size", value = "1"),
-			@org.hibernate.annotations.Parameter(name = "sequence_name", value = "ars_service")
+			@org.hibernate.annotations.Parameter(name = "sequence_name", value = "ars_service_inst_user")
 		})
 	private Long id;
 
-	@Column(name = "c_name", nullable = false)
-	private String name;
+	@Column(name = "c_username", nullable = false)
+	private String username;
 
-	@Column(name = "c_conn_pattern", length = 1000)
-	private String connectionPattern;
+	@Column(name = "c_password", nullable = false)
+	private String password;
 
-	@Embedded
-	@AttributeOverride(name = "id", column = @Column(name = "e_type", nullable = false))
-	private EServiceType type;
+	@Column(name = "b_admin", nullable = false)
+	private Boolean admin;
+
+	@Column(name = "b_expr_passwd", nullable = false)
+	private Boolean expirePassword;
+
+	@Column(name = "b_enabled", nullable = false)
+	private Boolean enabled;
+
+	@ManyToOne(fetch = FetchType.EAGER)
+	@JoinColumn(name = "f_service_inst", nullable = false, foreignKey = @ForeignKey(name = "siUser2serviceInstance"))
+	private OServiceInstance serviceInstance;
 
 	// --------------- CREATE / MODIFY
 
@@ -42,7 +49,7 @@ public class Service implements ICreationDate, ICreatorUser, IModificationDate, 
 	//@NotAudited
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "f_creator_user", insertable = false, updatable = false,
-		foreignKey = @ForeignKey(name = "_crtrusr2user"))
+		foreignKey = @ForeignKey(name = "siUser_crtrUsr2user"))
 	private User creatorUser;
 
 	//@NotAudited
@@ -54,7 +61,7 @@ public class Service implements ICreationDate, ICreatorUser, IModificationDate, 
 
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "f_modifier_user", insertable = false, updatable = false,
-		foreignKey = @ForeignKey(name = "_mdfrusr2user"))
+		foreignKey = @ForeignKey(name = "siUser_mdfrUsr2user"))
 	private User modifierUser;
 
 	@Column(name = "f_modifier_user")
@@ -74,28 +81,52 @@ public class Service implements ICreationDate, ICreatorUser, IModificationDate, 
 		this.id = id;
 	}
 
-	public String getName() {
-		return name;
+	public String getUsername() {
+		return username;
 	}
 
-	public void setName(String name) {
-		this.name = name;
+	public void setUsername(String username) {
+		this.username = username;
 	}
 
-	public String getConnectionPattern() {
-		return connectionPattern;
+	public String getPassword() {
+		return password;
 	}
 
-	public void setConnectionPattern(String connectionPattern) {
-		this.connectionPattern = connectionPattern;
+	public void setPassword(String password) {
+		this.password = password;
 	}
 
-	public EServiceType getType() {
-		return type;
+	public Boolean getAdmin() {
+		return admin;
 	}
 
-	public void setType(EServiceType type) {
-		this.type = type;
+	public void setAdmin(Boolean admin) {
+		this.admin = admin;
+	}
+
+	public Boolean getExpirePassword() {
+		return expirePassword;
+	}
+
+	public void setExpirePassword(Boolean expirePassword) {
+		this.expirePassword = expirePassword;
+	}
+
+	public Boolean getEnabled() {
+		return enabled;
+	}
+
+	public void setEnabled(Boolean enabled) {
+		this.enabled = enabled;
+	}
+
+	public OServiceInstance getServiceInstance() {
+		return serviceInstance;
+	}
+
+	public void setServiceInstance(OServiceInstance serviceInstance) {
+		this.serviceInstance = serviceInstance;
 	}
 
 	// --------------- CREATE / MODIFY
@@ -171,9 +202,9 @@ public class Service implements ICreationDate, ICreatorUser, IModificationDate, 
 	@Override
 	public boolean equals(Object o) {
 		if (this == o) return true;
-		if (!(o instanceof Service)) return false;
+		if (!(o instanceof OSIUser)) return false;
 
-		Service that = (Service) o;
+		OSIUser that = (OSIUser) o;
 
 		return !(getId() != null ? !getId().equals(that.getId()) : that.getId() != null);
 
@@ -186,6 +217,6 @@ public class Service implements ICreationDate, ICreatorUser, IModificationDate, 
 
 	@Override
 	public String toString() {
-		return getName();
+		return String.format("%s@%s", getUsername(), getServiceInstance());
 	}
 }

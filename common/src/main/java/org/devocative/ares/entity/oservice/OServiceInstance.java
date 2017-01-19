@@ -1,6 +1,6 @@
-package org.devocative.ares.entity.service;
+package org.devocative.ares.entity.oservice;
 
-import org.devocative.ares.entity.Server;
+import org.devocative.ares.entity.OServer;
 import org.devocative.demeter.entity.*;
 
 import javax.persistence.*;
@@ -9,7 +9,7 @@ import java.util.List;
 
 @Entity
 @Table(name = "t_ars_service_inst")
-public class ServiceInstance implements ICreationDate, ICreatorUser, IModificationDate, IModifierUser {
+public class OServiceInstance implements ICreationDate, ICreatorUser, IModificationDate, IModifierUser {
 	private static final long serialVersionUID = 2007755808784442971L;
 
 	@Id
@@ -31,21 +31,21 @@ public class ServiceInstance implements ICreationDate, ICreatorUser, IModificati
 
 	@ManyToOne(fetch = FetchType.EAGER)
 	@JoinColumn(name = "f_server", nullable = false, foreignKey = @ForeignKey(name = "srvcinst2server"))
-	private Server server;
+	private OServer server;
 
 	@ManyToOne(fetch = FetchType.EAGER)
 	@JoinColumn(name = "f_service", nullable = false, foreignKey = @ForeignKey(name = "srvcinst2service"))
-	private Service service;
+	private OService service;
 
 	@ManyToMany(fetch = FetchType.LAZY)
 	@JoinTable(name = "mt_service_inst_related",
 		joinColumns = @JoinColumn(name = "f_related"),
 		inverseJoinColumns = @JoinColumn(name = "f_source")
 	)
-	private List<ServiceInstance> related;
+	private List<OServiceInstance> related;
 
 	@OneToMany(fetch = FetchType.LAZY, mappedBy = "serviceInstance")
-	private List<SIPropertyValue> properties;
+	private List<OSIPropertyValue> properties;
 
 	// --------------- CREATE / MODIFY
 
@@ -104,35 +104,35 @@ public class ServiceInstance implements ICreationDate, ICreatorUser, IModificati
 		this.port = port;
 	}
 
-	public Server getServer() {
+	public OServer getServer() {
 		return server;
 	}
 
-	public void setServer(Server server) {
+	public void setServer(OServer server) {
 		this.server = server;
 	}
 
-	public Service getService() {
+	public OService getService() {
 		return service;
 	}
 
-	public void setService(Service service) {
+	public void setService(OService service) {
 		this.service = service;
 	}
 
-	public List<ServiceInstance> getRelated() {
+	public List<OServiceInstance> getRelated() {
 		return related;
 	}
 
-	public void setRelated(List<ServiceInstance> related) {
+	public void setRelated(List<OServiceInstance> related) {
 		this.related = related;
 	}
 
-	public List<SIPropertyValue> getProperties() {
+	public List<OSIPropertyValue> getProperties() {
 		return properties;
 	}
 
-	public void setProperties(List<SIPropertyValue> properties) {
+	public void setProperties(List<OSIPropertyValue> properties) {
 		this.properties = properties;
 	}
 
@@ -209,9 +209,9 @@ public class ServiceInstance implements ICreationDate, ICreatorUser, IModificati
 	@Override
 	public boolean equals(Object o) {
 		if (this == o) return true;
-		if (!(o instanceof ServiceInstance)) return false;
+		if (!(o instanceof OServiceInstance)) return false;
 
-		ServiceInstance that = (ServiceInstance) o;
+		OServiceInstance that = (OServiceInstance) o;
 
 		return !(getId() != null ? !getId().equals(that.getId()) : that.getId() != null);
 

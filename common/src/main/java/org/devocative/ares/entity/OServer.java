@@ -1,4 +1,4 @@
-package org.devocative.ares.entity.service;
+package org.devocative.ares.entity;
 
 import org.devocative.demeter.entity.*;
 
@@ -6,31 +6,29 @@ import javax.persistence.*;
 import java.util.Date;
 
 @Entity
-@Table(name = "t_ars_service_inst_prop_val")
-public class SIPropertyValue implements ICreationDate, ICreatorUser, IModificationDate, IModifierUser {
-	private static final long serialVersionUID = 8592429112321349167L;
+@Table(name = "t_ars_server", uniqueConstraints = {
+	@UniqueConstraint(name = "uk_ars_serverName", columnNames = {"c_name"}),
+	@UniqueConstraint(name = "uk_ars_serverAddress", columnNames = {"c_address"})
+})
+public class OServer implements ICreationDate, ICreatorUser, IModificationDate, IModifierUser {
+	private static final long serialVersionUID = -6588853204422299159L;
 
 	@Id
-	@GeneratedValue(generator = "ars_service_inst_prop_val")
-	@org.hibernate.annotations.GenericGenerator(name = "ars_service_inst_prop_val", strategy = "org.hibernate.id.enhanced.SequenceStyleGenerator",
+	@GeneratedValue(generator = "ars_server")
+	@org.hibernate.annotations.GenericGenerator(name = "ars_server", strategy = "org.hibernate.id.enhanced.SequenceStyleGenerator",
 		parameters = {
 			//@org.hibernate.annotations.Parameter(name = "optimizer", value = "pooled"),
 			@org.hibernate.annotations.Parameter(name = "initial_value", value = "1"),
 			@org.hibernate.annotations.Parameter(name = "increment_size", value = "1"),
-			@org.hibernate.annotations.Parameter(name = "sequence_name", value = "ars_service_inst_prop_val")
+			@org.hibernate.annotations.Parameter(name = "sequence_name", value = "ars_server")
 		})
 	private Long id;
 
-	@Column(name = "c_value", nullable = false)
-	private String value;
+	@Column(name = "c_name", nullable = false)
+	private String name;
 
-	@ManyToOne(fetch = FetchType.EAGER)
-	@JoinColumn(name = "f_property", nullable = false, foreignKey = @ForeignKey(name = "siPropVal2property"))
-	private ServiceProperty property;
-
-	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "f_service_inst", nullable = false, foreignKey = @ForeignKey(name = "siPropVal2serviceInstance"))
-	private ServiceInstance serviceInstance;
+	@Column(name = "c_address", nullable = false)
+	private String address;
 
 	// --------------- CREATE / MODIFY
 
@@ -41,7 +39,7 @@ public class SIPropertyValue implements ICreationDate, ICreatorUser, IModificati
 	//@NotAudited
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "f_creator_user", insertable = false, updatable = false,
-		foreignKey = @ForeignKey(name = "siPropVal_crtrUsr2user"))
+		foreignKey = @ForeignKey(name = "server_crtrusr2user"))
 	private User creatorUser;
 
 	//@NotAudited
@@ -53,7 +51,7 @@ public class SIPropertyValue implements ICreationDate, ICreatorUser, IModificati
 
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "f_modifier_user", insertable = false, updatable = false,
-		foreignKey = @ForeignKey(name = "siPropVal_mdfrUsr2user"))
+		foreignKey = @ForeignKey(name = "server_mdfrusr2user"))
 	private User modifierUser;
 
 	@Column(name = "f_modifier_user")
@@ -73,28 +71,20 @@ public class SIPropertyValue implements ICreationDate, ICreatorUser, IModificati
 		this.id = id;
 	}
 
-	public String getValue() {
-		return value;
+	public String getName() {
+		return name;
 	}
 
-	public void setValue(String value) {
-		this.value = value;
+	public void setName(String name) {
+		this.name = name;
 	}
 
-	public ServiceProperty getProperty() {
-		return property;
+	public String getAddress() {
+		return address;
 	}
 
-	public void setProperty(ServiceProperty property) {
-		this.property = property;
-	}
-
-	public ServiceInstance getServiceInstance() {
-		return serviceInstance;
-	}
-
-	public void setServiceInstance(ServiceInstance serviceInstance) {
-		this.serviceInstance = serviceInstance;
+	public void setAddress(String address) {
+		this.address = address;
 	}
 
 	// --------------- CREATE / MODIFY
@@ -170,9 +160,9 @@ public class SIPropertyValue implements ICreationDate, ICreatorUser, IModificati
 	@Override
 	public boolean equals(Object o) {
 		if (this == o) return true;
-		if (!(o instanceof SIPropertyValue)) return false;
+		if (!(o instanceof OServer)) return false;
 
-		SIPropertyValue that = (SIPropertyValue) o;
+		OServer that = (OServer) o;
 
 		return !(getId() != null ? !getId().equals(that.getId()) : that.getId() != null);
 
@@ -185,6 +175,6 @@ public class SIPropertyValue implements ICreationDate, ICreatorUser, IModificati
 
 	@Override
 	public String toString() {
-		return String.format("%s = %s", getProperty(), getValue());
+		return getName();
 	}
 }

@@ -1,6 +1,6 @@
 package org.devocative.ares.entity.command;
 
-import org.devocative.ares.entity.service.Service;
+import org.devocative.ares.entity.oservice.OService;
 import org.devocative.demeter.entity.*;
 
 import javax.persistence.*;
@@ -27,7 +27,7 @@ public class Command implements ICreationDate, ICreatorUser, IModificationDate, 
 
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "f_service", nullable = false, foreignKey = @ForeignKey(name = "command2service"))
-	private Service service;
+	private OService service;
 
 	@OneToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "f_config", nullable = false, foreignKey = @ForeignKey(name = "command2configLob"))
@@ -85,11 +85,11 @@ public class Command implements ICreationDate, ICreatorUser, IModificationDate, 
 		this.name = name;
 	}
 
-	public Service getService() {
+	public OService getService() {
 		return service;
 	}
 
-	public void setService(Service service) {
+	public void setService(OService service) {
 		this.service = service;
 	}
 

@@ -1,4 +1,4 @@
-package org.devocative.ares.entity;
+package org.devocative.ares.entity.oservice;
 
 import org.devocative.demeter.entity.*;
 
@@ -6,29 +6,32 @@ import javax.persistence.*;
 import java.util.Date;
 
 @Entity
-@Table(name = "t_ars_server", uniqueConstraints = {
-	@UniqueConstraint(name = "uk_ars_serverName", columnNames = {"c_name"}),
-	@UniqueConstraint(name = "uk_ars_serverAddress", columnNames = {"c_address"})
+@Table(name = "t_ars_service", uniqueConstraints = {
+	@UniqueConstraint(name = "uk_ars_service", columnNames = {"c_name"})
 })
-public class Server implements ICreationDate, ICreatorUser, IModificationDate, IModifierUser {
-	private static final long serialVersionUID = -6588853204422299159L;
+public class OService implements ICreationDate, ICreatorUser, IModificationDate, IModifierUser {
+	private static final long serialVersionUID = -110639388094098969L;
 
 	@Id
-	@GeneratedValue(generator = "ars_server")
-	@org.hibernate.annotations.GenericGenerator(name = "ars_server", strategy = "org.hibernate.id.enhanced.SequenceStyleGenerator",
+	@GeneratedValue(generator = "ars_service")
+	@org.hibernate.annotations.GenericGenerator(name = "ars_service", strategy = "org.hibernate.id.enhanced.SequenceStyleGenerator",
 		parameters = {
 			//@org.hibernate.annotations.Parameter(name = "optimizer", value = "pooled"),
 			@org.hibernate.annotations.Parameter(name = "initial_value", value = "1"),
 			@org.hibernate.annotations.Parameter(name = "increment_size", value = "1"),
-			@org.hibernate.annotations.Parameter(name = "sequence_name", value = "ars_server")
+			@org.hibernate.annotations.Parameter(name = "sequence_name", value = "ars_service")
 		})
 	private Long id;
 
 	@Column(name = "c_name", nullable = false)
 	private String name;
 
-	@Column(name = "c_address", nullable = false)
-	private String address;
+	@Column(name = "c_conn_pattern", length = 1000)
+	private String connectionPattern;
+
+	@Embedded
+	@AttributeOverride(name = "id", column = @Column(name = "e_type", nullable = false))
+	private EOServiceType type;
 
 	// --------------- CREATE / MODIFY
 
@@ -39,7 +42,7 @@ public class Server implements ICreationDate, ICreatorUser, IModificationDate, I
 	//@NotAudited
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "f_creator_user", insertable = false, updatable = false,
-		foreignKey = @ForeignKey(name = "server_crtrusr2user"))
+		foreignKey = @ForeignKey(name = "_crtrusr2user"))
 	private User creatorUser;
 
 	//@NotAudited
@@ -51,7 +54,7 @@ public class Server implements ICreationDate, ICreatorUser, IModificationDate, I
 
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "f_modifier_user", insertable = false, updatable = false,
-		foreignKey = @ForeignKey(name = "server_mdfrusr2user"))
+		foreignKey = @ForeignKey(name = "_mdfrusr2user"))
 	private User modifierUser;
 
 	@Column(name = "f_modifier_user")
@@ -79,12 +82,20 @@ public class Server implements ICreationDate, ICreatorUser, IModificationDate, I
 		this.name = name;
 	}
 
-	public String getAddress() {
-		return address;
+	public String getConnectionPattern() {
+		return connectionPattern;
 	}
 
-	public void setAddress(String address) {
-		this.address = address;
+	public void setConnectionPattern(String connectionPattern) {
+		this.connectionPattern = connectionPattern;
+	}
+
+	public EOServiceType getType() {
+		return type;
+	}
+
+	public void setType(EOServiceType type) {
+		this.type = type;
 	}
 
 	// --------------- CREATE / MODIFY
@@ -160,9 +171,9 @@ public class Server implements ICreationDate, ICreatorUser, IModificationDate, I
 	@Override
 	public boolean equals(Object o) {
 		if (this == o) return true;
-		if (!(o instanceof Server)) return false;
+		if (!(o instanceof OService)) return false;
 
-		Server that = (Server) o;
+		OService that = (OService) o;
 
 		return !(getId() != null ? !getId().equals(that.getId()) : that.getId() != null);
 
