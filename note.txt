@@ -5,7 +5,7 @@ cmd.sqlBlock
 cmd.sleep
 
 
-param: sourceSchema:String,dbService:Service("DB.Oracle"),destSchema:SUserOf(dbService)
+param: sourceSchema:String,dbService:Service("DB.Oracle"),destSchema:String
 
 if(!cmd.exec("checkDBUser", [dbService:dbService, username:sourceSchema])) {
 	error("No user ${sourceSchema} to export dump from")

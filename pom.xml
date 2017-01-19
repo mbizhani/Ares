@@ -56,6 +56,7 @@
 		<d.demeter.ver>1.0-SNAPSHOT</d.demeter.ver>
 		<d.spring.ver>4.3.3.RELEASE</d.spring.ver>
 		<d.servlet.ver>3.1.0</d.servlet.ver>
+		<d.xstream.ver>1.4.9</d.xstream.ver>
 
 		<p.jetty.ver>9.2.15.v20160210</p.jetty.ver>
 		<p.compiler.ver>3.5.1</p.compiler.ver>

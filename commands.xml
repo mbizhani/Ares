@@ -1,11 +1,18 @@
 <services>
-	<service name="Oracle" type="Database">
+	<service name="Oracle" type="Database"
+			 connectionPattern="jdbc:oracle:thin:@${service.address}:${service.port}:${service.prop.sid}">
+
+		<properties>
+			<property name="sid" required="true"/>
+			<property name="dbDir" required="true"/>
+		</properties>
+
 		<commands>
 			<command name="copySchema">
 				<params>
-					<parameter name="sourceSchema" type="string"/>
-					<parameter name="destSchema" type="string"/>
-					<parameter name="dbService" type="Service('Oracle')"/>
+					<param name="sourceSchema" type="string" required="true"/>
+					<param name="destSchema" type="string" required="true"/>
+					<param name="dbService" type="Service('Oracle')" required="true"/>
 				</params>
 				<body>
 					<![CDATA[
