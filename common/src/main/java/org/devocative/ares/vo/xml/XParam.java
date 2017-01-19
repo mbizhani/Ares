@@ -1,16 +1,19 @@
-package org.devocative.ares.xml;
+package org.devocative.ares.vo.xml;
 
 import com.thoughtworks.xstream.annotations.XStreamAlias;
 import com.thoughtworks.xstream.annotations.XStreamAsAttribute;
 
 import java.io.Serializable;
 
-@XStreamAlias("property")
-public class XProperty implements Serializable {
-	private static final long serialVersionUID = -5351574537269904298L;
+@XStreamAlias("param")
+public class XParam implements Serializable {
+	private static final long serialVersionUID = 2089896456604388719L;
 
 	@XStreamAsAttribute
 	private String name;
+
+	@XStreamAsAttribute
+	private String type;
 
 	@XStreamAsAttribute
 	private Boolean required;
@@ -23,6 +26,14 @@ public class XProperty implements Serializable {
 
 	public void setName(String name) {
 		this.name = name;
+	}
+
+	public String getType() {
+		return type;
+	}
+
+	public void setType(String type) {
+		this.type = type;
 	}
 
 	public Boolean getRequired() {

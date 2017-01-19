@@ -1,4 +1,4 @@
-package org.devocative.ares.xml;
+package org.devocative.ares.vo.xml;
 
 import com.thoughtworks.xstream.annotations.XStreamAlias;
 import com.thoughtworks.xstream.annotations.XStreamAsAttribute;
