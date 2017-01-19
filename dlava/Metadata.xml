@@ -6,8 +6,360 @@
 
 <meta>
 	<filterClass>targetClass.entity</filterClass>
-
 	<classes>
-
+		<class fqn="org.devocative.ares.entity.command.Command">
+			<cinfo/>
+			<id ref="id"/>
+			<fields>
+				<field name="id">
+					<finfo/>
+				</field>
+				<field name="name">
+					<finfo/>
+				</field>
+				<field name="service">
+					<finfo/>
+				</field>
+				<field name="config">
+					<finfo ignore="true"/>
+				</field>
+				<field name="configId">
+					<finfo ignore="true"/>
+				</field>
+				<field name="creationDate">
+					<finfo hasForm="false" hasTimePart="true"/>
+				</field>
+				<field name="creatorUser">
+					<finfo hasForm="false"/>
+				</field>
+				<field name="creatorUserId">
+					<finfo ignore="true"/>
+				</field>
+				<field name="modificationDate">
+					<finfo hasForm="false" hasTimePart="true"/>
+				</field>
+				<field name="modifierUser">
+					<finfo hasForm="false"/>
+				</field>
+				<field name="modifierUserId">
+					<finfo ignore="true"/>
+				</field>
+				<field name="version">
+					<finfo hasForm="false" hasFVO="false"/>
+				</field>
+			</fields>
+		</class>
+		<class fqn="org.devocative.ares.entity.command.CommandLog">
+			<cinfo hasForm="false"/>
+			<id ref="id"/>
+			<fields>
+				<field name="id">
+					<finfo/>
+				</field>
+				<field name="param">
+					<finfo/>
+				</field>
+				<field name="successful">
+					<finfo/>
+				</field>
+				<field name="error">
+					<finfo/>
+				</field>
+				<field name="command">
+					<finfo/>
+				</field>
+				<field name="creationDate">
+					<finfo hasForm="false" hasTimePart="true"/>
+				</field>
+				<field name="creatorUser">
+					<finfo hasForm="false"/>
+				</field>
+				<field name="creatorUserId">
+					<finfo ignore="true"/>
+				</field>
+			</fields>
+		</class>
+		<class fqn="org.devocative.ares.entity.command.ConfigLob">
+			<cinfo ignore="true"/>
+			<id ref="id"/>
+			<fields>
+				<field name="id">
+					<finfo/>
+				</field>
+				<field name="value">
+					<finfo/>
+				</field>
+				<field name="creationDate">
+					<finfo hasForm="false" hasTimePart="true"/>
+				</field>
+				<field name="creatorUser">
+					<finfo hasForm="false"/>
+				</field>
+				<field name="creatorUserId">
+					<finfo ignore="true"/>
+				</field>
+				<field name="modificationDate">
+					<finfo hasForm="false" hasTimePart="true"/>
+				</field>
+				<field name="modifierUser">
+					<finfo hasForm="false"/>
+				</field>
+				<field name="modifierUserId">
+					<finfo ignore="true"/>
+				</field>
+				<field name="version">
+					<finfo hasForm="false" hasFVO="false"/>
+				</field>
+			</fields>
+		</class>
+		<class fqn="org.devocative.ares.entity.OServer">
+			<cinfo/>
+			<id ref="id"/>
+			<fields>
+				<field name="id">
+					<finfo/>
+				</field>
+				<field name="name">
+					<finfo/>
+				</field>
+				<field name="address">
+					<finfo/>
+				</field>
+				<field name="creationDate">
+					<finfo hasForm="false" hasTimePart="true"/>
+				</field>
+				<field name="creatorUser">
+					<finfo hasForm="false"/>
+				</field>
+				<field name="creatorUserId">
+					<finfo ignore="true"/>
+				</field>
+				<field name="modificationDate">
+					<finfo hasForm="false" hasTimePart="true"/>
+				</field>
+				<field name="modifierUser">
+					<finfo hasForm="false"/>
+				</field>
+				<field name="modifierUserId">
+					<finfo ignore="true"/>
+				</field>
+				<field name="version">
+					<finfo hasForm="false" hasFVO="false"/>
+				</field>
+			</fields>
+		</class>
+		<class fqn="org.devocative.ares.entity.oservice.OService">
+			<cinfo/>
+			<id ref="id"/>
+			<fields>
+				<field name="id">
+					<finfo/>
+				</field>
+				<field name="name">
+					<finfo/>
+				</field>
+				<field name="connectionPattern">
+					<finfo/>
+				</field>
+				<field name="type">
+					<finfo/>
+				</field>
+				<field name="creationDate">
+					<finfo hasForm="false" hasTimePart="true"/>
+				</field>
+				<field name="creatorUser">
+					<finfo hasForm="false"/>
+				</field>
+				<field name="creatorUserId">
+					<finfo ignore="true"/>
+				</field>
+				<field name="modificationDate">
+					<finfo hasForm="false" hasTimePart="true"/>
+				</field>
+				<field name="modifierUser">
+					<finfo hasForm="false"/>
+				</field>
+				<field name="modifierUserId">
+					<finfo ignore="true"/>
+				</field>
+				<field name="version">
+					<finfo hasForm="false" hasFVO="false"/>
+				</field>
+			</fields>
+		</class>
+		<class fqn="org.devocative.ares.entity.oservice.OServiceInstance">
+			<cinfo/>
+			<id ref="id"/>
+			<fields>
+				<field name="id">
+					<finfo/>
+				</field>
+				<field name="name">
+					<finfo/>
+				</field>
+				<field name="port">
+					<finfo/>
+				</field>
+				<field name="server">
+					<finfo/>
+				</field>
+				<field name="service">
+					<finfo/>
+				</field>
+				<field name="related">
+					<finfo/>
+				</field>
+				<field name="properties">
+					<finfo hasForm="false" hasFVO="false"/>
+				</field>
+				<field name="creationDate">
+					<finfo hasForm="false" hasTimePart="true"/>
+				</field>
+				<field name="creatorUser">
+					<finfo hasForm="false"/>
+				</field>
+				<field name="creatorUserId">
+					<finfo ignore="true"/>
+				</field>
+				<field name="modificationDate">
+					<finfo hasForm="false" hasTimePart="true"/>
+				</field>
+				<field name="modifierUser">
+					<finfo hasForm="false"/>
+				</field>
+				<field name="modifierUserId">
+					<finfo ignore="true"/>
+				</field>
+				<field name="version">
+					<finfo hasForm="false" hasFVO="false"/>
+				</field>
+			</fields>
+		</class>
+		<class fqn="org.devocative.ares.entity.oservice.OServiceProperty">
+			<cinfo/>
+			<id ref="id"/>
+			<fields>
+				<field name="id">
+					<finfo/>
+				</field>
+				<field name="name">
+					<finfo/>
+				</field>
+				<field name="required">
+					<finfo/>
+				</field>
+				<field name="service">
+					<finfo/>
+				</field>
+				<field name="creationDate">
+					<finfo hasForm="false" hasTimePart="true"/>
+				</field>
+				<field name="creatorUser">
+					<finfo hasForm="false"/>
+				</field>
+				<field name="creatorUserId">
+					<finfo ignore="true"/>
+				</field>
+				<field name="modificationDate">
+					<finfo hasForm="false" hasTimePart="true"/>
+				</field>
+				<field name="modifierUser">
+					<finfo hasForm="false"/>
+				</field>
+				<field name="modifierUserId">
+					<finfo ignore="true"/>
+				</field>
+				<field name="version">
+					<finfo hasForm="false" hasFVO="false"/>
+				</field>
+			</fields>
+		</class>
+		<class fqn="org.devocative.ares.entity.oservice.OSIPropertyValue">
+			<cinfo ignore="true"/>
+			<id ref="id"/>
+			<fields>
+				<field name="id">
+					<finfo/>
+				</field>
+				<field name="value">
+					<finfo/>
+				</field>
+				<field name="property">
+					<finfo/>
+				</field>
+				<field name="serviceInstance">
+					<finfo/>
+				</field>
+				<field name="creationDate">
+					<finfo hasForm="false" hasTimePart="true"/>
+				</field>
+				<field name="creatorUser">
+					<finfo hasForm="false"/>
+				</field>
+				<field name="creatorUserId">
+					<finfo ignore="true"/>
+				</field>
+				<field name="modificationDate">
+					<finfo hasForm="false" hasTimePart="true"/>
+				</field>
+				<field name="modifierUser">
+					<finfo hasForm="false"/>
+				</field>
+				<field name="modifierUserId">
+					<finfo ignore="true"/>
+				</field>
+				<field name="version">
+					<finfo hasForm="false" hasFVO="false"/>
+				</field>
+			</fields>
+		</class>
+		<class fqn="org.devocative.ares.entity.oservice.OSIUser">
+			<cinfo/>
+			<id ref="id"/>
+			<fields>
+				<field name="id">
+					<finfo/>
+				</field>
+				<field name="username">
+					<finfo/>
+				</field>
+				<field name="password">
+					<finfo/>
+				</field>
+				<field name="admin">
+					<finfo/>
+				</field>
+				<field name="expirePassword">
+					<finfo/>
+				</field>
+				<field name="enabled">
+					<finfo/>
+				</field>
+				<field name="serviceInstance">
+					<finfo/>
+				</field>
+				<field name="creationDate">
+					<finfo hasForm="false" hasTimePart="true"/>
+				</field>
+				<field name="creatorUser">
+					<finfo hasForm="false"/>
+				</field>
+				<field name="creatorUserId">
+					<finfo ignore="true"/>
+				</field>
+				<field name="modificationDate">
+					<finfo hasForm="false" hasTimePart="true"/>
+				</field>
+				<field name="modifierUser">
+					<finfo hasForm="false"/>
+				</field>
+				<field name="modifierUserId">
+					<finfo ignore="true"/>
+				</field>
+				<field name="version">
+					<finfo hasForm="false" hasFVO="false"/>
+				</field>
+			</fields>
+		</class>
 	</classes>
 </meta>
