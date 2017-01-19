@@ -40,7 +40,7 @@ public class OServiceProperty implements ICreationDate, ICreatorUser, IModificat
 	//@NotAudited
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "f_creator_user", insertable = false, updatable = false,
-		foreignKey = @ForeignKey(name = "_crtrusr2user"))
+		foreignKey = @ForeignKey(name = "srvcprop_crtrusr2user"))
 	private User creatorUser;
 
 	//@NotAudited
@@ -52,7 +52,7 @@ public class OServiceProperty implements ICreationDate, ICreatorUser, IModificat
 
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "f_modifier_user", insertable = false, updatable = false,
-		foreignKey = @ForeignKey(name = "_mdfrusr2user"))
+		foreignKey = @ForeignKey(name = "srvcprop_mdfrusr2user"))
 	private User modifierUser;
 
 	@Column(name = "f_modifier_user")
