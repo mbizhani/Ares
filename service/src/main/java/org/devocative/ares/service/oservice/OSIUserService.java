@@ -7,6 +7,8 @@ import org.devocative.ares.iservice.oservice.IOSIUserService;
 import org.devocative.ares.vo.filter.oservice.OSIUserFVO;
 import org.devocative.demeter.entity.User;
 import org.devocative.demeter.iservice.persistor.IPersistorService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -14,6 +16,7 @@ import java.util.List;
 
 @Service("arsOSIUserService")
 public class OSIUserService implements IOSIUserService {
+	private static final Logger logger = LoggerFactory.getLogger(OSIUserService.class);
 
 	@Autowired
 	private IPersistorService persistorService;

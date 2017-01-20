@@ -7,7 +7,9 @@ import javax.persistence.*;
 import java.util.Date;
 
 @Entity
-@Table(name = "t_ars_command")
+@Table(name = "t_ars_command", uniqueConstraints = {
+	@UniqueConstraint(name = "uk_ars_command", columnNames = {"c_name", "f_service"})
+})
 public class Command implements ICreationDate, ICreatorUser, IModificationDate, IModifierUser {
 	private static final long serialVersionUID = -63582547132213642L;
 

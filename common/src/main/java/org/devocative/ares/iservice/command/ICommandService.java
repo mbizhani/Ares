@@ -1,9 +1,9 @@
-//overwrite
 package org.devocative.ares.iservice.command;
 
 import org.devocative.ares.entity.command.Command;
 import org.devocative.ares.entity.oservice.OService;
 import org.devocative.ares.vo.filter.command.CommandFVO;
+import org.devocative.ares.vo.xml.XCommand;
 import org.devocative.demeter.entity.User;
 
 import java.util.List;
@@ -26,4 +26,8 @@ public interface ICommandService {
 	List<User> getModifierUserList();
 
 	// ==============================
+
+	Command loadByNameAndOService(OService oService, String name);
+
+	void checkAndSave(OService oService, XCommand xCommand);
 }

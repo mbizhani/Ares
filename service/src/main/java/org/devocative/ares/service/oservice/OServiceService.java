@@ -1,21 +1,38 @@
-//overwrite
 package org.devocative.ares.service.oservice;
 
+import com.thoughtworks.xstream.XStream;
+import org.devocative.ares.entity.oservice.EOServiceType;
 import org.devocative.ares.entity.oservice.OService;
+import org.devocative.ares.iservice.command.ICommandService;
+import org.devocative.ares.iservice.oservice.IOServicePropertyService;
 import org.devocative.ares.iservice.oservice.IOServiceService;
 import org.devocative.ares.vo.filter.oservice.OServiceFVO;
+import org.devocative.ares.vo.xml.XCommand;
+import org.devocative.ares.vo.xml.XOperation;
+import org.devocative.ares.vo.xml.XProperty;
+import org.devocative.ares.vo.xml.XService;
 import org.devocative.demeter.entity.User;
 import org.devocative.demeter.iservice.persistor.IPersistorService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.io.InputStream;
 import java.util.List;
 
 @Service("arsOServiceService")
 public class OServiceService implements IOServiceService {
+	private static final Logger logger = LoggerFactory.getLogger(OServiceService.class);
 
 	@Autowired
 	private IPersistorService persistorService;
+
+	@Autowired
+	private IOServicePropertyService propertyService;
+
+	@Autowired
+	private ICommandService commandService;
 
 	// ------------------------------
 
@@ -75,4 +92,40 @@ public class OServiceService implements IOServiceService {
 	}
 
 	// ==============================
+
+	@Override
+	public void importFile(InputStream in) {
+		logger.info("OServiceService.importFile()");
+
+		XStream xstream = new XStream();
+		xstream.processAnnotations(XOperation.class);
+
+		XOperation xOperation = (XOperation) xstream.fromXML(in);
+		for (XService xService : xOperation.getServices()) {
+			OService oService = loadByName(xService.getName());
+			if (oService == null) {
+				oService = new OService();
+				oService.setName(xService.getName());
+				oService.setType(EOServiceType.findByName(xService.getType()));
+				oService.setConnectionPattern(xService.getConnectionPattern());
+				saveOrUpdate(oService);
+
+				logger.info("OService not found and created: {}", xService.getName());
+			} else {
+				logger.info("OService loaded: {}", oService.getName());
+			}
+
+			if (xService.getProperties() != null) {
+				for (XProperty xProperty : xService.getProperties()) {
+					propertyService.checkAndSave(oService, xProperty.getName(), xProperty.getRequired());
+				}
+			}
+
+			for (XCommand xCommand : xService.getCommands()) {
+				commandService.checkAndSave(oService, xCommand);
+			}
+		}
+
+		persistorService.commitOrRollback();
+	}
 }

@@ -1,4 +1,3 @@
-//overwrite
 package org.devocative.ares.service.oservice;
 
 import org.devocative.ares.entity.oservice.OService;
@@ -7,13 +6,17 @@ import org.devocative.ares.iservice.oservice.IOServicePropertyService;
 import org.devocative.ares.vo.filter.oservice.OServicePropertyFVO;
 import org.devocative.demeter.entity.User;
 import org.devocative.demeter.iservice.persistor.IPersistorService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.Collections;
 import java.util.List;
 
 @Service("arsOServicePropertyService")
 public class OServicePropertyService implements IOServicePropertyService {
+	private static final Logger logger = LoggerFactory.getLogger(OServicePropertyService.class);
 
 	@Autowired
 	private IPersistorService persistorService;
@@ -71,4 +74,23 @@ public class OServicePropertyService implements IOServicePropertyService {
 	}
 
 	// ==============================
+
+	@Override
+	public void checkAndSave(OService oService, String propertyName, Boolean required) {
+		OServicePropertyFVO fvo = new OServicePropertyFVO();
+		fvo.setName(propertyName);
+		fvo.setService(Collections.singletonList(oService));
+
+		if (count(fvo) == 0) {
+			OServiceProperty property = new OServiceProperty();
+			property.setName(propertyName);
+			property.setRequired(required);
+			property.setService(oService);
+			saveOrUpdate(property);
+
+			logger.info("OServiceProperty not found and created: {} for {}", propertyName, oService.getName());
+		} else {
+			logger.info("OService [{}] has [{}] property", oService.getName(), propertyName);
+		}
+	}
 }

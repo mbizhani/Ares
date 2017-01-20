@@ -1,41 +1,102 @@
-<services>
-	<service name="Oracle" type="Database"
-			 connectionPattern="jdbc:oracle:thin:@${service.address}:${service.port}:${service.prop.sid}">
+<operation>
+	<services>
+		<service name="Oracle" type="Database"
+				 connectionPattern="jdbc:oracle:thin:@${service.address}:${service.port}:${service.prop.sid}">
 
-		<properties>
-			<property name="sid" required="true"/>
-			<property name="dbDir" required="true"/>
-		</properties>
+			<properties>
+				<property name="sid" required="true"/>
+				<property name="dbDir" required="true"/>
+			</properties>
 
-		<commands>
-			<command name="copySchema">
-				<params>
-					<param name="sourceSchema" type="string" required="true"/>
-					<param name="destSchema" type="string" required="true"/>
-					<param name="dbService" type="Service('Oracle')" required="true"/>
-				</params>
-				<body>
-					<![CDATA[
+			<commands>
+				<command name="checkDBUser">
+					<params>
+						<param name="username" type="string" required="true"/>
+						<param name="dbService" type="Service('Oracle')" required="true"/>
+					</params>
+					<body>
+						<![CDATA[
+return cmd.sql("select * from all_users where username='${username}'", dbService) > 0
+]]>
+					</body>
+				</command>
+
+				<command name="truncateDBUser">
+					<params>
+						<param name="schema" type="string" required="true"/>
+						<param name="dbService" type="Service('Oracle')" required="true"/>
+					</params>
+					<body>
+						<![CDATA[
+cmd.sqlBlock("""
+DECLARE
+	scname varchar2(20);
+BEGIN
+	scname := '${schema}.toUpperCase()';
+
+	--Bye Sequences!
+	for i in (select us.sequence_name from all_sequences us where us.sequence_owner = scname) loop
+		execute immediate 'drop sequence '||scname||'.'|| i.sequence_name;
+	end loop;
+
+	--Bye Tables!
+	for i in (select ut.table_name from all_tables ut where ut.owner = scname) loop
+		execute immediate 'drop table '||scname||'.'|| i.table_name ||' cascade constraints purge';
+	end loop;
+
+	--Bye Synonyms!
+	for i in (select us.synonym_name from dba_synonyms us where us.owner = scname) loop
+		execute immediate 'drop synonym '||scname||'.'|| i.synonym_name;
+	end loop;
+end;
+""", [dbService:dbService])
+]]>
+					</body>
+				</command>
+
+				<command name="copySchema">
+					<params>
+						<param name="sourceSchema" type="string" required="true"/>
+						<param name="destSchema" type="string" required="true"/>
+						<param name="dbService" type="Service('Oracle')" required="true"/>
+					</params>
+					<body>
+						<![CDATA[
 if(!cmd.exec("checkDBUser", [dbService:dbService, username:sourceSchema])) {
 	error("No user ${sourceSchema} to export dump from")
 }
 
 if(!cmd.exec("checkDBUser", [dbService:dbService, username:destSchema])) {
-	error("No user ${destSchema.username} to import dump to")
+	error("No user ${destSchema} to import dump to")
 }
 
 cmd.exec("truncateDBUser", [dbService:dbService, username:destSchema])
 
 def osService = dbService.fromRelated("OS.Linux");
 
-cmd.ssh("su - oracle -c 'expdp ${dbService.username}/${dbService.password} schemas=${sourceSchema} directory=${dbService.prop.dbDir} dumpfile=${sourceSchema}.dmp logfile=${sourceSchema}.log'", osService)
+cmd.ssh("sudo su - oracle -c 'expdp ${dbService.username}/${dbService.password} schemas=${sourceSchema} directory=${dbService.prop.dbDir} dumpfile=${sourceSchema}.dmp logfile=${sourceSchema}.log'", osService)
 
-cmd.ssh("su - oracle -c 'impdp ${dbService.username}/${dbService.password} remap_schema=${sourceSchema}:${destSchema} directory=${dbService.prop.dbDir} dumpfile=${destSchema}.dmp logfile=${destSchema}.log'", osService)
-
-return true
+cmd.ssh("sudo su - oracle -c 'impdp ${dbService.username}/${dbService.password} remap_schema=${sourceSchema}:${destSchema} directory=${dbService.prop.dbDir} dumpfile=${destSchema}.dmp logfile=${destSchema}.log'", osService)
 ]]>
-				</body>
-			</command>
-		</commands>
-	</service>
-</services>
+					</body>
+				</command>
+
+				<command name="backupSchema">
+					<params>
+						<param name="schema" type="string" required="true"/>
+						<param name="dbService" type="Service('Oracle')" required="true"/>
+					</params>
+					<body>
+						<![CDATA[
+if(!cmd.exec("checkDBUser", [dbService:dbService, username:schema])) {
+	error("No user ${schema} to export dump from")
+}
+
+cmd.ssh("sudo su - oracle -c 'expdp ${dbService.username}/${dbService.password} schemas=${schema} directory=${dbService.prop.dbDir} dumpfile=${schema}_${cmd.now('yyyyMMdd_HHmmss', 'fa')}.dmp logfile=${schema}.log'", osService)
+]]>
+					</body>
+				</command>
+			</commands>
+		</service>
+	</services>
+</operation>

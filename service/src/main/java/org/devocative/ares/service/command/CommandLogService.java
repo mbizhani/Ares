@@ -7,6 +7,8 @@ import org.devocative.ares.iservice.command.ICommandLogService;
 import org.devocative.ares.vo.filter.command.CommandLogFVO;
 import org.devocative.demeter.entity.User;
 import org.devocative.demeter.iservice.persistor.IPersistorService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -14,6 +16,7 @@ import java.util.List;
 
 @Service("arsCommandLogService")
 public class CommandLogService implements ICommandLogService {
+	private static final Logger logger = LoggerFactory.getLogger(CommandLogService.class);
 
 	@Autowired
 	private IPersistorService persistorService;
