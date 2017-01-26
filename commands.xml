@@ -1,22 +1,23 @@
 <operation>
 	<services>
 		<service name="Oracle" type="Database"
-				 connectionPattern="jdbc:oracle:thin:@${service.address}:${service.port}:${service.prop.sid}">
+				 connectionPattern="jdbc:oracle:thin:@${target.address}:${target.port}:${target.prop.sid}">
 
 			<properties>
+				<property name="driver" required="true"/>
 				<property name="sid" required="true"/>
 				<property name="dbDir" required="true"/>
+				<property name="osDbDir" required="true"/>
 			</properties>
 
 			<commands>
 				<command name="checkDBUser">
 					<params>
 						<param name="username" type="string" required="true"/>
-						<param name="dbService" type="Service('Oracle')" required="true"/>
 					</params>
 					<body>
 						<![CDATA[
-return cmd.sql("select * from all_users where username='${username}'", dbService) > 0
+return $cmd.sql("select count(1) from all_users where username='${username}'") > 0
 ]]>
 					</body>
 				</command>
@@ -24,11 +25,10 @@ return cmd.sql("select * from all_users where username='${username}'", dbService
 				<command name="truncateDBUser">
 					<params>
 						<param name="schema" type="string" required="true"/>
-						<param name="dbService" type="Service('Oracle')" required="true"/>
 					</params>
 					<body>
 						<![CDATA[
-cmd.sqlBlock("""
+$cmd.sqlBlock("""
 DECLARE
 	scname varchar2(20);
 BEGIN
@@ -49,7 +49,7 @@ BEGIN
 		execute immediate 'drop synonym '||scname||'.'|| i.synonym_name;
 	end loop;
 end;
-""", [dbService:dbService])
+""")
 ]]>
 					</body>
 				</command>
@@ -58,25 +58,24 @@ end;
 					<params>
 						<param name="sourceSchema" type="string" required="true"/>
 						<param name="destSchema" type="string" required="true"/>
-						<param name="dbService" type="Service('Oracle')" required="true"/>
 					</params>
 					<body>
 						<![CDATA[
-if(!cmd.exec("checkDBUser", [dbService:dbService, username:sourceSchema])) {
-	error("No user ${sourceSchema} to export dump from")
+if(!$cmd.exec("checkDBUser", [username:sourceSchema])) {
+	$cmd.error("No user ${sourceSchema} to export dump from")
 }
 
-if(!cmd.exec("checkDBUser", [dbService:dbService, username:destSchema])) {
-	error("No user ${destSchema} to import dump to")
+if(!$cmd.exec("checkDBUser", [username:destSchema])) {
+	$cmd.error("No user ${destSchema} to import dump to")
 }
 
-cmd.exec("truncateDBUser", [dbService:dbService, username:destSchema])
+$cmd.exec("truncateDBUser", [username:destSchema])
 
-def osService = dbService.fromRelated("OS.Linux");
+def osService = target.findRelated("Linux");
 
-cmd.ssh("sudo su - oracle -c 'expdp ${dbService.username}/${dbService.password} schemas=${sourceSchema} directory=${dbService.prop.dbDir} dumpfile=${sourceSchema}.dmp logfile=${sourceSchema}.log'", osService)
+$cmd.ssh("sudo -S su - oracle -c 'expdp ${target.username}/${target.password} schemas=${sourceSchema} directory=${target.prop.dbDir} dumpfile=${sourceSchema}.dmp logfile=${sourceSchema}.log'", osService, osService.password)
 
-cmd.ssh("sudo su - oracle -c 'impdp ${dbService.username}/${dbService.password} remap_schema=${sourceSchema}:${destSchema} directory=${dbService.prop.dbDir} dumpfile=${destSchema}.dmp logfile=${destSchema}.log'", osService)
+$cmd.ssh("sudo -S su - oracle -c 'impdp ${target.username}/${target.password} remap_schema=${sourceSchema}:${destSchema} directory=${target.prop.dbDir} dumpfile=${destSchema}.dmp logfile=${destSchema}.log'", osService, osService.password)
 ]]>
 					</body>
 				</command>
@@ -84,15 +83,31 @@ cmd.ssh("sudo su - oracle -c 'impdp ${dbService.username}/${dbService.password} 
 				<command name="backupSchema">
 					<params>
 						<param name="schema" type="string" required="true"/>
-						<param name="dbService" type="Service('Oracle')" required="true"/>
 					</params>
 					<body>
 						<![CDATA[
-if(!cmd.exec("checkDBUser", [dbService:dbService, username:schema])) {
-	error("No user ${schema} to export dump from")
+if(!$cmd.exec("checkDBUser", target, [username:schema])) {
+	$cmd.error("No user ${schema} to export dump from")
 }
 
-cmd.ssh("sudo su - oracle -c 'expdp ${dbService.username}/${dbService.password} schemas=${schema} directory=${dbService.prop.dbDir} dumpfile=${schema}_${cmd.now('yyyyMMdd_HHmmss', 'fa')}.dmp logfile=${schema}.log'", osService)
+$cmd.ssh("sudo su - oracle -c 'expdp ${target.username}/${target.password} schemas=${schema} directory=${target.prop.dbDir} dumpfile=${schema}_bkup_${$cmd.now('yyyyMMdd_HHmmss', 'fa')}.dmp logfile=${schema}.log'", osService)
+]]>
+					</body>
+				</command>
+			</commands>
+		</service>
+
+		<service name="SSH" type="Linux">
+			<commands>
+				<command name="changePassword">
+					<params>
+						<param name="username" required="true"/>
+						<param name="newPassword" required="true"/>
+					</params>
+
+					<body>
+						<![CDATA[
+$cmd.ssh("sudo -S passwd ${username} --stdin", target.password, newPassword);
 ]]>
 					</body>
 				</command>

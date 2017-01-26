@@ -80,7 +80,6 @@ public class OServiceInstanceFormDPage extends DPage {
 		WFloatTable floatTable = new WFloatTable("floatTable");
 		floatTable.setEqualWidth(true);
 		floatTable.add(new WTextInput("name")
-			.setRequired(true)
 			.setLabel(new ResourceModel("OServiceInstance.name")));
 		floatTable.add(new WNumberInput("port", Integer.class)
 			.setLabel(new ResourceModel("OServiceInstance.port")));

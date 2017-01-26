@@ -27,7 +27,5 @@ public interface ICommandService {
 
 	// ==============================
 
-	Command loadByNameAndOService(OService oService, String name);
-
 	void checkAndSave(OService oService, XCommand xCommand);
 }

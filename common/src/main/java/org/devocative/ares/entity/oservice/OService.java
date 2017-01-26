@@ -70,6 +70,15 @@ public class OService implements ICreationDate, ICreatorUser, IModificationDate,
 
 	// ------------------------------
 
+	public OService() {
+	}
+
+	public OService(String name) {
+		this.name = name;
+	}
+
+	// ------------------------------
+
 	public Long getId() {
 		return id;
 	}

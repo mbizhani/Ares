@@ -73,6 +73,16 @@ public class OSIUser implements ICreationDate, ICreatorUser, IModificationDate, 
 
 	// ------------------------------
 
+	public OSIUser() {
+	}
+
+	public OSIUser(String username, String password) {
+		this.username = username;
+		this.password = password;
+	}
+
+	// ------------------------------
+
 	public Long getId() {
 		return id;
 	}

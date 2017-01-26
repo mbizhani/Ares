@@ -36,6 +36,9 @@ public class OServiceInstanceService implements IOServiceInstanceService {
 
 	@Override
 	public void saveOrUpdate(OServiceInstance entity) {
+		if(entity.getName() == null) {
+			entity.setName(String.format("%s@%s", entity.getService(), entity.getServer()));
+		}
 		persistorService.saveOrUpdate(entity);
 	}
 
@@ -133,7 +136,7 @@ public class OServiceInstanceService implements IOServiceInstanceService {
 			props.put(propertyValue.getProperty().getName(), propertyValue.getValue());
 		}
 
-		OServiceInstanceTargetVO targetVO = new OServiceInstanceTargetVO(serviceInstance, props);
+		OServiceInstanceTargetVO targetVO = new OServiceInstanceTargetVO(serviceInstance, null, props); //TODO
 
 		if (serviceInstance.getService().getConnectionPattern() != null) {
 			Map<String, Object> params = new HashMap<>();

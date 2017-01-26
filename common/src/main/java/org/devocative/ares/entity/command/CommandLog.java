@@ -1,5 +1,6 @@
 package org.devocative.ares.entity.command;
 
+import org.devocative.ares.entity.oservice.OServiceInstance;
 import org.devocative.demeter.entity.ICreationDate;
 import org.devocative.demeter.entity.ICreatorUser;
 import org.devocative.demeter.entity.User;
@@ -35,6 +36,10 @@ public class CommandLog implements ICreationDate, ICreatorUser {
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "f_command", nullable = false, foreignKey = @ForeignKey(name = "commandLog2command"))
 	private Command command;
+
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "f_service_instance", nullable = false, foreignKey = @ForeignKey(name = "commandLog2serviceInstance"))
+	private OServiceInstance serviceInstance;
 
 	// --------------- CREATE / MODIFY
 
@@ -92,6 +97,14 @@ public class CommandLog implements ICreationDate, ICreatorUser {
 
 	public void setCommand(Command command) {
 		this.command = command;
+	}
+
+	public OServiceInstance getServiceInstance() {
+		return serviceInstance;
+	}
+
+	public void setServiceInstance(OServiceInstance serviceInstance) {
+		this.serviceInstance = serviceInstance;
 	}
 
 	// --------------- CREATE / MODIFY

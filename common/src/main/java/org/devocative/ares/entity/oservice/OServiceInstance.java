@@ -26,7 +26,7 @@ public class OServiceInstance implements ICreationDate, ICreatorUser, IModificat
 	@Column(name = "c_name", nullable = false)
 	private String name;
 
-	@Column(name = "n_name")
+	@Column(name = "n_port")
 	private Integer port;
 
 	@ManyToOne(fetch = FetchType.EAGER)
@@ -77,6 +77,17 @@ public class OServiceInstance implements ICreationDate, ICreatorUser, IModificat
 	@Version
 	@Column(name = "n_version", nullable = false)
 	private Integer version = 0;
+
+	// ------------------------------
+
+	public OServiceInstance() {
+	}
+
+	public OServiceInstance(Integer port, OServer server, OService service) {
+		this.port = port;
+		this.server = server;
+		this.service = service;
+	}
 
 	// ------------------------------
 
