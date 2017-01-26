@@ -28,8 +28,43 @@
 	</tasks>
 
 	<dPages>
+		<dPage type="org.devocative.ares.web.dpage.OServerListDPage"
+			   title="KEY:dPage.ars.OServerList"
+			   uri="/oservers"
+			   inMenu="true"/>
+
+		<dPage type="org.devocative.ares.web.dpage.oservice.OServiceListDPage"
+			   title="KEY:dPage.ars.OServiceList"
+			   uri="/oservices"
+			   inMenu="true"/>
+
+		<dPage type="org.devocative.ares.web.dpage.oservice.OServiceInstanceListDPage"
+			   title="KEY:dPage.ars.OServiceInstanceList"
+			   uri="/osrvcinst"
+			   inMenu="true"/>
+
+		<dPage type="org.devocative.ares.web.dpage.command.CommandListDPage"
+			   title="KEY:dPage.ars.CommandList"
+			   uri="/commands"
+			   inMenu="true"/>
+
+		<dPage type="org.devocative.ares.web.dpage.command.CommandLogListDPage"
+			   title="KEY:dPage.ars.CommandLogList"
+			   uri="/cmdlogs"
+			   inMenu="true"/>
+
+		<dPage type="org.devocative.ares.web.dpage.oservice.OServicePropertyListDPage"
+			   title="KEY:dPage.ars.OServicePropertyList"
+			   uri="/oproperties"
+			   inMenu="true"/>
+
+		<dPage type="org.devocative.ares.web.dpage.oservice.OSIUserListDPage"
+			   title="KEY:dPage.ars.OSIUserList"
+			   uri="/ousers"
+			   inMenu="true"/>
+
 		<!--<dPage type=""
-			   title="KEY:"
+			   title="KEY:dPage.ars."
 			   uri="/"
 			   inMenu=""/>-->
 	</dPages>

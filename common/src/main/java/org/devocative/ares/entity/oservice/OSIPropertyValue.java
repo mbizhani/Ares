@@ -65,6 +65,22 @@ public class OSIPropertyValue implements ICreationDate, ICreatorUser, IModificat
 
 	// ------------------------------
 
+	public OSIPropertyValue() {
+	}
+
+	public OSIPropertyValue(OServiceProperty property, OServiceInstance serviceInstance) {
+		this.property = property;
+		this.serviceInstance = serviceInstance;
+	}
+
+	public OSIPropertyValue(String value, OServiceProperty property, OServiceInstance serviceInstance) {
+		this.value = value;
+		this.property = property;
+		this.serviceInstance = serviceInstance;
+	}
+
+	// ------------------------------
+
 	public Long getId() {
 		return id;
 	}

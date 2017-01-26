@@ -108,12 +108,12 @@ public class OServiceService implements IOServiceService {
 				oService.setName(xService.getName());
 				oService.setType(EOServiceType.findByName(xService.getType()));
 				oService.setConnectionPattern(xService.getConnectionPattern());
-				saveOrUpdate(oService);
-
 				logger.info("OService not found and created: {}", xService.getName());
 			} else {
+				oService.setConnectionPattern(xService.getConnectionPattern());
 				logger.info("OService loaded: {}", oService.getName());
 			}
+			saveOrUpdate(oService);
 
 			if (xService.getProperties() != null) {
 				for (XProperty xProperty : xService.getProperties()) {

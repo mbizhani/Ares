@@ -4,6 +4,7 @@ import org.devocative.demeter.entity.*;
 
 import javax.persistence.*;
 import java.util.Date;
+import java.util.List;
 
 @Entity
 @Table(name = "t_ars_service", uniqueConstraints = {
@@ -32,6 +33,9 @@ public class OService implements ICreationDate, ICreatorUser, IModificationDate,
 	@Embedded
 	@AttributeOverride(name = "id", column = @Column(name = "e_type", nullable = false))
 	private EOServiceType type;
+
+	@OneToMany(fetch = FetchType.EAGER, mappedBy = "service")
+	private List<OServiceProperty> properties;
 
 	// --------------- CREATE / MODIFY
 
@@ -96,6 +100,14 @@ public class OService implements ICreationDate, ICreatorUser, IModificationDate,
 
 	public void setType(EOServiceType type) {
 		this.type = type;
+	}
+
+	public List<OServiceProperty> getProperties() {
+		return properties;
+	}
+
+	public void setProperties(List<OServiceProperty> properties) {
+		this.properties = properties;
 	}
 
 	// --------------- CREATE / MODIFY

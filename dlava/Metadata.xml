@@ -209,7 +209,7 @@
 				<field name="related">
 					<finfo/>
 				</field>
-				<field name="properties">
+				<field name="propertyValues">
 					<finfo hasForm="false" hasFVO="false"/>
 				</field>
 				<field name="creationDate">

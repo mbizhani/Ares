@@ -1,19 +1,26 @@
-//overwrite
 package org.devocative.ares.service.oservice;
 
 import org.devocative.ares.entity.OServer;
+import org.devocative.ares.entity.oservice.OSIPropertyValue;
 import org.devocative.ares.entity.oservice.OService;
 import org.devocative.ares.entity.oservice.OServiceInstance;
+import org.devocative.ares.entity.oservice.OServiceProperty;
 import org.devocative.ares.iservice.oservice.IOServiceInstanceService;
+import org.devocative.ares.vo.OServiceInstanceTargetVO;
 import org.devocative.ares.vo.filter.oservice.OServiceInstanceFVO;
 import org.devocative.demeter.entity.User;
 import org.devocative.demeter.iservice.persistor.IPersistorService;
+import org.devocative.demeter.iservice.template.IStringTemplate;
+import org.devocative.demeter.iservice.template.IStringTemplateService;
+import org.devocative.demeter.iservice.template.TemplateEngineType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Service("arsOServiceInstanceService")
 public class OServiceInstanceService implements IOServiceInstanceService {
@@ -21,6 +28,9 @@ public class OServiceInstanceService implements IOServiceInstanceService {
 
 	@Autowired
 	private IPersistorService persistorService;
+
+	@Autowired
+	private IStringTemplateService stringTemplateService;
 
 	// ------------------------------
 
@@ -31,7 +41,9 @@ public class OServiceInstanceService implements IOServiceInstanceService {
 
 	@Override
 	public OServiceInstance load(Long id) {
-		return persistorService.get(OServiceInstance.class, id);
+		OServiceInstance oServiceInstance = persistorService.get(OServiceInstance.class, id);
+		updateProperties(oServiceInstance.getService(), oServiceInstance);
+		return oServiceInstance;
 	}
 
 	@Override
@@ -85,4 +97,51 @@ public class OServiceInstanceService implements IOServiceInstanceService {
 	}
 
 	// ==============================
+
+	@Override
+	public void updateProperties(OService oService, OServiceInstance oServiceInstance) {
+		List<OSIPropertyValue> propertyValues = oServiceInstance.getPropertyValues();
+		if (oService.equals(oServiceInstance.getService())) {
+			for (OServiceProperty property : oService.getProperties()) {
+				boolean foundProp = false;
+
+				for (OSIPropertyValue propertyValue : propertyValues) {
+					if (propertyValue.getProperty().equals(property)) {
+						foundProp = true;
+						break;
+					}
+				}
+
+				if (!foundProp) {
+					propertyValues.add(new OSIPropertyValue(property, oServiceInstance));
+				}
+			}
+		} else {
+			propertyValues.clear();
+			for (OServiceProperty property : oService.getProperties()) {
+				propertyValues.add(new OSIPropertyValue(property, oServiceInstance));
+			}
+		}
+	}
+
+	public OServiceInstanceTargetVO getTargetVO(Long id) {
+		OServiceInstance serviceInstance = load(id);
+
+		Map<String, String> props = new HashMap<>();
+		List<OSIPropertyValue> properties = serviceInstance.getPropertyValues();
+		for (OSIPropertyValue propertyValue : properties) {
+			props.put(propertyValue.getProperty().getName(), propertyValue.getValue());
+		}
+
+		OServiceInstanceTargetVO targetVO = new OServiceInstanceTargetVO(serviceInstance, props);
+
+		if (serviceInstance.getService().getConnectionPattern() != null) {
+			Map<String, Object> params = new HashMap<>();
+			params.put("target", targetVO);
+			IStringTemplate template = stringTemplateService.create(serviceInstance.getService().getConnectionPattern(), TemplateEngineType.Groovy);
+			String connection = (String) template.process(params);
+			targetVO.setConnection(connection);
+		}
+		return targetVO;
+	}
 }

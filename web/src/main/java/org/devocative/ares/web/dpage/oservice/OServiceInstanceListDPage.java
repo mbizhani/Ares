@@ -3,17 +3,13 @@ package org.devocative.ares.web.dpage.oservice;
 
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.markup.html.form.Form;
-import org.apache.wicket.model.CompoundPropertyModel;
-import org.apache.wicket.model.IModel;
-import org.apache.wicket.model.Model;
-import org.apache.wicket.model.ResourceModel;
+import org.apache.wicket.model.*;
 import org.devocative.ares.entity.oservice.OServiceInstance;
 import org.devocative.ares.iservice.oservice.IOServiceInstanceService;
 import org.devocative.ares.vo.filter.oservice.OServiceInstanceFVO;
 import org.devocative.ares.web.AresIcon;
 import org.devocative.demeter.web.DPage;
 import org.devocative.demeter.web.component.DAjaxButton;
-import org.devocative.wickomp.WModel;
 import org.devocative.wickomp.form.WSelectionInput;
 import org.devocative.wickomp.form.WTextInput;
 import org.devocative.wickomp.form.range.WDateRangeInput;
@@ -142,7 +138,7 @@ public class OServiceInstanceListDPage extends DPage implements IGridDataSource<
 		columnList.add(new OPropertyColumn<OServiceInstance>(new ResourceModel("OServiceInstance.server"), "server"));
 		columnList.add(new OPropertyColumn<OServiceInstance>(new ResourceModel("OServiceInstance.service"), "service"));
 		columnList.add(new OPropertyColumn<OServiceInstance>(new ResourceModel("OServiceInstance.related"), "related"));
-		columnList.add(new OPropertyColumn<OServiceInstance>(new ResourceModel("OServiceInstance.properties"), "properties"));
+		columnList.add(new OPropertyColumn<OServiceInstance>(new ResourceModel("OServiceInstance.propertyValues"), "propertyValues"));
 		columnList.add(new OPropertyColumn<OServiceInstance>(new ResourceModel("entity.creationDate"), "creationDate")
 			.setFormatter(ODateFormatter.getDateTimeByUserPreference())
 			.setStyle("direction:ltr"));
@@ -245,6 +241,14 @@ public class OServiceInstanceListDPage extends DPage implements IGridDataSource<
 
 	@Override
 	public IModel<OServiceInstance> model(OServiceInstance object) {
-		return new WModel<>(object);
+		final Long id = object.getId();
+		return new LoadableDetachableModel<OServiceInstance>() {
+			private static final long serialVersionUID = -6002081215165866814L;
+
+			@Override
+			protected OServiceInstance load() {
+				return oServiceInstanceService.load(id);
+			}
+		};
 	}
 }

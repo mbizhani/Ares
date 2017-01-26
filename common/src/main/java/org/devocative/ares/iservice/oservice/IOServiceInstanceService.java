@@ -1,4 +1,3 @@
-//overwrite
 package org.devocative.ares.iservice.oservice;
 
 import org.devocative.ares.entity.OServer;
@@ -31,4 +30,6 @@ public interface IOServiceInstanceService {
 	List<User> getModifierUserList();
 
 	// ==============================
+
+	void updateProperties(OService oService, OServiceInstance oServiceInstance);
 }

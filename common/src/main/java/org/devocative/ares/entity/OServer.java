@@ -175,6 +175,6 @@ public class OServer implements ICreationDate, ICreatorUser, IModificationDate, 
 
 	@Override
 	public String toString() {
-		return getName();
+		return String.format("%s (%s)", getName(), getAddress());
 	}
 }

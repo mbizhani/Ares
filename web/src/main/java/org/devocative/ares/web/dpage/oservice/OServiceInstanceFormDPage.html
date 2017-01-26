@@ -1,4 +1,3 @@
-<!--overwrite-->
 <html xmlns="http://www.w3.org/1999/xhtml" xmlns:wicket="http://wicket.apache.org">
 
 <wicket:panel xmlns:wicket="http://wicket.apache.org">
@@ -13,6 +12,21 @@
 				<div><div wicket:id="related" ></div></div>
 
 			</div>
+
+			<table>
+				<thead>
+				<tr>
+					<th><wicket:message key="OSIPropertyValue.property"/></th>
+					<th><wicket:message key="OSIPropertyValue.value"/></th>
+				</tr>
+				</thead>
+				<tbody wicket:id="propertyValues">
+					<tr wicket:id="property">
+						<td wicket:id="key"></td>
+						<td><input type="text" wicket:id="value"/></td>
+					</tr>
+				</tbody>
+			</table>
 
 			<button wicket:id="save"></button>
 			<button type="reset">

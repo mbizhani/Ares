@@ -44,8 +44,8 @@ public class OServiceInstance implements ICreationDate, ICreatorUser, IModificat
 	)
 	private List<OServiceInstance> related;
 
-	@OneToMany(fetch = FetchType.LAZY, mappedBy = "serviceInstance")
-	private List<OSIPropertyValue> properties;
+	@OneToMany(fetch = FetchType.LAZY, mappedBy = "serviceInstance", cascade = CascadeType.ALL)
+	private List<OSIPropertyValue> propertyValues;
 
 	// --------------- CREATE / MODIFY
 
@@ -128,12 +128,12 @@ public class OServiceInstance implements ICreationDate, ICreatorUser, IModificat
 		this.related = related;
 	}
 
-	public List<OSIPropertyValue> getProperties() {
-		return properties;
+	public List<OSIPropertyValue> getPropertyValues() {
+		return propertyValues;
 	}
 
-	public void setProperties(List<OSIPropertyValue> properties) {
-		this.properties = properties;
+	public void setPropertyValues(List<OSIPropertyValue> propertyValues) {
+		this.propertyValues = propertyValues;
 	}
 
 	// --------------- CREATE / MODIFY
