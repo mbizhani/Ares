@@ -1,4 +1,3 @@
-//overwrite
 package org.devocative.ares.service.oservice;
 
 import org.devocative.ares.entity.oservice.OSIUser;
@@ -74,4 +73,20 @@ public class OSIUserService implements IOSIUserService {
 	}
 
 	// ==============================
+
+	public OSIUser findAdminForSI(Long serviceInstId) {
+		List<OSIUser> list = persistorService.createQueryBuilder()
+			.addFrom(OSIUser.class, "ent")
+			.addWhere("and ent.admin = true")
+			.addWhere("and ent.enabled = true")
+			.addWhere("and ent.serviceInstance.id = :serviceInstId")
+			.addParam("serviceInstId", serviceInstId)
+			.list();
+
+		if (list.size() > 0) {
+			return list.get(0);
+		}
+
+		return null;
+	}
 }

@@ -1,6 +1,7 @@
 package org.devocative.ares.entity.command;
 
 import org.devocative.ares.entity.oservice.OService;
+import org.devocative.ares.vo.xml.XCommand;
 import org.devocative.demeter.entity.*;
 
 import javax.persistence.*;
@@ -68,6 +69,11 @@ public class Command implements ICreationDate, ICreatorUser, IModificationDate, 
 	@Version
 	@Column(name = "n_version", nullable = false)
 	private Integer version = 0;
+
+	// ---------------
+
+	@Transient
+	private XCommand xCommand;
 
 	// ------------------------------
 
@@ -174,6 +180,17 @@ public class Command implements ICreationDate, ICreatorUser, IModificationDate, 
 	public void setVersion(Integer version) {
 		this.version = version;
 	}
+
+	// ---------------
+
+	public XCommand getXCommand() {
+		return xCommand;
+	}
+
+	public void setXCommand(XCommand xCommand) {
+		this.xCommand = xCommand;
+	}
+
 
 	// ------------------------------
 

@@ -53,7 +53,7 @@ public class OServiceInstanceFormDPage extends DPage {
 		super(id, Collections.<String>emptyList());
 
 		this.entity = entity;
-		if(entity != null) {
+		if (entity.getPropertyValues() != null) {
 			propertyValuesList.addAll(entity.getPropertyValues());
 		}
 	}

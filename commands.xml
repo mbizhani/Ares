@@ -17,9 +17,7 @@
 					</params>
 					<body>
 						<![CDATA[
-return $cmd.sql("select count(1) from all_users where username='${username}'") > 0
-]]>
-					</body>
+return $cmd.sql("select count(1) from all_users where username='${username}'") > 0]]></body>
 				</command>
 
 				<command name="truncateDBUser">
@@ -49,9 +47,7 @@ BEGIN
 		execute immediate 'drop synonym '||scname||'.'|| i.synonym_name;
 	end loop;
 end;
-""")
-]]>
-					</body>
+""")]]></body>
 				</command>
 
 				<command name="copySchema">
@@ -75,9 +71,7 @@ def osService = target.findRelated("Linux");
 
 $cmd.ssh("sudo -S su - oracle -c 'expdp ${target.username}/${target.password} schemas=${sourceSchema} directory=${target.prop.dbDir} dumpfile=${sourceSchema}.dmp logfile=${sourceSchema}.log'", osService, osService.password)
 
-$cmd.ssh("sudo -S su - oracle -c 'impdp ${target.username}/${target.password} remap_schema=${sourceSchema}:${destSchema} directory=${target.prop.dbDir} dumpfile=${destSchema}.dmp logfile=${destSchema}.log'", osService, osService.password)
-]]>
-					</body>
+$cmd.ssh("sudo -S su - oracle -c 'impdp ${target.username}/${target.password} remap_schema=${sourceSchema}:${destSchema} directory=${target.prop.dbDir} dumpfile=${destSchema}.dmp logfile=${destSchema}.log'", osService, osService.password)]]></body>
 				</command>
 
 				<command name="backupSchema">
@@ -90,14 +84,12 @@ if(!$cmd.exec("checkDBUser", target, [username:schema])) {
 	$cmd.error("No user ${schema} to export dump from")
 }
 
-$cmd.ssh("sudo su - oracle -c 'expdp ${target.username}/${target.password} schemas=${schema} directory=${target.prop.dbDir} dumpfile=${schema}_bkup_${$cmd.now('yyyyMMdd_HHmmss', 'fa')}.dmp logfile=${schema}.log'", osService)
-]]>
-					</body>
+$cmd.ssh("sudo su - oracle -c 'expdp ${target.username}/${target.password} schemas=${schema} directory=${target.prop.dbDir} dumpfile=${schema}_bkup_${$cmd.now('yyyyMMdd_HHmmss', 'fa')}.dmp logfile=${schema}.log'", osService)]]></body>
 				</command>
 			</commands>
 		</service>
 
-		<service name="SSH" type="Linux">
+		<service name="SSH" type="OS">
 			<commands>
 				<command name="changePassword">
 					<params>
@@ -105,11 +97,19 @@ $cmd.ssh("sudo su - oracle -c 'expdp ${target.username}/${target.password} schem
 						<param name="newPassword" required="true"/>
 					</params>
 
-					<body>
-						<![CDATA[
-$cmd.ssh("sudo -S passwd ${username} --stdin", target.password, newPassword);
-]]>
-					</body>
+					<body><![CDATA[
+$cmd.ssh("sudo -S passwd ${username} --stdin", [target.password, newPassword]);]]></body>
+				</command>
+
+				<command name="test">
+					<params>
+						<param name="text" required="true"/>
+					</params>
+
+					<body><![CDATA[
+$cmd.ssh("ls -l /")
+$cmd.ssh("echo ${text}")
+]]></body>
 				</command>
 			</commands>
 		</service>

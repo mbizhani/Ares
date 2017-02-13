@@ -1,12 +1,15 @@
 package org.devocative.ares.iservice.command;
 
+import org.devocative.ares.cmd.ICommandResultCallBack;
 import org.devocative.ares.entity.command.Command;
 import org.devocative.ares.entity.oservice.OService;
+import org.devocative.ares.entity.oservice.OServiceInstance;
 import org.devocative.ares.vo.filter.command.CommandFVO;
 import org.devocative.ares.vo.xml.XCommand;
 import org.devocative.demeter.entity.User;
 
 import java.util.List;
+import java.util.Map;
 
 public interface ICommandService {
 	void saveOrUpdate(Command entity);
@@ -28,4 +31,6 @@ public interface ICommandService {
 	// ==============================
 
 	void checkAndSave(OService oService, XCommand xCommand);
+
+	Object executeCommand(Long commandId, OServiceInstance serviceInstance, Map<String, Object> params, ICommandResultCallBack callBack);
 }

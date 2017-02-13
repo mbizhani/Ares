@@ -18,6 +18,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -36,7 +37,7 @@ public class OServiceInstanceService implements IOServiceInstanceService {
 
 	@Override
 	public void saveOrUpdate(OServiceInstance entity) {
-		if(entity.getName() == null) {
+		if (entity.getName() == null) {
 			entity.setName(String.format("%s@%s", entity.getService(), entity.getServer()));
 		}
 		persistorService.saveOrUpdate(entity);
@@ -104,6 +105,12 @@ public class OServiceInstanceService implements IOServiceInstanceService {
 	@Override
 	public void updateProperties(OService oService, OServiceInstance oServiceInstance) {
 		List<OSIPropertyValue> propertyValues = oServiceInstance.getPropertyValues();
+
+		if (propertyValues == null && oService.getProperties() != null) {
+			propertyValues = new ArrayList<>();
+			oServiceInstance.setPropertyValues(propertyValues);
+		}
+
 		if (oService.equals(oServiceInstance.getService())) {
 			for (OServiceProperty property : oService.getProperties()) {
 				boolean foundProp = false;
@@ -119,7 +126,7 @@ public class OServiceInstanceService implements IOServiceInstanceService {
 					propertyValues.add(new OSIPropertyValue(property, oServiceInstance));
 				}
 			}
-		} else {
+		} else if (propertyValues != null) {
 			propertyValues.clear();
 			for (OServiceProperty property : oService.getProperties()) {
 				propertyValues.add(new OSIPropertyValue(property, oServiceInstance));

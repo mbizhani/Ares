@@ -1,4 +1,3 @@
-//overwrite
 package org.devocative.ares.iservice.oservice;
 
 import org.devocative.ares.entity.oservice.OSIUser;

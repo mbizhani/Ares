@@ -24,23 +24,26 @@ public class XParam implements Serializable {
 		return name;
 	}
 
-	public void setName(String name) {
+	public XParam setName(String name) {
 		this.name = name;
+		return this;
 	}
 
 	public String getType() {
 		return type;
 	}
 
-	public void setType(String type) {
+	public XParam setType(String type) {
 		this.type = type;
+		return this;
 	}
 
 	public Boolean getRequired() {
 		return required;
 	}
 
-	public void setRequired(Boolean required) {
+	public XParam setRequired(Boolean required) {
 		this.required = required;
+		return this;
 	}
 }

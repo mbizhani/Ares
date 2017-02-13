@@ -3,11 +3,18 @@ package org.devocative.ares.service.command;
 import com.thoughtworks.xstream.XStream;
 import org.devocative.adroit.cache.ICache;
 import org.devocative.adroit.cache.IMissedHitHandler;
+import org.devocative.adroit.xml.AdroitXStream;
 import org.devocative.ares.cmd.CommandCenter;
+import org.devocative.ares.cmd.ICommandResultCallBack;
 import org.devocative.ares.entity.command.Command;
 import org.devocative.ares.entity.command.ConfigLob;
+import org.devocative.ares.entity.oservice.OSIPropertyValue;
+import org.devocative.ares.entity.oservice.OSIUser;
 import org.devocative.ares.entity.oservice.OService;
+import org.devocative.ares.entity.oservice.OServiceInstance;
 import org.devocative.ares.iservice.command.ICommandService;
+import org.devocative.ares.service.oservice.OSIUserService;
+import org.devocative.ares.service.oservice.OServiceInstanceService;
 import org.devocative.ares.vo.OServiceInstanceTargetVO;
 import org.devocative.ares.vo.filter.command.CommandFVO;
 import org.devocative.ares.vo.xml.XCommand;
@@ -24,6 +31,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.PostConstruct;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -43,11 +51,18 @@ public class CommandService implements ICommandService, IMissedHitHandler<Long, 
 	@Autowired
 	private IStringTemplateService stringTemplateService;
 
+	@Autowired
+	private OSIUserService siUserService;
+
+	@Autowired
+	private OServiceInstanceService serviceInstanceService;
+
 	// ------------------------------
 
 	@Override
 	public void saveOrUpdate(Command entity) {
 		persistorService.saveOrUpdate(entity);
+		commandCache.remove(entity.getId());
 	}
 
 	@Override
@@ -99,7 +114,7 @@ public class CommandService implements ICommandService, IMissedHitHandler<Long, 
 
 	@PostConstruct
 	public void initCommandService() {
-		xstream = new XStream();
+		xstream = new AdroitXStream();
 		xstream.processAnnotations(XCommand.class);
 
 		commandCache = cacheService.create("ARS_COMMAND", 50);
@@ -109,13 +124,17 @@ public class CommandService implements ICommandService, IMissedHitHandler<Long, 
 	// IMissedHitHandler
 	@Override
 	public Command loadForCache(Long key) {
-		return persistorService
+		Command command = persistorService
 			.createQueryBuilder()
 			.addFrom(Command.class, "ent")
 			.addJoin("cfg", "ent.config", EJoinMode.LeftFetch)
 			.addWhere("and ent.id = :id")
 			.addParam("id", key)
 			.object();
+
+		command.setXCommand(loadXCommand(command));
+
+		return command;
 	}
 
 	@Override
@@ -142,12 +161,28 @@ public class CommandService implements ICommandService, IMissedHitHandler<Long, 
 		}
 	}
 
-	public Object executeCommand(Command command, OServiceInstanceTargetVO targetVO, Map<String, Object> params) {
-		XCommand xCommand = loadXCommand(command);
+	@Override
+	public Object executeCommand(Long commandId, OServiceInstance serviceInstance, Map<String, Object> params, ICommandResultCallBack callBack) {
+		Command command = load(commandId);
+		XCommand xCommand = command.getXCommand();
 
-		//if(command.getService().getName().equals(targetVO.))
+		serviceInstance = serviceInstanceService.load(serviceInstance.getId());
 
-		CommandCenter center = new CommandCenter(this, targetVO, null); //TODO
+		Map<String, String> props = new HashMap<>();
+		if (serviceInstance.getPropertyValues() != null) {
+			for (OSIPropertyValue propertyValue : serviceInstance.getPropertyValues()) {
+				props.put(propertyValue.getProperty().getName(), propertyValue.getValue());
+			}
+		}
+
+		OSIUser adminForSI = siUserService.findAdminForSI(serviceInstance.getId());
+
+		OServiceInstanceTargetVO targetVO = new OServiceInstanceTargetVO(serviceInstance, adminForSI, props);
+
+		logger.info("ExecuteCommand: cmd=[{}] si=[{}] admin=[{}] params=#[{}]",
+			command.getName(), serviceInstance, adminForSI, props.size());
+
+		CommandCenter center = new CommandCenter(this, targetVO, callBack);
 		params.put("$cmd", center);
 		params.put("target", targetVO);
 

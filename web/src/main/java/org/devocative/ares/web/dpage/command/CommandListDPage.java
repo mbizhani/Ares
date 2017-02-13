@@ -1,4 +1,3 @@
-//overwrite
 package org.devocative.ares.web.dpage.command;
 
 import org.apache.wicket.ajax.AjaxRequestTarget;
@@ -11,6 +10,7 @@ import org.devocative.ares.entity.command.Command;
 import org.devocative.ares.iservice.command.ICommandService;
 import org.devocative.ares.vo.filter.command.CommandFVO;
 import org.devocative.ares.web.AresIcon;
+import org.devocative.ares.web.panel.CommandExecPanel;
 import org.devocative.demeter.web.DPage;
 import org.devocative.demeter.web.component.DAjaxButton;
 import org.devocative.wickomp.WModel;
@@ -151,6 +151,16 @@ public class CommandListDPage extends DPage implements IGridDataSource<Command> 
 				window.show(target);
 			}
 		}.setField("EDIT"));
+
+		columnList.add(new OAjaxLinkColumn<Command>(new Model<String>(), AresIcon.EXECUTE) {
+			private static final long serialVersionUID = 1205302042L;
+
+			@Override
+			public void onClick(AjaxRequestTarget target, IModel<Command> rowData) {
+				window.setContent(new CommandExecPanel(window.getContentId(), rowData.getObject().getId()));
+				window.show(target);
+			}
+		}.setField("EXECUTE"));
 
 		OGrid<Command> oGrid = new OGrid<>();
 		oGrid

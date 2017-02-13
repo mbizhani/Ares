@@ -1,6 +1,7 @@
 package org.devocative.ares.service.oservice;
 
 import com.thoughtworks.xstream.XStream;
+import org.devocative.adroit.xml.AdroitXStream;
 import org.devocative.ares.entity.oservice.EOServiceType;
 import org.devocative.ares.entity.oservice.OService;
 import org.devocative.ares.iservice.command.ICommandService;
@@ -97,7 +98,7 @@ public class OServiceService implements IOServiceService {
 	public void importFile(InputStream in) {
 		logger.info("OServiceService.importFile()");
 
-		XStream xstream = new XStream();
+		XStream xstream = new AdroitXStream();
 		xstream.processAnnotations(XOperation.class);
 
 		XOperation xOperation = (XOperation) xstream.fromXML(in);
@@ -106,7 +107,11 @@ public class OServiceService implements IOServiceService {
 			if (oService == null) {
 				oService = new OService();
 				oService.setName(xService.getName());
-				oService.setType(EOServiceType.findByName(xService.getType()));
+				EOServiceType serviceType = EOServiceType.findByName(xService.getType());
+				if (serviceType == null) {
+					throw new RuntimeException("Invalid service type: " + xService.getType());
+				}
+				oService.setType(serviceType);
 				oService.setConnectionPattern(xService.getConnectionPattern());
 				logger.info("OService not found and created: {}", xService.getName());
 			} else {

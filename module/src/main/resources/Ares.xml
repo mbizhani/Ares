@@ -25,6 +25,7 @@
 	</entities>
 
 	<tasks>
+		<task type="org.devocative.ares.service.command.CommandExecutionDTask"/>
 	</tasks>
 
 	<dPages>
