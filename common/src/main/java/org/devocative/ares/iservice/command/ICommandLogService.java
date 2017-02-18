@@ -1,12 +1,13 @@
-//overwrite
 package org.devocative.ares.iservice.command;
 
 import org.devocative.ares.entity.command.Command;
 import org.devocative.ares.entity.command.CommandLog;
+import org.devocative.ares.entity.oservice.OServiceInstance;
 import org.devocative.ares.vo.filter.command.CommandLogFVO;
 import org.devocative.demeter.entity.User;
 
 import java.util.List;
+import java.util.Map;
 
 public interface ICommandLogService {
 	void saveOrUpdate(CommandLog entity);
@@ -22,6 +23,8 @@ public interface ICommandLogService {
 	List<Command> getCommandList();
 
 	List<User> getCreatorUserList();
+
+	void insertLog(Command command, OServiceInstance serviceInstance, Map<String, ?> params, String error);
 
 	// ==============================
 }

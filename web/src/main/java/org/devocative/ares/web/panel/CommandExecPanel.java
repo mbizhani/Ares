@@ -125,7 +125,11 @@ public class CommandExecPanel extends DPanel implements IAsyncResponseHandler {
 			@Override
 			protected void onSubmit(AjaxRequestTarget target) {
 				OServiceInstance serviceInstance = (OServiceInstance) params.remove("target");
-				asyncBehavior.sendAsyncRequest(AresDModule.EXEC_COMMAND, new CommandQVO(commandId, serviceInstance, new HashMap<>(params)));
+				Map<String, String> cmdParams = new HashMap<>();
+				for (Map.Entry<String, Object> entry : params.entrySet()) {
+					cmdParams.put(entry.getKey(), (String) entry.getValue());
+				}
+				asyncBehavior.sendAsyncRequest(AresDModule.EXEC_COMMAND, new CommandQVO(commandId, serviceInstance, cmdParams));
 			}
 		});
 		add(form);

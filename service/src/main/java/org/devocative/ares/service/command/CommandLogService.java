@@ -1,8 +1,8 @@
-//overwrite
 package org.devocative.ares.service.command;
 
 import org.devocative.ares.entity.command.Command;
 import org.devocative.ares.entity.command.CommandLog;
+import org.devocative.ares.entity.oservice.OServiceInstance;
 import org.devocative.ares.iservice.command.ICommandLogService;
 import org.devocative.ares.vo.filter.command.CommandLogFVO;
 import org.devocative.demeter.entity.User;
@@ -13,6 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Map;
 
 @Service("arsCommandLogService")
 public class CommandLogService implements ICommandLogService {
@@ -45,6 +46,7 @@ public class CommandLogService implements ICommandLogService {
 			.addSelect("select ent")
 			.addFrom(CommandLog.class, "ent")
 			.applyFilter(CommandLog.class, "ent", filter)
+			.setOrderBy("ent.creationDate desc")
 			.list((pageIndex - 1) * pageSize, pageSize);
 	}
 
@@ -69,4 +71,26 @@ public class CommandLogService implements ICommandLogService {
 	}
 
 	// ==============================
+
+	@Override
+	public void insertLog(Command command, OServiceInstance serviceInstance, Map<String, ?> params, String error) {
+		StringBuilder builder = new StringBuilder();
+		for (Map.Entry<String, ?> entry : params.entrySet()) {
+			builder
+				.append(entry.getKey())
+				.append("=")
+				.append(entry.getValue())
+				.append(";");
+		}
+
+		CommandLog log = new CommandLog();
+		log.setCommand(command);
+		log.setServiceInstance(serviceInstance);
+		log.setParams(builder.toString());
+		log.setSuccessful(error == null);
+		log.setError(error);
+
+		saveOrUpdate(log);
+		persistorService.commitOrRollback();
+	}
 }

@@ -12,6 +12,7 @@ import org.devocative.ares.entity.oservice.OSIPropertyValue;
 import org.devocative.ares.entity.oservice.OSIUser;
 import org.devocative.ares.entity.oservice.OService;
 import org.devocative.ares.entity.oservice.OServiceInstance;
+import org.devocative.ares.iservice.command.ICommandLogService;
 import org.devocative.ares.iservice.command.ICommandService;
 import org.devocative.ares.service.oservice.OSIUserService;
 import org.devocative.ares.service.oservice.OServiceInstanceService;
@@ -20,6 +21,7 @@ import org.devocative.ares.vo.filter.command.CommandFVO;
 import org.devocative.ares.vo.xml.XCommand;
 import org.devocative.demeter.entity.User;
 import org.devocative.demeter.iservice.ICacheService;
+import org.devocative.demeter.iservice.ISecurityService;
 import org.devocative.demeter.iservice.persistor.EJoinMode;
 import org.devocative.demeter.iservice.persistor.IPersistorService;
 import org.devocative.demeter.iservice.template.IStringTemplate;
@@ -56,6 +58,12 @@ public class CommandService implements ICommandService, IMissedHitHandler<Long, 
 
 	@Autowired
 	private OServiceInstanceService serviceInstanceService;
+
+	@Autowired
+	private ICommandLogService commandLogService;
+
+	@Autowired
+	private ISecurityService securityService;
 
 	// ------------------------------
 
@@ -162,32 +170,53 @@ public class CommandService implements ICommandService, IMissedHitHandler<Long, 
 	}
 
 	@Override
-	public Object executeCommand(Long commandId, OServiceInstance serviceInstance, Map<String, Object> params, ICommandResultCallBack callBack) {
+	public Object executeCommand(Long commandId, OServiceInstance serviceInstance, Map<String, String> params, ICommandResultCallBack callBack) {
+		Object result = null;
+		String error;
+
 		Command command = load(commandId);
 		XCommand xCommand = command.getXCommand();
 
-		serviceInstance = serviceInstanceService.load(serviceInstance.getId());
+		try {
 
-		Map<String, String> props = new HashMap<>();
-		if (serviceInstance.getPropertyValues() != null) {
-			for (OSIPropertyValue propertyValue : serviceInstance.getPropertyValues()) {
-				props.put(propertyValue.getProperty().getName(), propertyValue.getValue());
+			serviceInstance = serviceInstanceService.load(serviceInstance.getId());
+
+			Map<String, String> props = new HashMap<>();
+			if (serviceInstance.getPropertyValues() != null) {
+				for (OSIPropertyValue propertyValue : serviceInstance.getPropertyValues()) {
+					props.put(propertyValue.getProperty().getName(), propertyValue.getValue());
+				}
 			}
+
+			OSIUser adminForSI = siUserService.findAdminForSI(serviceInstance.getId());
+
+			OServiceInstanceTargetVO targetVO = new OServiceInstanceTargetVO(serviceInstance, adminForSI, props);
+
+			logger.info("ExecuteCommand: cmd=[{}] si=[{}] user=[{}] admin=[{}] params=#[{}]",
+				command.getName(), serviceInstance, securityService.getCurrentUser(), adminForSI, props.size());
+
+			Map<String, Object> cmdParams = new HashMap<>();
+			cmdParams.putAll(params);
+
+			CommandCenter center = new CommandCenter(this, targetVO, callBack);
+			cmdParams.put("$cmd", center);
+			cmdParams.put("target", targetVO);
+
+			CmdRunner runner = new CmdRunner(xCommand.getBody(), cmdParams);
+			Thread th = new Thread(runner);
+			th.start();
+			th.join();
+
+			result = runner.getResult();
+			error = runner.getError();
+		} catch (Exception e) {
+			logger.error("Execute Command: ", e);
+			error = e.getMessage() != null ? e.getMessage() : e.getClass().getName();
 		}
 
-		OSIUser adminForSI = siUserService.findAdminForSI(serviceInstance.getId());
+		commandLogService.insertLog(command, serviceInstance, params, error);
 
-		OServiceInstanceTargetVO targetVO = new OServiceInstanceTargetVO(serviceInstance, adminForSI, props);
-
-		logger.info("ExecuteCommand: cmd=[{}] si=[{}] admin=[{}] params=#[{}]",
-			command.getName(), serviceInstance, adminForSI, props.size());
-
-		CommandCenter center = new CommandCenter(this, targetVO, callBack);
-		params.put("$cmd", center);
-		params.put("target", targetVO);
-
-		IStringTemplate template = stringTemplateService.create(xCommand.getBody(), TemplateEngineType.GroovyShell);
-		return template.process(params);
+		return result;
 	}
 
 	// ------------------------------
@@ -204,5 +233,38 @@ public class CommandService implements ICommandService, IMissedHitHandler<Long, 
 
 	private XCommand loadXCommand(Command command) {
 		return (XCommand) xstream.fromXML(command.getConfig().getValue());
+	}
+
+	// ------------------------------
+
+	private class CmdRunner implements Runnable {
+		private String cmd;
+		private Map<String, Object> params;
+		private Object result;
+		private String error;
+
+		public CmdRunner(String cmd, Map<String, Object> params) {
+			this.cmd = cmd;
+			this.params = params;
+		}
+
+		@Override
+		public void run() {
+			try {
+				IStringTemplate template = stringTemplateService.create(cmd, TemplateEngineType.GroovyShell);
+				result = template.process(params);
+			} catch (Exception e) {
+				logger.error("CmdRunner: ", e);
+				error = e.getMessage() != null ? e.getMessage() : e.getClass().getName();
+			}
+		}
+
+		public Object getResult() {
+			return result;
+		}
+
+		public String getError() {
+			return error;
+		}
 	}
 }
