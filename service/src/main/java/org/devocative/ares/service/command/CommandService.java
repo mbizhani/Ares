@@ -71,6 +71,7 @@ public class CommandService implements ICommandService, IMissedHitHandler<Long, 
 	public void saveOrUpdate(Command entity) {
 		persistorService.saveOrUpdate(entity);
 		commandCache.remove(entity.getId());
+		stringTemplateService.clearCacheFor("CMD_" + entity.getId());
 	}
 
 	@Override
@@ -202,7 +203,7 @@ public class CommandService implements ICommandService, IMissedHitHandler<Long, 
 			cmdParams.put("$cmd", center);
 			cmdParams.put("target", targetVO);
 
-			CmdRunner runner = new CmdRunner(xCommand.getBody(), cmdParams);
+			CmdRunner runner = new CmdRunner(command.getId(), xCommand.getBody(), cmdParams);
 			Thread th = new Thread(runner);
 			th.start();
 			th.join();
@@ -238,12 +239,14 @@ public class CommandService implements ICommandService, IMissedHitHandler<Long, 
 	// ------------------------------
 
 	private class CmdRunner implements Runnable {
+		private Long cmdId;
 		private String cmd;
 		private Map<String, Object> params;
 		private Object result;
 		private String error;
 
-		public CmdRunner(String cmd, Map<String, Object> params) {
+		public CmdRunner(Long cmdId, String cmd, Map<String, Object> params) {
+			this.cmdId = cmdId;
 			this.cmd = cmd;
 			this.params = params;
 		}
@@ -251,7 +254,7 @@ public class CommandService implements ICommandService, IMissedHitHandler<Long, 
 		@Override
 		public void run() {
 			try {
-				IStringTemplate template = stringTemplateService.create(cmd, TemplateEngineType.GroovyShell);
+				IStringTemplate template = stringTemplateService.create("CMD_" + cmdId, cmd, TemplateEngineType.GroovyShell);
 				result = template.process(params);
 			} catch (Exception e) {
 				logger.error("CmdRunner: ", e);
