@@ -14,7 +14,7 @@ import java.util.List;
 public class CommandLogFVO implements Serializable {
 	private static final long serialVersionUID = 1961844763L;
 
-	private String param;
+	private String params;
 	private Boolean successful;
 	private String error;
 	private List<Command> command;
@@ -23,12 +23,12 @@ public class CommandLogFVO implements Serializable {
 
 	// ------------------------------
 
-	public String getParam() {
-		return param;
+	public String getParams() {
+		return params;
 	}
 
-	public void setParam(String param) {
-		this.param = param;
+	public void setParams(String params) {
+		this.params = params;
 	}
 
 	public Boolean getSuccessful() {

@@ -25,7 +25,7 @@ public class CommandLog implements ICreationDate, ICreatorUser {
 	private Long id;
 
 	@Column(name = "c_param", nullable = false, length = 1000)
-	private String param;
+	private String params;
 
 	@Column(name = "b_successful", nullable = false)
 	private Boolean successful;
@@ -67,12 +67,12 @@ public class CommandLog implements ICreationDate, ICreatorUser {
 		this.id = id;
 	}
 
-	public String getParam() {
-		return param;
+	public String getParams() {
+		return params;
 	}
 
-	public void setParam(String param) {
-		this.param = param;
+	public void setParams(String params) {
+		this.params = params;
 	}
 
 	public Boolean getSuccessful() {
