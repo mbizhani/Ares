@@ -3,6 +3,7 @@ package org.devocative.ares.iservice.oservice;
 import org.devocative.ares.entity.OServer;
 import org.devocative.ares.entity.oservice.OService;
 import org.devocative.ares.entity.oservice.OServiceInstance;
+import org.devocative.ares.vo.OServiceInstanceTargetVO;
 import org.devocative.ares.vo.filter.oservice.OServiceInstanceFVO;
 import org.devocative.demeter.entity.User;
 
@@ -32,4 +33,6 @@ public interface IOServiceInstanceService {
 	// ==============================
 
 	void updateProperties(OService oService, OServiceInstance oServiceInstance);
+
+	OServiceInstanceTargetVO getTargetVO(Long serviceInstanceId);
 }

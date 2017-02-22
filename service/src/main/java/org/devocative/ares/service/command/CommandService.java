@@ -8,13 +8,10 @@ import org.devocative.ares.cmd.CommandCenter;
 import org.devocative.ares.cmd.ICommandResultCallBack;
 import org.devocative.ares.entity.command.Command;
 import org.devocative.ares.entity.command.ConfigLob;
-import org.devocative.ares.entity.oservice.OSIPropertyValue;
-import org.devocative.ares.entity.oservice.OSIUser;
 import org.devocative.ares.entity.oservice.OService;
 import org.devocative.ares.entity.oservice.OServiceInstance;
 import org.devocative.ares.iservice.command.ICommandLogService;
 import org.devocative.ares.iservice.command.ICommandService;
-import org.devocative.ares.service.oservice.OSIUserService;
 import org.devocative.ares.service.oservice.OServiceInstanceService;
 import org.devocative.ares.vo.OServiceInstanceTargetVO;
 import org.devocative.ares.vo.filter.command.CommandFVO;
@@ -33,6 +30,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.PostConstruct;
+import java.sql.Connection;
+import java.sql.DriverManager;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -52,9 +51,6 @@ public class CommandService implements ICommandService, IMissedHitHandler<Long, 
 
 	@Autowired
 	private IStringTemplateService stringTemplateService;
-
-	@Autowired
-	private OSIUserService siUserService;
 
 	@Autowired
 	private OServiceInstanceService serviceInstanceService;
@@ -179,22 +175,10 @@ public class CommandService implements ICommandService, IMissedHitHandler<Long, 
 		XCommand xCommand = command.getXCommand();
 
 		try {
-
-			serviceInstance = serviceInstanceService.load(serviceInstance.getId());
-
-			Map<String, String> props = new HashMap<>();
-			if (serviceInstance.getPropertyValues() != null) {
-				for (OSIPropertyValue propertyValue : serviceInstance.getPropertyValues()) {
-					props.put(propertyValue.getProperty().getName(), propertyValue.getValue());
-				}
-			}
-
-			OSIUser adminForSI = siUserService.findAdminForSI(serviceInstance.getId());
-
-			OServiceInstanceTargetVO targetVO = new OServiceInstanceTargetVO(serviceInstance, adminForSI, props);
+			OServiceInstanceTargetVO targetVO = serviceInstanceService.getTargetVO(serviceInstance.getId());
 
 			logger.info("ExecuteCommand: cmd=[{}] si=[{}] user=[{}] admin=[{}] params=#[{}]",
-				command.getName(), serviceInstance, securityService.getCurrentUser(), adminForSI, props.size());
+				command.getName(), serviceInstance, securityService.getCurrentUser(), targetVO.getUser(), targetVO.getProp());
 
 			Map<String, Object> cmdParams = new HashMap<>();
 			cmdParams.putAll(params);
@@ -218,6 +202,18 @@ public class CommandService implements ICommandService, IMissedHitHandler<Long, 
 		commandLogService.insertLog(command, serviceInstance, params, error);
 
 		return result;
+	}
+
+	@Override
+	public Connection getConnection(OServiceInstanceTargetVO targetVO) {
+		try {
+			Class.forName(targetVO.getProp().get("driver"));
+
+			return DriverManager.getConnection(targetVO.getConnection(), targetVO.getUser().getUsername(), targetVO.getUser().getPassword());
+		} catch (Exception e) {
+			logger.error("getConnection", e);
+			throw new RuntimeException(e);
+		}
 	}
 
 	// ------------------------------

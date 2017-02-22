@@ -13,12 +13,15 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.sql.Connection;
+import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.HashMap;
 import java.util.Map;
 
 public class CommandCenter {
 	private static final Logger logger = LoggerFactory.getLogger(CommandCenter.class);
+
 	private static final JSch J_SCH = new JSch();
 
 	private ICommandService commandService;
@@ -27,6 +30,8 @@ public class CommandCenter {
 
 	private Map<Long, Session> SSH = new HashMap<>();
 	private Map<Long, Connection> DB_CONN = new HashMap<>();
+
+	private Exception exception;
 
 	// ------------------------------
 
@@ -74,7 +79,7 @@ public class CommandCenter {
 
 	// Main ssh()
 	public SshResult ssh(String cmd, OServiceInstanceTargetVO targetVO, boolean force, String... stdin) {
-		int exitStatus;
+		int exitStatus = 0;
 		StringBuilder result = new StringBuilder();
 
 		try {
@@ -151,7 +156,8 @@ public class CommandCenter {
 				throw new RuntimeException("Invalid ssh command exitStatus: " + exitStatus);
 			}
 		} catch (Exception e) {
-			throw new RuntimeException(e);
+			logger.error("CommandCenter.ssh", e);
+			setException(e);
 		}
 
 		return new SshResult(result.toString(), exitStatus);
@@ -164,6 +170,27 @@ public class CommandCenter {
 	}
 
 	public Object sql(String sql, OServiceInstanceTargetVO targetVO) {
+		if (!DB_CONN.containsKey(targetVO.getId())) {
+			Connection connection = commandService.getConnection(targetVO);
+			DB_CONN.put(targetVO.getId(), connection);
+		}
+
+		try {
+			Connection connection = DB_CONN.get(targetVO.getId());
+			Statement statement = connection.createStatement();
+			if (statement.execute(sql)) {
+				ResultSet rs = statement.getResultSet();
+				//TODO
+			} else {
+				logger.info("Execute non-select query: update count=[{}]", statement.getUpdateCount());
+			}
+			statement.close();
+			return null;
+		} catch (SQLException e) {
+			logger.error("CommandCenter.sql", e);
+			setException(e);
+		}
+
 		return null;
 	}
 
@@ -198,6 +225,16 @@ public class CommandCenter {
 	}
 
 	// ------------------------------
+
+	public Exception getException() {
+		return exception;
+	}
+
+	public void setException(Exception exception) {
+		this.exception = exception;
+		closeAll();
+		throw new RuntimeException(exception);
+	}
 
 	public void closeAll() {
 		for (Session session : SSH.values()) {

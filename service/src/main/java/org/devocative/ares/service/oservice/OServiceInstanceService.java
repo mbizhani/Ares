@@ -1,10 +1,7 @@
 package org.devocative.ares.service.oservice;
 
 import org.devocative.ares.entity.OServer;
-import org.devocative.ares.entity.oservice.OSIPropertyValue;
-import org.devocative.ares.entity.oservice.OService;
-import org.devocative.ares.entity.oservice.OServiceInstance;
-import org.devocative.ares.entity.oservice.OServiceProperty;
+import org.devocative.ares.entity.oservice.*;
 import org.devocative.ares.iservice.oservice.IOServiceInstanceService;
 import org.devocative.ares.vo.OServiceInstanceTargetVO;
 import org.devocative.ares.vo.filter.oservice.OServiceInstanceFVO;
@@ -29,6 +26,9 @@ public class OServiceInstanceService implements IOServiceInstanceService {
 
 	@Autowired
 	private IPersistorService persistorService;
+
+	@Autowired
+	private OSIUserService siUserService;
 
 	@Autowired
 	private IStringTemplateService stringTemplateService;
@@ -134,8 +134,9 @@ public class OServiceInstanceService implements IOServiceInstanceService {
 		}
 	}
 
-	public OServiceInstanceTargetVO getTargetVO(Long id) {
-		OServiceInstance serviceInstance = load(id);
+	@Override
+	public OServiceInstanceTargetVO getTargetVO(Long serviceInstanceId) {
+		OServiceInstance serviceInstance = load(serviceInstanceId);
 
 		Map<String, String> props = new HashMap<>();
 		List<OSIPropertyValue> properties = serviceInstance.getPropertyValues();
@@ -143,7 +144,9 @@ public class OServiceInstanceService implements IOServiceInstanceService {
 			props.put(propertyValue.getProperty().getName(), propertyValue.getValue());
 		}
 
-		OServiceInstanceTargetVO targetVO = new OServiceInstanceTargetVO(serviceInstance, null, props); //TODO
+		OSIUser adminForSI = siUserService.findAdminForSI(serviceInstance.getId());
+
+		OServiceInstanceTargetVO targetVO = new OServiceInstanceTargetVO(serviceInstance, adminForSI, props);
 
 		if (serviceInstance.getService().getConnectionPattern() != null) {
 			Map<String, Object> params = new HashMap<>();
