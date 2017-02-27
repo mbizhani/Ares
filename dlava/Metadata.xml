@@ -17,6 +17,9 @@
 				<field name="name">
 					<finfo/>
 				</field>
+				<field name="listView">
+					<finfo/>
+				</field>
 				<field name="service">
 					<finfo/>
 				</field>

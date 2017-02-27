@@ -14,9 +14,11 @@ import org.devocative.ares.web.panel.CommandExecPanel;
 import org.devocative.demeter.web.DPage;
 import org.devocative.demeter.web.component.DAjaxButton;
 import org.devocative.wickomp.WModel;
+import org.devocative.wickomp.form.WBooleanInput;
 import org.devocative.wickomp.form.WSelectionInput;
 import org.devocative.wickomp.form.WTextInput;
 import org.devocative.wickomp.form.range.WDateRangeInput;
+import org.devocative.wickomp.formatter.OBooleanFormatter;
 import org.devocative.wickomp.formatter.ODateFormatter;
 import org.devocative.wickomp.formatter.ONumberFormatter;
 import org.devocative.wickomp.grid.IGridDataSource;
@@ -101,6 +103,8 @@ public class CommandListDPage extends DPage implements IGridDataSource<Command> 
 		floatTable.setEqualWidth(true);
 		floatTable.add(new WTextInput("name")
 			.setLabel(new ResourceModel("Command.name")));
+		floatTable.add(new WBooleanInput("listView")
+			.setLabel(new ResourceModel("Command.listView")));
 		floatTable.add(new WSelectionInput("service", commandService.getServiceList(), true)
 			.setLabel(new ResourceModel("Command.service")));
 		floatTable.add(new WDateRangeInput("creationDate")
@@ -129,6 +133,8 @@ public class CommandListDPage extends DPage implements IGridDataSource<Command> 
 
 		OColumnList<Command> columnList = new OColumnList<>();
 		columnList.add(new OPropertyColumn<Command>(new ResourceModel("Command.name"), "name"));
+		columnList.add(new OPropertyColumn<Command>(new ResourceModel("Command.listView"), "listView")
+			.setFormatter(OBooleanFormatter.bool()));
 		columnList.add(new OPropertyColumn<Command>(new ResourceModel("Command.service"), "service"));
 		columnList.add(new OPropertyColumn<Command>(new ResourceModel("entity.creationDate"), "creationDate")
 			.setFormatter(ODateFormatter.getDateTimeByUserPreference())

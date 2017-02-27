@@ -28,6 +28,9 @@ public class Command implements ICreationDate, ICreatorUser, IModificationDate, 
 	@Column(name = "c_name", nullable = false)
 	private String name;
 
+	@Column(name = "b_list_view", nullable = false)
+	private Boolean listView;
+
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "f_service", nullable = false, foreignKey = @ForeignKey(name = "command2service"))
 	private OService service;
@@ -91,6 +94,14 @@ public class Command implements ICreationDate, ICreatorUser, IModificationDate, 
 
 	public void setName(String name) {
 		this.name = name;
+	}
+
+	public Boolean getListView() {
+		return listView;
+	}
+
+	public void setListView(Boolean listView) {
+		this.listView = listView;
 	}
 
 	public OService getService() {

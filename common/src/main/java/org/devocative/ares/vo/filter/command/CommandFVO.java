@@ -15,6 +15,7 @@ public class CommandFVO implements Serializable {
 	private static final long serialVersionUID = -2029421249L;
 
 	private String name;
+	private Boolean listView;
 	private List<OService> service;
 	private RangeVO<Date> creationDate;
 	private List<User> creatorUser;
@@ -29,6 +30,14 @@ public class CommandFVO implements Serializable {
 
 	public void setName(String name) {
 		this.name = name;
+	}
+
+	public Boolean getListView() {
+		return listView;
+	}
+
+	public void setListView(Boolean listView) {
+		this.listView = listView;
 	}
 
 	public List<OService> getService() {

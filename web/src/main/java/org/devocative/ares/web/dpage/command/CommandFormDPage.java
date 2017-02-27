@@ -11,6 +11,7 @@ import org.devocative.ares.web.AresIcon;
 import org.devocative.demeter.web.DPage;
 import org.devocative.demeter.web.UrlUtil;
 import org.devocative.demeter.web.component.DAjaxButton;
+import org.devocative.wickomp.form.WBooleanInput;
 import org.devocative.wickomp.form.WSelectionInput;
 import org.devocative.wickomp.form.WTextInput;
 import org.devocative.wickomp.html.WFloatTable;
@@ -63,6 +64,9 @@ public class CommandFormDPage extends DPage {
 		floatTable.add(new WTextInput("name")
 			.setRequired(true)
 			.setLabel(new ResourceModel("Command.name")));
+		floatTable.add(new WBooleanInput("listView")
+			.setRequired(true)
+			.setLabel(new ResourceModel("Command.listView")));
 		floatTable.add(new WSelectionInput("service", commandService.getServiceList(), false)
 			.setRequired(true)
 			.setLabel(new ResourceModel("Command.service")));
