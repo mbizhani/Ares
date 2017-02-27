@@ -47,6 +47,9 @@
 				<field name="version">
 					<finfo hasForm="false" hasFVO="false"/>
 				</field>
+				<field name="xCommand">
+					<finfo ignore="true"/>
+				</field>
 			</fields>
 		</class>
 		<class fqn="org.devocative.ares.entity.command.CommandLog">
@@ -56,7 +59,7 @@
 				<field name="id">
 					<finfo/>
 				</field>
-				<field name="param">
+				<field name="params">
 					<finfo/>
 				</field>
 				<field name="successful">
@@ -66,6 +69,9 @@
 					<finfo/>
 				</field>
 				<field name="command">
+					<finfo/>
+				</field>
+				<field name="serviceInstance">
 					<finfo/>
 				</field>
 				<field name="creationDate">
@@ -162,6 +168,9 @@
 					<finfo/>
 				</field>
 				<field name="type">
+					<finfo/>
+				</field>
+				<field name="properties">
 					<finfo/>
 				</field>
 				<field name="creationDate">

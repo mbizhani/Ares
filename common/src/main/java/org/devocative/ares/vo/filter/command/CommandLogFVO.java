@@ -3,6 +3,7 @@ package org.devocative.ares.vo.filter.command;
 
 import org.devocative.adroit.vo.RangeVO;
 import org.devocative.ares.entity.command.Command;
+import org.devocative.ares.entity.oservice.OServiceInstance;
 import org.devocative.demeter.entity.User;
 import org.devocative.demeter.iservice.persistor.Filterer;
 
@@ -18,6 +19,7 @@ public class CommandLogFVO implements Serializable {
 	private Boolean successful;
 	private String error;
 	private List<Command> command;
+	private List<OServiceInstance> serviceInstance;
 	private RangeVO<Date> creationDate;
 	private List<User> creatorUser;
 
@@ -53,6 +55,14 @@ public class CommandLogFVO implements Serializable {
 
 	public void setCommand(List<Command> command) {
 		this.command = command;
+	}
+
+	public List<OServiceInstance> getServiceInstance() {
+		return serviceInstance;
+	}
+
+	public void setServiceInstance(List<OServiceInstance> serviceInstance) {
+		this.serviceInstance = serviceInstance;
 	}
 
 	public RangeVO<Date> getCreationDate() {

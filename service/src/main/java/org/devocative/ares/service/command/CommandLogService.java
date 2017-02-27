@@ -66,6 +66,11 @@ public class CommandLogService implements ICommandLogService {
 	}
 
 	@Override
+	public List<OServiceInstance> getServiceInstanceList() {
+		return persistorService.list(OServiceInstance.class);
+	}
+
+	@Override
 	public List<User> getCreatorUserList() {
 		return persistorService.list(User.class);
 	}

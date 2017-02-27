@@ -90,6 +90,8 @@ public class CommandLogListDPage extends DPage implements IGridDataSource<Comman
 			.setLabel(new ResourceModel("CommandLog.error")));
 		floatTable.add(new WSelectionInput("command", commandLogService.getCommandList(), true)
 			.setLabel(new ResourceModel("CommandLog.command")));
+		floatTable.add(new WSelectionInput("serviceInstance", commandLogService.getServiceInstanceList(), true)
+			.setLabel(new ResourceModel("CommandLog.serviceInstance")));
 		floatTable.add(new WDateRangeInput("creationDate")
 			.setTimePartVisible(true)
 			.setLabel(new ResourceModel("entity.creationDate")));
@@ -115,6 +117,7 @@ public class CommandLogListDPage extends DPage implements IGridDataSource<Comman
 			.setFormatter(OBooleanFormatter.bool()));
 		columnList.add(new OPropertyColumn<CommandLog>(new ResourceModel("CommandLog.error"), "error"));
 		columnList.add(new OPropertyColumn<CommandLog>(new ResourceModel("CommandLog.command"), "command"));
+		columnList.add(new OPropertyColumn<CommandLog>(new ResourceModel("CommandLog.serviceInstance"), "serviceInstance"));
 		columnList.add(new OPropertyColumn<CommandLog>(new ResourceModel("entity.creationDate"), "creationDate")
 			.setFormatter(ODateFormatter.getDateTimeByUserPreference())
 			.setStyle("direction:ltr"));
