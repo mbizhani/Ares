@@ -1,0 +1,16 @@
+Active Internet connections (servers and established)
+Proto Recv-Q Send-Q Local Address               Foreign Address             State       PID/Program name
+tcp        0      0 0.0.0.0:54862               0.0.0.0:*                   LISTEN      5918/rpc.statd
+tcp        0      0 0.0.0.0:111                 0.0.0.0:*                   LISTEN      5862/rpcbind
+tcp        0      0 0.0.0.0:21                  0.0.0.0:*                   LISTEN      6272/vsftpd
+tcp        0      0 0.0.0.0:22                  0.0.0.0:*                   LISTEN      6231/sshd
+tcp        0      0 127.0.0.1:631               0.0.0.0:*                   LISTEN      5960/cupsd
+tcp        0      0 127.0.0.1:25                0.0.0.0:*                   LISTEN      6351/master
+tcp        0      0 172.16.1.243:49086          172.16.1.241:10051          TIME_WAIT   -
+tcp        0    976 172.16.1.243:22             172.16.4.105:7598           ESTABLISHED 61999/sshd
+tcp        0      0 :::60256                    :::*                        LISTEN      5918/rpc.statd
+tcp        0      0 :::111                      :::*                        LISTEN      5862/rpcbind
+tcp        0      0 :::80                       :::*                        LISTEN      6391/httpd
+tcp        0      0 :::22                       :::*                        LISTEN      6231/sshd
+tcp        0      0 ::1:631                     :::*                        LISTEN      5960/cupsd
+tcp        0      0 ::1:25                      :::*                        LISTEN      6351/master

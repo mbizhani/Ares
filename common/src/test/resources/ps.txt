@@ -1,0 +1,132 @@
+  PID TTY      STAT   TIME COMMAND
+    1 ?        Ss     0:04 /sbin/init
+    2 ?        S      0:00 [kthreadd]
+    3 ?        S      0:00 [ksoftirqd/0]
+    5 ?        S<     0:00 [kworker/0:0H]
+    7 ?        S      7:07 [rcu_sched]
+    8 ?        S      0:00 [rcu_bh]
+    9 ?        S      8:53 [rcuos/0]
+   10 ?        S      0:00 [rcuob/0]
+   11 ?        S      0:00 [migration/0]
+   12 ?        S      0:08 [watchdog/0]
+   13 ?        S      0:06 [watchdog/1]
+   14 ?        S      0:00 [migration/1]
+   15 ?        S      0:20 [ksoftirqd/1]
+   17 ?        S<     0:00 [kworker/1:0H]
+   18 ?        S      1:35 [rcuos/1]
+   19 ?        S      0:00 [rcuob/1]
+   20 ?        S<     0:00 [khelper]
+   21 ?        S      0:00 [kdevtmpfs]
+   22 ?        S<     0:00 [netns]
+   23 ?        S<     0:00 [perf]
+   24 ?        S      0:01 [khungtaskd]
+   25 ?        S<     0:00 [writeback]
+   26 ?        SN     0:00 [ksmd]
+   27 ?        SN     1:13 [khugepaged]
+   28 ?        S<     0:00 [crypto]
+   29 ?        S<     0:00 [kintegrityd]
+   30 ?        S<     0:00 [bioset]
+   31 ?        S<     0:00 [kblockd]
+   32 ?        S<     0:00 [ata_sff]
+   33 ?        S<     0:00 [md]
+   37 ?        S      0:48 [kswapd0]
+   38 ?        S      0:00 [fsnotify_mark]
+   50 ?        S<     0:00 [kthrotld]
+   51 ?        S<     0:00 [acpi_thermal_pm]
+   53 ?        S<     0:00 [kpsmoused]
+   55 ?        S<     0:00 [bcache]
+   56 ?        S<     0:00 [deferwq]
+  112 ?        S<     0:00 [ttm_swap]
+ 1639 ?        S      0:00 [scsi_eh_0]
+ 1640 ?        S<     0:00 [scsi_tmf_0]
+ 1641 ?        S      0:00 [scsi_eh_1]
+ 1642 ?        S<     0:00 [scsi_tmf_1]
+ 1647 ?        S<     0:00 [mpt_poll_0]
+ 1648 ?        S<     0:00 [mpt/0]
+ 1649 ?        S      0:00 [scsi_eh_2]
+ 1650 ?        S<     0:00 [scsi_tmf_2]
+ 1735 ?        S<     0:00 [kdmflush]
+ 1736 ?        S<     0:00 [bioset]
+ 1738 ?        S<     0:00 [kdmflush]
+ 1739 ?        S<     0:00 [bioset]
+ 1805 ?        S      0:04 [jbd2/dm-0-8]
+ 1806 ?        S<     0:00 [ext4-rsv-conver]
+ 1899 ?        S<s    0:02 /sbin/udevd -d
+ 5099 ?        S<     0:00 [kdmflush]
+ 5100 ?        S<     0:00 [bioset]
+ 5102 ?        S<     0:00 [kdmflush]
+ 5103 ?        S<     0:00 [bioset]
+ 5106 ?        S<     0:00 [kdmflush]
+ 5107 ?        S<     0:00 [bioset]
+ 5174 ?        S      0:00 [jbd2/sda1-8]
+ 5175 ?        S<     0:00 [ext4-rsv-conver]
+ 5176 ?        S      3:43 [jbd2/dm-2-8]
+ 5177 ?        S<     0:00 [ext4-rsv-conver]
+ 5178 ?        S      0:00 [jbd2/dm-3-8]
+ 5179 ?        S<     0:00 [ext4-rsv-conver]
+ 5180 ?        S      0:00 [jbd2/dm-4-8]
+ 5181 ?        S<     0:00 [ext4-rsv-conver]
+ 5186 ?        S<     0:01 [kworker/1:1H]
+ 5226 ?        S      0:00 [kauditd]
+ 5376 ?        S     25:39 /usr/sbin/vmtoolsd
+ 5433 ?        S      0:00 /usr/lib/vmware-vgauth/VGAuthService -s
+ 5543 ?        Sl     7:37 ./ManagementAgentHost
+ 5590 ?        S<     0:00 [ipv6_addrconf]
+ 5776 ?        S<sl   0:07 auditd
+ 5810 ?        Ssl    0:06 /sbin/rsyslogd -i /var/run/syslogd.pid -c 5
+ 5844 ?        Ss     1:35 irqbalance --pid=/var/run/irqbalance.pid
+ 5862 ?        Ss     0:03 rpcbind
+ 5882 ?        Ss     0:05 dbus-daemon --system
+ 5895 ?        Ss     0:22 NetworkManager --pid-file=/var/run/NetworkManager/NetworkManager.pid
+ 5899 ?        S      0:01 /usr/sbin/modem-manager
+ 5918 ?        Ss     0:00 rpc.statd
+ 5960 ?        Ss     0:00 cupsd -C /etc/cups/cupsd.conf
+ 5982 ?        Ss     0:00 /usr/sbin/wpa_supplicant -c /etc/wpa_supplicant/wpa_supplicant.conf -B -u -f /var/log/wpa_supplicant.log -P /var/run/wpa_supplicant.pid
+ 6029 ?        Ss     0:00 /usr/sbin/acpid
+ 6041 ?        Ssl    0:19 hald
+ 6042 ?        S      0:00 hald-runner
+ 6089 ?        S      0:00 hald-addon-input: Listening on /dev/input/event1 /dev/input/event0
+ 6096 ?        S      0:00 hald-addon-acpi: listening on acpid socket /var/run/acpid.socket
+ 6120 ?        Ssl    0:43 automount --pid-file /var/run/autofs.pid
+ 6231 ?        Ss     0:00 /usr/sbin/sshd
+ 6272 ?        Ss     0:00 /usr/sbin/vsftpd /etc/vsftpd/vsftpd.conf
+ 6351 ?        Ss     0:12 /usr/libexec/postfix/master
+ 6373 ?        S      0:02 qmgr -l -t fifo -u
+ 6380 ?        Ss     0:00 /usr/sbin/abrtd
+ 6391 ?        Ss     1:34 /usr/sbin/httpd
+ 6406 ?        S      0:00 /usr/sbin/zabbix_agentd -c /etc/zabbix/zabbix_agentd.conf
+ 6410 ?        S     10:27 /usr/sbin/zabbix_agentd: collector [idle 1 sec]
+ 6411 ?        S     11:40 /usr/sbin/zabbix_agentd: active checks #1 [idle 1 sec]
+ 6423 ?        Ss     0:20 crond
+ 6438 ?        Ss     0:00 /usr/sbin/atd
+ 6459 ?        Ss     0:04 /usr/sbin/certmonger -S -p /var/run/certmonger.pid
+ 6514 ?        Ss     0:00 login -- root
+ 6516 tty2     Ss+    0:00 /sbin/mingetty /dev/tty2
+ 6518 tty3     Ss+    0:00 /sbin/mingetty /dev/tty3
+ 6520 tty4     Ss+    0:00 /sbin/mingetty /dev/tty4
+ 6522 tty5     Ss+    0:00 /sbin/mingetty /dev/tty5
+ 6524 tty6     Ss+    0:00 /sbin/mingetty /dev/tty6
+ 6525 ?        S<     0:00 /sbin/udevd -d
+ 6526 ?        S<     0:00 /sbin/udevd -d
+ 6530 ?        Sl     0:04 /usr/sbin/console-kit-daemon --no-daemon
+ 6597 tty1     Ss+    0:00 -bash
+ 9654 ?        S      4:53 [kworker/0:1]
+12857 ?        S<     0:00 [kworker/0:1H]
+41026 ?        S      0:00 [kworker/0:0]
+45371 ?        S      0:03 [kworker/u128:1]
+53110 ?        S      0:00 /usr/sbin/httpd
+53111 ?        S      0:00 /usr/sbin/httpd
+53112 ?        S      0:00 /usr/sbin/httpd
+53113 ?        S      0:00 /usr/sbin/httpd
+53114 ?        S      0:00 /usr/sbin/httpd
+53115 ?        S      0:00 /usr/sbin/httpd
+53116 ?        S      0:00 /usr/sbin/httpd
+53117 ?        S      0:00 /usr/sbin/httpd
+54373 ?        S      0:01 [kworker/u128:0]
+54407 ?        S      0:04 [kworker/1:0]
+57463 ?        S      0:00 [kworker/1:1]
+61702 ?        S      0:00 pickup -l -t fifo -u
+61999 ?        Rs     0:01 sshd: root@pts/0,pts/1
+62001 pts/0    Ss     0:00 -bash
+62043 pts/1    Ss+    0:00 -bash
+62169 pts/0    R+     0:00 ps ax

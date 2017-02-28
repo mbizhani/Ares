@@ -16,4 +16,14 @@ public class SshResult {
 	public int getExitStatus() {
 		return exitStatus;
 	}
+
+	// ---------------
+
+	public ConsoleResultProcessing toTabular(String splitBy) {
+		return new ConsoleResultProcessing(stdout).setSplitBy(splitBy);
+	}
+
+	public ConsoleResultProcessing toTabular(String[] columns) {
+		return new ConsoleResultProcessing(stdout).setPossibleColumns(columns);
+	}
 }

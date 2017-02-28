@@ -1,0 +1,36 @@
+Vmid                       Name                                                                         File                                                          Guest OS          Version   Annotation
+10     130-Main SQL Server 2014                        [vmMachines] Main SQL Server 2014/Main SQL Server 2014.vmx                                               windows7Server64Guest   vmx-10
+100    New Virtual Machine                             [vmMachines] New Virtual Machine/New Virtual Machine.vmx                                                 windows8Server64Guest   vmx-08
+101    005-OEL6_mobileTestServer                       [vmMachines] mobileTestServer/005-OEL6_mobileTestServer.vmx                                              oracleLinux64Guest      vmx-10
+102    128-Win Server 2012r2 x64 FAS Analysis UAT      [vmMachines] 128-Win Server 2012r2 x64 FAS Analysis UAT/128-Win Server 2012r2 x64 FAS Analysis UAT.vmx   windows8Server64Guest   vmx-08
+104    012-OEL6_MIDRP_INTEG                            [vmMachines] OEL6_MIDRP_INTEG/UAT Template.vmx                                                           oracleLinux64Guest      vmx-10
+105    143-Win Server 2012r2 x64 SCM Analysis UAT      [vmMachines] 143-Win Server 2012r2 x64 SCM Analysis UAT/143-Win Server 2012r2 x64 SCM Analysis UAT.vmx   windows8Server64Guest   vmx-08
+106    013-Git_Server                                  [vmMachines] 013-Git_Server/013-Git_Server.vmx                                                           oracleLinux64Guest      vmx-10
+11     165-PMO_WinServer2012R2                         [vmMachines] PMO_WinServer2012R2/PMO_WinServer2012R2.vmx                                                 windows8Server64Guest   vmx-10
+12     200-Operation Server                            [vmMachines] Operation Server/Operation Server.vmx                                                       oracleLinux64Guest      vmx-10
+29     132-Win Server 2012r2 x64 SCM Analysis          [vmMachines] Win Server 2012r2 x64 SCM Analysis/Win Server 2012r2 x64 SCM Analysis.vmx                   windows8Server64Guest   vmx-08
+31     134-Win Server 2012r2 x64 MTC Analysis          [vmMachines] Win Server 2012r2 x64 MTC Analysis/Win Server 2012r2 x64 SCM Analysis.vmx                   windows8Server64Guest   vmx-08
+32     239-WinServer2012R2-SP                          [vmMachines] WinServer2012R2-SP/WinServer2012R2-SP.vmx                                                   windows8Server64Guest   vmx-10
+38     125-Win 2012r2 x64 HSE                          [vmMachines] Win Server 2012r2 x64 HSE/Win 2012r2 x64 Standard.vmx                                       windows8Server64Guest   vmx-08
+40     156-oel67uatdb                                  [vmMachines] E__VMs_oel67uatdb/E__VMs_oel67uatdb.vmx                                                     oracleLinux64Guest      vmx-10
+42     124-Win Server 2012r2 x64 SCM UI                [vmMachines] Win Server 2012r2 x64 SCM UI/Win Server 2012r2 x64 SCM Analysis.vmx                         windows8Server64Guest   vmx-08
+48     133-oel67devdb                                  [vmMachines] oradev/oradev.vmx                                                                           oracleLinux64Guest      vmx-10
+55     246-VEEAM_BK                                    [vmMachines] VEEAM_BK/VEEAM_BK.vmx                                                                       windows8Server64Guest   vmx-10
+57     248-OEL6_ELK                                    [vmMachines] OEL6_ELK/OEL6_ELK.vmx                                                                       oracleLinux64Guest      vmx-10
+60     140-MIDHCO LMS                                  [vmMachines] Standard Oracle Enterprise Linux 64-bit/Standard Oracle Enterprise Linux 64-bit.vmx         oracleLinux64Guest      vmx-10
+64     231-openfire4                                   [vmMachines] openfire4/openfire4.vmx                                                                     oracleLinux64Guest      vmx-10
+68     218-DCM_Test_Invironment                        [vmMachines] DCM_Test_Invironment/DCM_Test_Invironment.vmx                                               windows8Server64Guest   vmx-08
+7      127-Windows 7 INFRA                             [vmMachines] Windows 7 INFRA/Windows 7 INFRA.vmx                                                         windows7Guest           vmx-10
+70     129-Windows 7 x64 FIN                           [vmMachines] Windows 7 x64 FIN/Windows 7 x64 FIN.vmx                                                     windows7_64Guest        vmx-10
+77     123-Win Server2012r2 x64 BPC UAT                [vmMachines] Win Server2012r2 x64 BPC UAT/Win 2012r2 x64 Standard.vmx                                    windows8Server64Guest   vmx-08
+79     120-UAT Template                                [vmMachines] UAT Template/UAT Template.vmx                                                               oracleLinux64Guest      vmx-10
+80     010-Windows 10 x64                              [vmMachines] Windows 10 x64/Windows 10 x64.vmx                                                           windows9_64Guest        vmx-10
+82     119-Win Server 2012r2 x64 SCM Framework         [vmMachines] Win Server 2012r2 x64 Framework/Win Server 2012r2 x64 SCM Analysis.vmx                      windows8Server64Guest   vmx-08
+85     131-Win Server 2012r2 x64 MTC Analysis iFanap   [vmMachines] Win Server 2012r2 x64 MTC Analysis iFanap/Win Server 2012r2 x64 SCM Analysis.vmx            windows8Server64Guest   vmx-08
+86     142-Windows 7 x64 FIN UAT                       [vmMachines] Windows 7 x64 FIN UAT/Windows 7 x64 FIN.vmx                                                 windows7_64Guest        vmx-10
+88     141-OEL6 HSE UAT                                [vmMachines] linux HSE UAT/UAT Template.vmx                                                              oracleLinux64Guest      vmx-10
+91     139-Win Server 2012r2 x64 FAS Analysis UAT      [vmMachines] Win Server 2012r2 x64 FAS Analysis UAT/Win Server 2012r2 x64 SCM Analysis.vmx               windows8Server64Guest   vmx-08
+94     174-OEL6 BPC                                    [vmMachines] OEL6 BPC/174-OEL6 BPC.vmx                                                                   oracleLinux64Guest      vmx-10
+95     243-OEL6_repo                                   [vmMachines] 243-OEL6_repo/243-OEL6_repo.vmx                                                             oracleLinux64Guest      vmx-10
+97     144-Windows 7 x64 FIN iFanap                    [vmMachines] Windows 7 x64 FIN iFanap/144-Windows 7 x64 FIN iFanap.vmx                                   windows7_64Guest        vmx-10
+98     220-Win Server 2012r2 VPN                       [vmMachines] Win Server 2012r2 VPN/Win Server 2012r2 VPN.vmx                                             windows8Server64Guest   vmx-08

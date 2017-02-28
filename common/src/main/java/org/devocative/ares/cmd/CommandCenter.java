@@ -5,6 +5,7 @@ import com.jcraft.jsch.JSch;
 import com.jcraft.jsch.Session;
 import org.devocative.ares.iservice.command.ICommandService;
 import org.devocative.ares.vo.OServiceInstanceTargetVO;
+import org.devocative.ares.vo.TabularVO;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -12,11 +13,10 @@ import java.io.BufferedReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
-import java.sql.Connection;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
+import java.sql.*;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class CommandCenter {
@@ -98,6 +98,7 @@ public class CommandCenter {
 			Session session = SSH.get(targetVO.getId());
 
 			logger.info("Sending SSH Command: cmd=[{}] si=[{}]", cmd, targetVO);
+			resultCallBack.onResult(String.format("# CMD:> %s\n\n", cmd));
 
 			ChannelExec channelExec = (ChannelExec) session.openChannel("exec");
 			channelExec.setCommand(cmd);
@@ -170,6 +171,8 @@ public class CommandCenter {
 	}
 
 	public Object sql(String sql, OServiceInstanceTargetVO targetVO) {
+		Object result = null;
+
 		if (!DB_CONN.containsKey(targetVO.getId())) {
 			Connection connection = commandService.getConnection(targetVO);
 			DB_CONN.put(targetVO.getId(), connection);
@@ -177,21 +180,45 @@ public class CommandCenter {
 
 		try {
 			Connection connection = DB_CONN.get(targetVO.getId());
+
+			logger.info("Execute query: si=[{}] sql=[{}]", targetVO, sql);
+			resultCallBack.onResult(String.format("# SQL:> %s\n\n", sql));
+
 			Statement statement = connection.createStatement();
 			if (statement.execute(sql)) {
 				ResultSet rs = statement.getResultSet();
-				//TODO
+				ResultSetMetaData metaData = rs.getMetaData();
+
+				List<String> columns = new ArrayList<>();
+				for (int i = 1; i <= metaData.getColumnCount(); i++) {
+					columns.add(metaData.getColumnName(i).toLowerCase());
+				}
+
+				List<List<String>> rows = new ArrayList<>();
+				while (rs.next()) {
+					List<String> row = new ArrayList<>();
+					for (String column : columns) {
+						row.add(rs.getString(column));
+					}
+					rows.add(row);
+				}
+
+				if (columns.size() == 1 && rows.size() == 1) {
+					result = rows.get(0).get(0);
+				} else {
+					result = new TabularVO(columns, rows);
+				}
 			} else {
 				logger.info("Execute non-select query: update count=[{}]", statement.getUpdateCount());
+				result = statement.getUpdateCount();
 			}
 			statement.close();
-			return null;
 		} catch (SQLException e) {
 			logger.error("CommandCenter.sql", e);
 			setException(e);
 		}
 
-		return null;
+		return result;
 	}
 
 	// ---------------
