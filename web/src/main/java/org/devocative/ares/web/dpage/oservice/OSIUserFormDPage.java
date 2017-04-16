@@ -60,7 +60,6 @@ public class OSIUserFormDPage extends DPage {
 		super.onInitialize();
 
 		WFloatTable floatTable = new WFloatTable("floatTable");
-		floatTable.setEqualWidth(true);
 		floatTable.add(new WTextInput("username")
 			.setRequired(true)
 			.setLabel(new ResourceModel("OSIUser.username")));

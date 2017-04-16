@@ -100,7 +100,6 @@ public class OServicePropertyListDPage extends DPage implements IGridDataSource<
 		});
 
 		WFloatTable floatTable = new WFloatTable("floatTable");
-		floatTable.setEqualWidth(true);
 		floatTable.add(new WTextInput("name")
 			.setLabel(new ResourceModel("OServiceProperty.name")));
 		floatTable.add(new WBooleanInput("required")

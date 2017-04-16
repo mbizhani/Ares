@@ -81,7 +81,6 @@ public class CommandLogListDPage extends DPage implements IGridDataSource<Comman
 		super.onInitialize();
 
 		WFloatTable floatTable = new WFloatTable("floatTable");
-		floatTable.setEqualWidth(true);
 		floatTable.add(new WTextInput("params")
 			.setLabel(new ResourceModel("CommandLog.params")));
 		floatTable.add(new WBooleanInput("successful")

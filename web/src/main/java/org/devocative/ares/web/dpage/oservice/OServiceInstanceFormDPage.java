@@ -78,7 +78,6 @@ public class OServiceInstanceFormDPage extends DPage {
 		WSelectionInput service = new WSelectionInput("service", oServiceInstanceService.getServiceList(), false);
 
 		WFloatTable floatTable = new WFloatTable("floatTable");
-		floatTable.setEqualWidth(true);
 		floatTable.add(new WTextInput("name")
 			.setLabel(new ResourceModel("OServiceInstance.name")));
 		floatTable.add(new WNumberInput("port", Integer.class)

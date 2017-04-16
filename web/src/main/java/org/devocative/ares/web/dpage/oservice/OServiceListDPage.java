@@ -99,7 +99,6 @@ public class OServiceListDPage extends DPage implements IGridDataSource<OService
 		});
 
 		WFloatTable floatTable = new WFloatTable("floatTable");
-		floatTable.setEqualWidth(true);
 		floatTable.add(new WTextInput("name")
 			.setLabel(new ResourceModel("OService.name")));
 		floatTable.add(new WTextInput("connectionPattern")

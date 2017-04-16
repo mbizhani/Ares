@@ -93,8 +93,6 @@ public class CommandExecPanel extends DPanel implements IAsyncResponseHandler {
 		xParams.addAll(xCommand.getParams());
 
 		WFloatTable floatTable = new WFloatTable("floatTable");
-		floatTable.setEqualWidth(true);
-
 		floatTable.add(new ListView<XParam>("fields", xParams) {
 			private static final long serialVersionUID = -5561490679744721872L;
 

@@ -95,7 +95,6 @@ public class OServiceInstanceListDPage extends DPage implements IGridDataSource<
 		});
 
 		WFloatTable floatTable = new WFloatTable("floatTable");
-		floatTable.setEqualWidth(true);
 		floatTable.add(new WTextInput("name")
 			.setLabel(new ResourceModel("OServiceInstance.name")));
 		floatTable.add(new WNumberRangeInput("port", Integer.class)

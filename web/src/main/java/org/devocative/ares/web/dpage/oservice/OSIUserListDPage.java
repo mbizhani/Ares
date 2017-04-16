@@ -100,7 +100,6 @@ public class OSIUserListDPage extends DPage implements IGridDataSource<OSIUser> 
 		});
 
 		WFloatTable floatTable = new WFloatTable("floatTable");
-		floatTable.setEqualWidth(true);
 		floatTable.add(new WTextInput("username")
 			.setLabel(new ResourceModel("OSIUser.username")));
 		floatTable.add(new WTextInput("password")

@@ -98,7 +98,6 @@ public class OServerListDPage extends DPage implements IGridDataSource<OServer> 
 		});
 
 		WFloatTable floatTable = new WFloatTable("floatTable");
-		floatTable.setEqualWidth(true);
 		floatTable.add(new WTextInput("name")
 			.setLabel(new ResourceModel("OServer.name")));
 		floatTable.add(new WTextInput("address")

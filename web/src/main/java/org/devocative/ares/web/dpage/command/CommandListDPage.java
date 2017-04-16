@@ -100,7 +100,6 @@ public class CommandListDPage extends DPage implements IGridDataSource<Command> 
 		});
 
 		WFloatTable floatTable = new WFloatTable("floatTable");
-		floatTable.setEqualWidth(true);
 		floatTable.add(new WTextInput("name")
 			.setLabel(new ResourceModel("Command.name")));
 		floatTable.add(new WBooleanInput("listView")
