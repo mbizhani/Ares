@@ -8,7 +8,8 @@
 		shortName="ARS"
 		mainClass="org.devocative.ares.module.AresDModule"
 		mainResource="org.devocative.ares.web.AresDModule"
-		configKeysClass="org.devocative.ares.AresConfigKey">
+		configKeyClass="org.devocative.ares.AresConfigKey"
+		privilegeKeyClass="org.devocative.ares.AresPrivilegeKey">
 
 	<entities>
 		<entity type="org.devocative.ares.entity.command.Command"/>
