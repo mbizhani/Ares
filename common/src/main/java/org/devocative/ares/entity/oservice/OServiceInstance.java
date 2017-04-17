@@ -23,9 +23,6 @@ public class OServiceInstance implements ICreationDate, ICreatorUser, IModificat
 		})
 	private Long id;
 
-	@Column(name = "c_name", nullable = false)
-	private String name;
-
 	@Column(name = "n_port")
 	private Integer port;
 
@@ -36,13 +33,6 @@ public class OServiceInstance implements ICreationDate, ICreatorUser, IModificat
 	@ManyToOne(fetch = FetchType.EAGER)
 	@JoinColumn(name = "f_service", nullable = false, foreignKey = @ForeignKey(name = "srvcinst2service"))
 	private OService service;
-
-	@ManyToMany(fetch = FetchType.LAZY)
-	@JoinTable(name = "mt_service_inst_related",
-		joinColumns = @JoinColumn(name = "f_related"),
-		inverseJoinColumns = @JoinColumn(name = "f_source")
-	)
-	private List<OServiceInstance> related;
 
 	@OneToMany(fetch = FetchType.LAZY, mappedBy = "serviceInstance", cascade = CascadeType.ALL)
 	private List<OSIPropertyValue> propertyValues;
@@ -99,14 +89,6 @@ public class OServiceInstance implements ICreationDate, ICreatorUser, IModificat
 		this.id = id;
 	}
 
-	public String getName() {
-		return name;
-	}
-
-	public void setName(String name) {
-		this.name = name;
-	}
-
 	public Integer getPort() {
 		return port;
 	}
@@ -129,14 +111,6 @@ public class OServiceInstance implements ICreationDate, ICreatorUser, IModificat
 
 	public void setService(OService service) {
 		this.service = service;
-	}
-
-	public List<OServiceInstance> getRelated() {
-		return related;
-	}
-
-	public void setRelated(List<OServiceInstance> related) {
-		this.related = related;
 	}
 
 	public List<OSIPropertyValue> getPropertyValues() {
@@ -235,6 +209,6 @@ public class OServiceInstance implements ICreationDate, ICreatorUser, IModificat
 
 	@Override
 	public String toString() {
-		return getName();
+		return String.format("%s@%s", getService(), getServer());
 	}
 }

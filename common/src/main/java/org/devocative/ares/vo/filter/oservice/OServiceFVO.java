@@ -2,7 +2,7 @@
 package org.devocative.ares.vo.filter.oservice;
 
 import org.devocative.adroit.vo.RangeVO;
-import org.devocative.ares.entity.oservice.EOServiceType;
+import org.devocative.ares.entity.oservice.OServiceProperty;
 import org.devocative.demeter.entity.User;
 import org.devocative.demeter.iservice.persistor.Filterer;
 
@@ -16,7 +16,7 @@ public class OServiceFVO implements Serializable {
 
 	private String name;
 	private String connectionPattern;
-	private List<EOServiceType> type;
+	private List<OServiceProperty> properties;
 	private RangeVO<Date> creationDate;
 	private List<User> creatorUser;
 	private RangeVO<Date> modificationDate;
@@ -40,12 +40,12 @@ public class OServiceFVO implements Serializable {
 		this.connectionPattern = connectionPattern;
 	}
 
-	public List<EOServiceType> getType() {
-		return type;
+	public List<OServiceProperty> getProperties() {
+		return properties;
 	}
 
-	public void setType(List<EOServiceType> type) {
-		this.type = type;
+	public void setProperties(List<OServiceProperty> properties) {
+		this.properties = properties;
 	}
 
 	public RangeVO<Date> getCreationDate() {
@@ -79,5 +79,4 @@ public class OServiceFVO implements Serializable {
 	public void setModifierUser(List<User> modifierUser) {
 		this.modifierUser = modifierUser;
 	}
-
 }

@@ -24,8 +24,6 @@ public interface IOServiceInstanceService {
 
 	List<OService> getServiceList();
 
-	List<OServiceInstance> getRelatedList();
-
 	List<User> getCreatorUserList();
 
 	List<User> getModifierUserList();

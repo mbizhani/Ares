@@ -5,15 +5,15 @@ import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.markup.html.form.Form;
 import org.apache.wicket.model.CompoundPropertyModel;
 import org.apache.wicket.model.IModel;
-import org.apache.wicket.model.Model;
 import org.apache.wicket.model.ResourceModel;
-import org.devocative.ares.entity.oservice.EOServiceType;
+import org.devocative.ares.AresPrivilegeKey;
 import org.devocative.ares.entity.oservice.OService;
 import org.devocative.ares.iservice.oservice.IOServiceService;
 import org.devocative.ares.vo.filter.oservice.OServiceFVO;
 import org.devocative.ares.web.AresIcon;
 import org.devocative.demeter.web.DPage;
 import org.devocative.demeter.web.component.DAjaxButton;
+import org.devocative.demeter.web.component.grid.OEditAjaxColumn;
 import org.devocative.wickomp.WModel;
 import org.devocative.wickomp.form.WSelectionInput;
 import org.devocative.wickomp.form.WTextInput;
@@ -26,7 +26,6 @@ import org.devocative.wickomp.grid.WDataGrid;
 import org.devocative.wickomp.grid.WSortField;
 import org.devocative.wickomp.grid.column.OColumnList;
 import org.devocative.wickomp.grid.column.OPropertyColumn;
-import org.devocative.wickomp.grid.column.link.OAjaxLinkColumn;
 import org.devocative.wickomp.html.WAjaxLink;
 import org.devocative.wickomp.html.WFloatTable;
 import org.devocative.wickomp.html.window.WModalWindow;
@@ -85,7 +84,6 @@ public class OServiceListDPage extends DPage implements IGridDataSource<OService
 		super.onInitialize();
 
 		final WModalWindow window = new WModalWindow("window");
-		window.getOptions().setHeight(OSize.percent(80)).setWidth(OSize.percent(80));
 		add(window);
 
 		add(new WAjaxLink("add", AresIcon.ADD) {
@@ -96,15 +94,15 @@ public class OServiceListDPage extends DPage implements IGridDataSource<OService
 				window.setContent(new OServiceFormDPage(window.getContentId()));
 				window.show(target);
 			}
-		});
+		}.setVisible(hasPermission(AresPrivilegeKey.OServiceAdd)));
 
 		WFloatTable floatTable = new WFloatTable("floatTable");
 		floatTable.add(new WTextInput("name")
 			.setLabel(new ResourceModel("OService.name")));
 		floatTable.add(new WTextInput("connectionPattern")
 			.setLabel(new ResourceModel("OService.connectionPattern")));
-		floatTable.add(new WSelectionInput("type", EOServiceType.list(), true)
-			.setLabel(new ResourceModel("OService.type")));
+		floatTable.add(new WSelectionInput("properties", oServiceService.getPropertiesList(), true)
+			.setLabel(new ResourceModel("OService.properties")));
 		floatTable.add(new WDateRangeInput("creationDate")
 			.setTimePartVisible(true)
 			.setLabel(new ResourceModel("entity.creationDate")));
@@ -132,7 +130,7 @@ public class OServiceListDPage extends DPage implements IGridDataSource<OService
 		OColumnList<OService> columnList = new OColumnList<>();
 		columnList.add(new OPropertyColumn<OService>(new ResourceModel("OService.name"), "name"));
 		columnList.add(new OPropertyColumn<OService>(new ResourceModel("OService.connectionPattern"), "connectionPattern"));
-		columnList.add(new OPropertyColumn<OService>(new ResourceModel("OService.type"), "type"));
+		columnList.add(new OPropertyColumn<OService>(new ResourceModel("OService.properties"), "properties"));
 		columnList.add(new OPropertyColumn<OService>(new ResourceModel("entity.creationDate"), "creationDate")
 			.setFormatter(ODateFormatter.getDateTimeByUserPreference())
 			.setStyle("direction:ltr"));
@@ -145,15 +143,17 @@ public class OServiceListDPage extends DPage implements IGridDataSource<OService
 			.setFormatter(ONumberFormatter.integer())
 			.setStyle("direction:ltr"));
 
-		columnList.add(new OAjaxLinkColumn<OService>(new Model<String>(), AresIcon.EDIT) {
-			private static final long serialVersionUID = 132652404L;
+		if (hasPermission(AresPrivilegeKey.OServiceEdit)) {
+			columnList.add(new OEditAjaxColumn<OService>() {
+				private static final long serialVersionUID = 1621478020L;
 
-			@Override
-			public void onClick(AjaxRequestTarget target, IModel<OService> rowData) {
-				window.setContent(new OServiceFormDPage(window.getContentId(), rowData.getObject()));
-				window.show(target);
-			}
-		}.setField("EDIT"));
+				@Override
+				public void onClick(AjaxRequestTarget target, IModel<OService> rowData) {
+					window.setContent(new OServiceFormDPage(window.getContentId(), rowData.getObject()));
+					window.show(target);
+				}
+			});
+		}
 
 		OGrid<OService> oGrid = new OGrid<>();
 		oGrid

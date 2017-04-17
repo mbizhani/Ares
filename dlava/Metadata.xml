@@ -170,11 +170,8 @@
 				<field name="connectionPattern">
 					<finfo/>
 				</field>
-				<field name="type">
-					<finfo/>
-				</field>
 				<field name="properties">
-					<finfo/>
+					<finfo hasForm="false"/>
 				</field>
 				<field name="creationDate">
 					<finfo hasForm="false" hasTimePart="true"/>
@@ -204,9 +201,6 @@
 			<id ref="id"/>
 			<fields>
 				<field name="id">
-					<finfo/>
-				</field>
-				<field name="name">
 					<finfo/>
 				</field>
 				<field name="port">

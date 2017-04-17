@@ -1,6 +1,7 @@
 package org.devocative.ares.iservice.oservice;
 
 import org.devocative.ares.entity.oservice.OService;
+import org.devocative.ares.entity.oservice.OServiceProperty;
 import org.devocative.ares.vo.filter.oservice.OServiceFVO;
 import org.devocative.demeter.entity.User;
 
@@ -19,6 +20,8 @@ public interface IOServiceService {
 	List<OService> search(OServiceFVO filter, long pageIndex, long pageSize);
 
 	long count(OServiceFVO filter);
+
+	List<OServiceProperty> getPropertiesList();
 
 	List<User> getCreatorUserList();
 

@@ -5,14 +5,12 @@ import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.markup.html.form.Form;
 import org.apache.wicket.model.CompoundPropertyModel;
 import org.apache.wicket.model.ResourceModel;
-import org.devocative.ares.entity.oservice.EOServiceType;
 import org.devocative.ares.entity.oservice.OService;
 import org.devocative.ares.iservice.oservice.IOServiceService;
 import org.devocative.ares.web.AresIcon;
 import org.devocative.demeter.web.DPage;
 import org.devocative.demeter.web.UrlUtil;
 import org.devocative.demeter.web.component.DAjaxButton;
-import org.devocative.wickomp.form.WSelectionInput;
 import org.devocative.wickomp.form.WTextInput;
 import org.devocative.wickomp.html.WFloatTable;
 import org.devocative.wickomp.html.window.WModalWindow;
@@ -65,8 +63,6 @@ public class OServiceFormDPage extends DPage {
 			.setLabel(new ResourceModel("OService.name")));
 		floatTable.add(new WTextInput("connectionPattern")
 			.setLabel(new ResourceModel("OService.connectionPattern")));
-		floatTable.add(new WSelectionInput("type", EOServiceType.list(), false)
-			.setLabel(new ResourceModel("OService.type")));
 
 		Form<OService> form = new Form<>("form", new CompoundPropertyModel<>(entity));
 		form.add(floatTable);

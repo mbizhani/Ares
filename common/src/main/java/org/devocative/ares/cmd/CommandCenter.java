@@ -84,7 +84,7 @@ public class CommandCenter {
 
 		try {
 			if (!SSH.containsKey(targetVO.getId())) {
-				logger.info("Try to get SSH connection: {}", targetVO.getFullName());
+				logger.info("Try to get SSH connection: {}", targetVO.getName());
 
 				Session session = J_SCH.getSession(targetVO.getUser().getUsername(), targetVO.getAddress(), targetVO.getPort());
 				session.setPassword(targetVO.getUser().getPassword());
@@ -92,7 +92,7 @@ public class CommandCenter {
 				session.connect(30000); // making a connection with timeout.
 
 				SSH.put(targetVO.getId(), session);
-				logger.info("Successful SSH connection: {}", targetVO.getFullName());
+				logger.info("Successful SSH connection: {}", targetVO.getName());
 			}
 
 			Session session = SSH.get(targetVO.getId());

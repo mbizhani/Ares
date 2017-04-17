@@ -30,10 +30,6 @@ public class OService implements ICreationDate, ICreatorUser, IModificationDate,
 	@Column(name = "c_conn_pattern", length = 1000)
 	private String connectionPattern;
 
-	@Embedded
-	@AttributeOverride(name = "id", column = @Column(name = "e_type", nullable = false))
-	private EOServiceType type;
-
 	@OneToMany(fetch = FetchType.EAGER, mappedBy = "service")
 	private List<OServiceProperty> properties;
 
@@ -101,14 +97,6 @@ public class OService implements ICreationDate, ICreatorUser, IModificationDate,
 
 	public void setConnectionPattern(String connectionPattern) {
 		this.connectionPattern = connectionPattern;
-	}
-
-	public EOServiceType getType() {
-		return type;
-	}
-
-	public void setType(EOServiceType type) {
-		this.type = type;
 	}
 
 	public List<OServiceProperty> getProperties() {

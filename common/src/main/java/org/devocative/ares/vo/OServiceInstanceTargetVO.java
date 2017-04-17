@@ -29,14 +29,7 @@ public class OServiceInstanceTargetVO implements Serializable {
 	}
 
 	public String getName() {
-		return serviceInstance.getName();
-	}
-
-	public String getFullName() {
-		return String.format("%s[%s]@%s",
-			serviceInstance.getName(),
-			serviceInstance.getService().getName(),
-			serviceInstance.getServer().getName());
+		return serviceInstance.toString();
 	}
 
 	public String getAddress() {

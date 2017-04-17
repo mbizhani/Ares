@@ -4,7 +4,6 @@ package org.devocative.ares.vo.filter.oservice;
 import org.devocative.adroit.vo.RangeVO;
 import org.devocative.ares.entity.OServer;
 import org.devocative.ares.entity.oservice.OService;
-import org.devocative.ares.entity.oservice.OServiceInstance;
 import org.devocative.demeter.entity.User;
 import org.devocative.demeter.iservice.persistor.Filterer;
 
@@ -16,25 +15,15 @@ import java.util.List;
 public class OServiceInstanceFVO implements Serializable {
 	private static final long serialVersionUID = -385193660L;
 
-	private String name;
 	private RangeVO<Integer> port;
 	private List<OServer> server;
 	private List<OService> service;
-	private List<OServiceInstance> related;
 	private RangeVO<Date> creationDate;
 	private List<User> creatorUser;
 	private RangeVO<Date> modificationDate;
 	private List<User> modifierUser;
 
 	// ------------------------------
-
-	public String getName() {
-		return name;
-	}
-
-	public void setName(String name) {
-		this.name = name;
-	}
 
 	public RangeVO<Integer> getPort() {
 		return port;
@@ -58,14 +47,6 @@ public class OServiceInstanceFVO implements Serializable {
 
 	public void setService(List<OService> service) {
 		this.service = service;
-	}
-
-	public List<OServiceInstance> getRelated() {
-		return related;
-	}
-
-	public void setRelated(List<OServiceInstance> related) {
-		this.related = related;
 	}
 
 	public RangeVO<Date> getCreationDate() {

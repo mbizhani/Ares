@@ -5,14 +5,15 @@ import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.markup.html.form.Form;
 import org.apache.wicket.model.CompoundPropertyModel;
 import org.apache.wicket.model.IModel;
-import org.apache.wicket.model.Model;
 import org.apache.wicket.model.ResourceModel;
+import org.devocative.ares.AresPrivilegeKey;
 import org.devocative.ares.entity.oservice.OServiceProperty;
 import org.devocative.ares.iservice.oservice.IOServicePropertyService;
 import org.devocative.ares.vo.filter.oservice.OServicePropertyFVO;
 import org.devocative.ares.web.AresIcon;
 import org.devocative.demeter.web.DPage;
 import org.devocative.demeter.web.component.DAjaxButton;
+import org.devocative.demeter.web.component.grid.OEditAjaxColumn;
 import org.devocative.wickomp.WModel;
 import org.devocative.wickomp.form.WBooleanInput;
 import org.devocative.wickomp.form.WSelectionInput;
@@ -27,7 +28,6 @@ import org.devocative.wickomp.grid.WDataGrid;
 import org.devocative.wickomp.grid.WSortField;
 import org.devocative.wickomp.grid.column.OColumnList;
 import org.devocative.wickomp.grid.column.OPropertyColumn;
-import org.devocative.wickomp.grid.column.link.OAjaxLinkColumn;
 import org.devocative.wickomp.html.WAjaxLink;
 import org.devocative.wickomp.html.WFloatTable;
 import org.devocative.wickomp.html.window.WModalWindow;
@@ -86,7 +86,6 @@ public class OServicePropertyListDPage extends DPage implements IGridDataSource<
 		super.onInitialize();
 
 		final WModalWindow window = new WModalWindow("window");
-		window.getOptions().setHeight(OSize.percent(80)).setWidth(OSize.percent(80));
 		add(window);
 
 		add(new WAjaxLink("add", AresIcon.ADD) {
@@ -97,7 +96,7 @@ public class OServicePropertyListDPage extends DPage implements IGridDataSource<
 				window.setContent(new OServicePropertyFormDPage(window.getContentId()));
 				window.show(target);
 			}
-		});
+		}.setVisible(hasPermission(AresPrivilegeKey.OServicePropertyAdd)));
 
 		WFloatTable floatTable = new WFloatTable("floatTable");
 		floatTable.add(new WTextInput("name")
@@ -147,15 +146,17 @@ public class OServicePropertyListDPage extends DPage implements IGridDataSource<
 			.setFormatter(ONumberFormatter.integer())
 			.setStyle("direction:ltr"));
 
-		columnList.add(new OAjaxLinkColumn<OServiceProperty>(new Model<String>(), AresIcon.EDIT) {
-			private static final long serialVersionUID = 1793825567L;
+		if (hasPermission(AresPrivilegeKey.OServicePropertyEdit)) {
+			columnList.add(new OEditAjaxColumn<OServiceProperty>() {
+				private static final long serialVersionUID = -1012316113L;
 
-			@Override
-			public void onClick(AjaxRequestTarget target, IModel<OServiceProperty> rowData) {
-				window.setContent(new OServicePropertyFormDPage(window.getContentId(), rowData.getObject()));
-				window.show(target);
-			}
-		}.setField("EDIT"));
+				@Override
+				public void onClick(AjaxRequestTarget target, IModel<OServiceProperty> rowData) {
+					window.setContent(new OServicePropertyFormDPage(window.getContentId(), rowData.getObject()));
+					window.show(target);
+				}
+			});
+		}
 
 		OGrid<OServiceProperty> oGrid = new OGrid<>();
 		oGrid

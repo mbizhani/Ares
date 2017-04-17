@@ -14,9 +14,6 @@ public class XService implements Serializable {
 	private String name;
 
 	@XStreamAsAttribute
-	private String type;
-
-	@XStreamAsAttribute
 	private String connectionPattern;
 
 	private List<XProperty> properties;
@@ -31,14 +28,6 @@ public class XService implements Serializable {
 
 	public void setName(String name) {
 		this.name = name;
-	}
-
-	public String getType() {
-		return type;
-	}
-
-	public void setType(String type) {
-		this.type = type;
 	}
 
 	public String getConnectionPattern() {

@@ -37,9 +37,6 @@ public class OServiceInstanceService implements IOServiceInstanceService {
 
 	@Override
 	public void saveOrUpdate(OServiceInstance entity) {
-		if (entity.getName() == null) {
-			entity.setName(String.format("%s@%s", entity.getService(), entity.getServer()));
-		}
 		persistorService.saveOrUpdate(entity);
 	}
 
@@ -83,11 +80,6 @@ public class OServiceInstanceService implements IOServiceInstanceService {
 	@Override
 	public List<OService> getServiceList() {
 		return persistorService.list(OService.class);
-	}
-
-	@Override
-	public List<OServiceInstance> getRelatedList() {
-		return persistorService.list(OServiceInstance.class);
 	}
 
 	@Override
