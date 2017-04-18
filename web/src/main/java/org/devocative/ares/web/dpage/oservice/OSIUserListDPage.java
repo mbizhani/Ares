@@ -5,14 +5,16 @@ import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.markup.html.form.Form;
 import org.apache.wicket.model.CompoundPropertyModel;
 import org.apache.wicket.model.IModel;
-import org.apache.wicket.model.Model;
 import org.apache.wicket.model.ResourceModel;
+import org.devocative.ares.AresPrivilegeKey;
+import org.devocative.ares.entity.oservice.ERemoteMode;
 import org.devocative.ares.entity.oservice.OSIUser;
 import org.devocative.ares.iservice.oservice.IOSIUserService;
 import org.devocative.ares.vo.filter.oservice.OSIUserFVO;
 import org.devocative.ares.web.AresIcon;
 import org.devocative.demeter.web.DPage;
 import org.devocative.demeter.web.component.DAjaxButton;
+import org.devocative.demeter.web.component.grid.OEditAjaxColumn;
 import org.devocative.wickomp.WModel;
 import org.devocative.wickomp.form.WBooleanInput;
 import org.devocative.wickomp.form.WSelectionInput;
@@ -27,7 +29,6 @@ import org.devocative.wickomp.grid.WDataGrid;
 import org.devocative.wickomp.grid.WSortField;
 import org.devocative.wickomp.grid.column.OColumnList;
 import org.devocative.wickomp.grid.column.OPropertyColumn;
-import org.devocative.wickomp.grid.column.link.OAjaxLinkColumn;
 import org.devocative.wickomp.html.WAjaxLink;
 import org.devocative.wickomp.html.WFloatTable;
 import org.devocative.wickomp.html.window.WModalWindow;
@@ -86,7 +87,6 @@ public class OSIUserListDPage extends DPage implements IGridDataSource<OSIUser> 
 		super.onInitialize();
 
 		final WModalWindow window = new WModalWindow("window");
-		window.getOptions().setHeight(OSize.percent(80)).setWidth(OSize.percent(80));
 		add(window);
 
 		add(new WAjaxLink("add", AresIcon.ADD) {
@@ -97,21 +97,23 @@ public class OSIUserListDPage extends DPage implements IGridDataSource<OSIUser> 
 				window.setContent(new OSIUserFormDPage(window.getContentId()));
 				window.show(target);
 			}
-		});
+		}.setVisible(hasPermission(AresPrivilegeKey.OSIUserAdd)));
 
 		WFloatTable floatTable = new WFloatTable("floatTable");
 		floatTable.add(new WTextInput("username")
 			.setLabel(new ResourceModel("OSIUser.username")));
-		floatTable.add(new WTextInput("password")
-			.setLabel(new ResourceModel("OSIUser.password")));
-		floatTable.add(new WBooleanInput("admin")
-			.setLabel(new ResourceModel("OSIUser.admin")));
-		floatTable.add(new WBooleanInput("expirePassword")
-			.setLabel(new ResourceModel("OSIUser.expirePassword")));
+		floatTable.add(new WBooleanInput("executor")
+			.setLabel(new ResourceModel("OSIUser.executor")));
 		floatTable.add(new WBooleanInput("enabled")
 			.setLabel(new ResourceModel("OSIUser.enabled")));
+		floatTable.add(new WSelectionInput("remoteMode", ERemoteMode.list(), true)
+			.setLabel(new ResourceModel("OSIUser.remoteMode")));
 		floatTable.add(new WSelectionInput("serviceInstance", oSIUserService.getServiceInstanceList(), true)
 			.setLabel(new ResourceModel("OSIUser.serviceInstance")));
+		floatTable.add(new WSelectionInput("server", oSIUserService.getServerList(), true)
+			.setLabel(new ResourceModel("OSIUser.server")));
+		floatTable.add(new WSelectionInput("service", oSIUserService.getServiceList(), true)
+			.setLabel(new ResourceModel("OSIUser.service")));
 		floatTable.add(new WDateRangeInput("creationDate")
 			.setTimePartVisible(true)
 			.setLabel(new ResourceModel("entity.creationDate")));
@@ -138,14 +140,14 @@ public class OSIUserListDPage extends DPage implements IGridDataSource<OSIUser> 
 
 		OColumnList<OSIUser> columnList = new OColumnList<>();
 		columnList.add(new OPropertyColumn<OSIUser>(new ResourceModel("OSIUser.username"), "username"));
-		columnList.add(new OPropertyColumn<OSIUser>(new ResourceModel("OSIUser.password"), "password"));
-		columnList.add(new OPropertyColumn<OSIUser>(new ResourceModel("OSIUser.admin"), "admin")
-			.setFormatter(OBooleanFormatter.bool()));
-		columnList.add(new OPropertyColumn<OSIUser>(new ResourceModel("OSIUser.expirePassword"), "expirePassword")
+		columnList.add(new OPropertyColumn<OSIUser>(new ResourceModel("OSIUser.executor"), "executor")
 			.setFormatter(OBooleanFormatter.bool()));
 		columnList.add(new OPropertyColumn<OSIUser>(new ResourceModel("OSIUser.enabled"), "enabled")
 			.setFormatter(OBooleanFormatter.bool()));
+		columnList.add(new OPropertyColumn<OSIUser>(new ResourceModel("OSIUser.remoteMode"), "remoteMode"));
 		columnList.add(new OPropertyColumn<OSIUser>(new ResourceModel("OSIUser.serviceInstance"), "serviceInstance"));
+		columnList.add(new OPropertyColumn<OSIUser>(new ResourceModel("OSIUser.server"), "server"));
+		columnList.add(new OPropertyColumn<OSIUser>(new ResourceModel("OSIUser.service"), "service"));
 		columnList.add(new OPropertyColumn<OSIUser>(new ResourceModel("entity.creationDate"), "creationDate")
 			.setFormatter(ODateFormatter.getDateTimeByUserPreference())
 			.setStyle("direction:ltr"));
@@ -158,15 +160,17 @@ public class OSIUserListDPage extends DPage implements IGridDataSource<OSIUser> 
 			.setFormatter(ONumberFormatter.integer())
 			.setStyle("direction:ltr"));
 
-		columnList.add(new OAjaxLinkColumn<OSIUser>(new Model<String>(), AresIcon.EDIT) {
-			private static final long serialVersionUID = -853210142L;
+		if (hasPermission(AresPrivilegeKey.OSIUserEdit)) {
+			columnList.add(new OEditAjaxColumn<OSIUser>() {
+				private static final long serialVersionUID = 635615474L;
 
-			@Override
-			public void onClick(AjaxRequestTarget target, IModel<OSIUser> rowData) {
-				window.setContent(new OSIUserFormDPage(window.getContentId(), rowData.getObject()));
-				window.show(target);
-			}
-		}.setField("EDIT"));
+				@Override
+				public void onClick(AjaxRequestTarget target, IModel<OSIUser> rowData) {
+					window.setContent(new OSIUserFormDPage(window.getContentId(), rowData.getObject()));
+					window.show(target);
+				}
+			});
+		}
 
 		OGrid<OSIUser> oGrid = new OGrid<>();
 		oGrid

@@ -1,6 +1,8 @@
 package org.devocative.ares.iservice.oservice;
 
+import org.devocative.ares.entity.OServer;
 import org.devocative.ares.entity.oservice.OSIUser;
+import org.devocative.ares.entity.oservice.OService;
 import org.devocative.ares.entity.oservice.OServiceInstance;
 import org.devocative.ares.vo.filter.oservice.OSIUserFVO;
 import org.devocative.demeter.entity.User;
@@ -19,6 +21,10 @@ public interface IOSIUserService {
 	long count(OSIUserFVO filter);
 
 	List<OServiceInstance> getServiceInstanceList();
+
+	List<OServer> getServerList();
+
+	List<OService> getServiceList();
 
 	List<User> getCreatorUserList();
 

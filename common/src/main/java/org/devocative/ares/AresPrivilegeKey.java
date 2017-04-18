@@ -6,8 +6,8 @@ public enum AresPrivilegeKey implements IPrivilegeKey {
 
 	OServiceAdd, OServiceEdit,
 	OServicePropertyAdd, OServicePropertyEdit,
-	OServiceInstanceAdd, OServiceInstanceEdit
-	;
+	OServiceInstanceAdd, OServiceInstanceEdit,
+	OSIUserAdd, OSIUserEdit;
 
 	private String name;
 

@@ -2,6 +2,9 @@
 package org.devocative.ares.vo.filter.oservice;
 
 import org.devocative.adroit.vo.RangeVO;
+import org.devocative.ares.entity.OServer;
+import org.devocative.ares.entity.oservice.ERemoteMode;
+import org.devocative.ares.entity.oservice.OService;
 import org.devocative.ares.entity.oservice.OServiceInstance;
 import org.devocative.demeter.entity.User;
 import org.devocative.demeter.iservice.persistor.Filterer;
@@ -15,11 +18,12 @@ public class OSIUserFVO implements Serializable {
 	private static final long serialVersionUID = -996678801L;
 
 	private String username;
-	private String password;
-	private Boolean admin;
-	private Boolean expirePassword;
+	private Boolean executor;
 	private Boolean enabled;
+	private List<ERemoteMode> remoteMode;
 	private List<OServiceInstance> serviceInstance;
+	private List<OServer> server;
+	private List<OService> service;
 	private RangeVO<Date> creationDate;
 	private List<User> creatorUser;
 	private RangeVO<Date> modificationDate;
@@ -35,28 +39,12 @@ public class OSIUserFVO implements Serializable {
 		this.username = username;
 	}
 
-	public String getPassword() {
-		return password;
+	public Boolean getExecutor() {
+		return executor;
 	}
 
-	public void setPassword(String password) {
-		this.password = password;
-	}
-
-	public Boolean getAdmin() {
-		return admin;
-	}
-
-	public void setAdmin(Boolean admin) {
-		this.admin = admin;
-	}
-
-	public Boolean getExpirePassword() {
-		return expirePassword;
-	}
-
-	public void setExpirePassword(Boolean expirePassword) {
-		this.expirePassword = expirePassword;
+	public void setExecutor(Boolean executor) {
+		this.executor = executor;
 	}
 
 	public Boolean getEnabled() {
@@ -67,12 +55,36 @@ public class OSIUserFVO implements Serializable {
 		this.enabled = enabled;
 	}
 
+	public List<ERemoteMode> getRemoteMode() {
+		return remoteMode;
+	}
+
+	public void setRemoteMode(List<ERemoteMode> remoteMode) {
+		this.remoteMode = remoteMode;
+	}
+
 	public List<OServiceInstance> getServiceInstance() {
 		return serviceInstance;
 	}
 
 	public void setServiceInstance(List<OServiceInstance> serviceInstance) {
 		this.serviceInstance = serviceInstance;
+	}
+
+	public List<OServer> getServer() {
+		return server;
+	}
+
+	public void setServer(List<OServer> server) {
+		this.server = server;
+	}
+
+	public List<OService> getService() {
+		return service;
+	}
+
+	public void setService(List<OService> service) {
+		this.service = service;
 	}
 
 	public RangeVO<Date> getCreationDate() {

@@ -1,6 +1,8 @@
 package org.devocative.ares.service.oservice;
 
+import org.devocative.ares.entity.OServer;
 import org.devocative.ares.entity.oservice.OSIUser;
+import org.devocative.ares.entity.oservice.OService;
 import org.devocative.ares.entity.oservice.OServiceInstance;
 import org.devocative.ares.iservice.oservice.IOSIUserService;
 import org.devocative.ares.vo.filter.oservice.OSIUserFVO;
@@ -24,6 +26,9 @@ public class OSIUserService implements IOSIUserService {
 
 	@Override
 	public void saveOrUpdate(OSIUser entity) {
+		entity.setServer(entity.getServiceInstance().getServer());
+		entity.setService(entity.getServiceInstance().getService());
+
 		persistorService.saveOrUpdate(entity);
 	}
 
@@ -60,6 +65,16 @@ public class OSIUserService implements IOSIUserService {
 	@Override
 	public List<OServiceInstance> getServiceInstanceList() {
 		return persistorService.list(OServiceInstance.class);
+	}
+
+	@Override
+	public List<OServer> getServerList() {
+		return persistorService.list(OServer.class);
+	}
+
+	@Override
+	public List<OService> getServiceList() {
+		return persistorService.list(OService.class);
 	}
 
 	@Override

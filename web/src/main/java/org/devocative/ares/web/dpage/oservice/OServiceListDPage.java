@@ -18,6 +18,7 @@ import org.devocative.wickomp.WModel;
 import org.devocative.wickomp.form.WSelectionInput;
 import org.devocative.wickomp.form.WTextInput;
 import org.devocative.wickomp.form.range.WDateRangeInput;
+import org.devocative.wickomp.form.range.WNumberRangeInput;
 import org.devocative.wickomp.formatter.ODateFormatter;
 import org.devocative.wickomp.formatter.ONumberFormatter;
 import org.devocative.wickomp.grid.IGridDataSource;
@@ -101,6 +102,10 @@ public class OServiceListDPage extends DPage implements IGridDataSource<OService
 			.setLabel(new ResourceModel("OService.name")));
 		floatTable.add(new WTextInput("connectionPattern")
 			.setLabel(new ResourceModel("OService.connectionPattern")));
+		floatTable.add(new WNumberRangeInput("adminPort", Integer.class)
+			.setLabel(new ResourceModel("OService.adminPort")));
+		floatTable.add(new WTextInput("ports")
+			.setLabel(new ResourceModel("OService.ports")));
 		floatTable.add(new WSelectionInput("properties", oServiceService.getPropertiesList(), true)
 			.setLabel(new ResourceModel("OService.properties")));
 		floatTable.add(new WDateRangeInput("creationDate")
@@ -130,6 +135,10 @@ public class OServiceListDPage extends DPage implements IGridDataSource<OService
 		OColumnList<OService> columnList = new OColumnList<>();
 		columnList.add(new OPropertyColumn<OService>(new ResourceModel("OService.name"), "name"));
 		columnList.add(new OPropertyColumn<OService>(new ResourceModel("OService.connectionPattern"), "connectionPattern"));
+		columnList.add(new OPropertyColumn<OService>(new ResourceModel("OService.adminPort"), "adminPort")
+			.setFormatter(ONumberFormatter.integer())
+			.setStyle("direction:ltr"));
+		columnList.add(new OPropertyColumn<OService>(new ResourceModel("OService.ports"), "ports"));
 		columnList.add(new OPropertyColumn<OService>(new ResourceModel("OService.properties"), "properties"));
 		columnList.add(new OPropertyColumn<OService>(new ResourceModel("entity.creationDate"), "creationDate")
 			.setFormatter(ODateFormatter.getDateTimeByUserPreference())

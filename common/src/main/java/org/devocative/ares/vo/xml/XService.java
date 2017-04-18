@@ -16,6 +16,12 @@ public class XService implements Serializable {
 	@XStreamAsAttribute
 	private String connectionPattern;
 
+	@XStreamAsAttribute
+	private Integer adminPort;
+
+	@XStreamAsAttribute
+	private String ports;
+
 	private List<XProperty> properties;
 
 	private List<XCommand> commands;
@@ -36,6 +42,22 @@ public class XService implements Serializable {
 
 	public void setConnectionPattern(String connectionPattern) {
 		this.connectionPattern = connectionPattern;
+	}
+
+	public Integer getAdminPort() {
+		return adminPort;
+	}
+
+	public void setAdminPort(Integer adminPort) {
+		this.adminPort = adminPort;
+	}
+
+	public String getPorts() {
+		return ports;
+	}
+
+	public void setPorts(String ports) {
+		this.ports = ports;
 	}
 
 	public List<XProperty> getProperties() {

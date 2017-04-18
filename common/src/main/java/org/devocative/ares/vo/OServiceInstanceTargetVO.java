@@ -37,7 +37,7 @@ public class OServiceInstanceTargetVO implements Serializable {
 	}
 
 	public Integer getPort() {
-		return serviceInstance.getPort();
+		return serviceInstance.getPortSafely();
 	}
 
 	public String getConnection() {

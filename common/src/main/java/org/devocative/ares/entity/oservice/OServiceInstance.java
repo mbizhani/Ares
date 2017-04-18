@@ -97,6 +97,10 @@ public class OServiceInstance implements ICreationDate, ICreatorUser, IModificat
 		this.port = port;
 	}
 
+	public Integer getPortSafely() {
+		return getPort() != null ? getPort() : getService().getAdminPort();
+	}
+
 	public OServer getServer() {
 		return server;
 	}

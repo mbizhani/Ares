@@ -16,6 +16,8 @@ public class OServiceFVO implements Serializable {
 
 	private String name;
 	private String connectionPattern;
+	private RangeVO<Integer> adminPort;
+	private String ports;
 	private List<OServiceProperty> properties;
 	private RangeVO<Date> creationDate;
 	private List<User> creatorUser;
@@ -38,6 +40,22 @@ public class OServiceFVO implements Serializable {
 
 	public void setConnectionPattern(String connectionPattern) {
 		this.connectionPattern = connectionPattern;
+	}
+
+	public RangeVO<Integer> getAdminPort() {
+		return adminPort;
+	}
+
+	public void setAdminPort(RangeVO<Integer> adminPort) {
+		this.adminPort = adminPort;
+	}
+
+	public String getPorts() {
+		return ports;
+	}
+
+	public void setPorts(String ports) {
+		this.ports = ports;
 	}
 
 	public List<OServiceProperty> getProperties() {
@@ -79,4 +97,5 @@ public class OServiceFVO implements Serializable {
 	public void setModifierUser(List<User> modifierUser) {
 		this.modifierUser = modifierUser;
 	}
+
 }

@@ -11,6 +11,7 @@ import org.devocative.ares.web.AresIcon;
 import org.devocative.demeter.web.DPage;
 import org.devocative.demeter.web.UrlUtil;
 import org.devocative.demeter.web.component.DAjaxButton;
+import org.devocative.wickomp.form.WNumberInput;
 import org.devocative.wickomp.form.WTextInput;
 import org.devocative.wickomp.html.WFloatTable;
 import org.devocative.wickomp.html.window.WModalWindow;
@@ -63,6 +64,10 @@ public class OServiceFormDPage extends DPage {
 			.setLabel(new ResourceModel("OService.name")));
 		floatTable.add(new WTextInput("connectionPattern")
 			.setLabel(new ResourceModel("OService.connectionPattern")));
+		floatTable.add(new WNumberInput("adminPort", Integer.class)
+			.setLabel(new ResourceModel("OService.adminPort")));
+		floatTable.add(new WTextInput("ports")
+			.setLabel(new ResourceModel("OService.ports")));
 
 		Form<OService> form = new Form<>("form", new CompoundPropertyModel<>(entity));
 		form.add(floatTable);

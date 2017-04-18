@@ -5,6 +5,7 @@ import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.markup.html.form.Form;
 import org.apache.wicket.model.CompoundPropertyModel;
 import org.apache.wicket.model.ResourceModel;
+import org.devocative.ares.entity.oservice.ERemoteMode;
 import org.devocative.ares.entity.oservice.OSIUser;
 import org.devocative.ares.iservice.oservice.IOSIUserService;
 import org.devocative.ares.web.AresIcon;
@@ -66,15 +67,14 @@ public class OSIUserFormDPage extends DPage {
 		floatTable.add(new WTextInput("password")
 			.setRequired(true)
 			.setLabel(new ResourceModel("OSIUser.password")));
-		floatTable.add(new WBooleanInput("admin")
+		floatTable.add(new WBooleanInput("executor")
 			.setRequired(true)
-			.setLabel(new ResourceModel("OSIUser.admin")));
-		floatTable.add(new WBooleanInput("expirePassword")
-			.setRequired(true)
-			.setLabel(new ResourceModel("OSIUser.expirePassword")));
+			.setLabel(new ResourceModel("OSIUser.executor")));
 		floatTable.add(new WBooleanInput("enabled")
 			.setRequired(true)
 			.setLabel(new ResourceModel("OSIUser.enabled")));
+		floatTable.add(new WSelectionInput("remoteMode", ERemoteMode.list(), false)
+			.setLabel(new ResourceModel("OSIUser.remoteMode")));
 		floatTable.add(new WSelectionInput("serviceInstance", oSIUserService.getServiceInstanceList(), false)
 			.setRequired(true)
 			.setLabel(new ResourceModel("OSIUser.serviceInstance")));

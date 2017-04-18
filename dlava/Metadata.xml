@@ -170,6 +170,12 @@
 				<field name="connectionPattern">
 					<finfo/>
 				</field>
+				<field name="adminPort">
+					<finfo/>
+				</field>
+				<field name="ports">
+					<finfo/>
+				</field>
 				<field name="properties">
 					<finfo hasForm="false"/>
 				</field>
@@ -330,19 +336,25 @@
 					<finfo/>
 				</field>
 				<field name="password">
-					<finfo/>
+					<finfo hasList="false" hasFVO="false"/>
 				</field>
-				<field name="admin">
-					<finfo/>
-				</field>
-				<field name="expirePassword">
+				<field name="executor">
 					<finfo/>
 				</field>
 				<field name="enabled">
 					<finfo/>
 				</field>
+				<field name="remoteMode">
+					<finfo/>
+				</field>
 				<field name="serviceInstance">
 					<finfo/>
+				</field>
+				<field name="server">
+					<finfo hasForm="false"/>
+				</field>
+				<field name="service">
+					<finfo hasForm="false"/>
 				</field>
 				<field name="creationDate">
 					<finfo hasForm="false" hasTimePart="true"/>

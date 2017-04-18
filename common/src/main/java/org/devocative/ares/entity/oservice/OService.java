@@ -30,6 +30,12 @@ public class OService implements ICreationDate, ICreatorUser, IModificationDate,
 	@Column(name = "c_conn_pattern", length = 1000)
 	private String connectionPattern;
 
+	@Column(name = "n_admin_port")
+	private Integer adminPort;
+
+	@Column(name = "c_ports")
+	private String ports;
+
 	@OneToMany(fetch = FetchType.EAGER, mappedBy = "service")
 	private List<OServiceProperty> properties;
 
@@ -97,6 +103,22 @@ public class OService implements ICreationDate, ICreatorUser, IModificationDate,
 
 	public void setConnectionPattern(String connectionPattern) {
 		this.connectionPattern = connectionPattern;
+	}
+
+	public Integer getAdminPort() {
+		return adminPort;
+	}
+
+	public void setAdminPort(Integer adminPort) {
+		this.adminPort = adminPort;
+	}
+
+	public String getPorts() {
+		return ports;
+	}
+
+	public void setPorts(String ports) {
+		this.ports = ports;
 	}
 
 	public List<OServiceProperty> getProperties() {

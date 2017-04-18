@@ -155,7 +155,8 @@ public class CommandService implements ICommandService, IMissedHitHandler<Long, 
 			command.setName(xCommand.getName());
 			command.setService(oService);
 			command.setConfig(lob);
-			saveOrUpdate(command);
+			command.setListView(false); //TODO
+			persistorService.saveOrUpdate(command);
 
 			logger.info("Command not found and created: {} for {}", xCommand.getName(), oService.getName());
 		} else {

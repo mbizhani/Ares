@@ -1,5 +1,6 @@
 package org.devocative.ares.entity.oservice;
 
+import org.devocative.ares.entity.OServer;
 import org.devocative.demeter.entity.*;
 
 import javax.persistence.*;
@@ -27,20 +28,29 @@ public class OSIUser implements ICreationDate, ICreatorUser, IModificationDate, 
 	@Column(name = "c_password", nullable = false)
 	private String password;
 
-	@Column(name = "b_admin", nullable = false)
-	private Boolean admin;
-
-	@Column(name = "b_expr_passwd", nullable = false)
-	private Boolean expirePassword;
+	@Column(name = "b_executor", nullable = false)
+	private Boolean executor;
 
 	@Column(name = "b_enabled", nullable = false)
 	private Boolean enabled;
+
+	@Embedded
+	@AttributeOverride(name = "id", column = @Column(name = "e_remote_mode", nullable = false))
+	private ERemoteMode remoteMode;
 
 	@ManyToOne(fetch = FetchType.EAGER)
 	@JoinColumn(name = "f_service_inst", nullable = false, foreignKey = @ForeignKey(name = "siUser2serviceInstance"))
 	private OServiceInstance serviceInstance;
 
-	// --------------- CREATE / MODIFY
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "f_server", nullable = false, foreignKey = @ForeignKey(name = "siUser2server"))
+	private OServer server;
+
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "f_service", nullable = false, foreignKey = @ForeignKey(name = "siUser2service"))
+	private OService service;
+
+	// ---------------
 
 	//@NotAudited
 	@Column(name = "d_creation", nullable = false, columnDefinition = "date")
@@ -107,20 +117,12 @@ public class OSIUser implements ICreationDate, ICreatorUser, IModificationDate, 
 		this.password = password;
 	}
 
-	public Boolean getAdmin() {
-		return admin;
+	public Boolean getExecutor() {
+		return executor;
 	}
 
-	public void setAdmin(Boolean admin) {
-		this.admin = admin;
-	}
-
-	public Boolean getExpirePassword() {
-		return expirePassword;
-	}
-
-	public void setExpirePassword(Boolean expirePassword) {
-		this.expirePassword = expirePassword;
+	public void setExecutor(Boolean executor) {
+		this.executor = executor;
 	}
 
 	public Boolean getEnabled() {
@@ -131,6 +133,14 @@ public class OSIUser implements ICreationDate, ICreatorUser, IModificationDate, 
 		this.enabled = enabled;
 	}
 
+	public ERemoteMode getRemoteMode() {
+		return remoteMode;
+	}
+
+	public void setRemoteMode(ERemoteMode remoteMode) {
+		this.remoteMode = remoteMode;
+	}
+
 	public OServiceInstance getServiceInstance() {
 		return serviceInstance;
 	}
@@ -139,7 +149,23 @@ public class OSIUser implements ICreationDate, ICreatorUser, IModificationDate, 
 		this.serviceInstance = serviceInstance;
 	}
 
-	// --------------- CREATE / MODIFY
+	public OServer getServer() {
+		return server;
+	}
+
+	public void setServer(OServer server) {
+		this.server = server;
+	}
+
+	public OService getService() {
+		return service;
+	}
+
+	public void setService(OService service) {
+		this.service = service;
+	}
+
+	// ---------------
 
 	@Override
 	public Date getCreationDate() {
@@ -207,7 +233,7 @@ public class OSIUser implements ICreationDate, ICreatorUser, IModificationDate, 
 		this.version = version;
 	}
 
-	// ------------------------------
+	// ---------------
 
 	@Override
 	public boolean equals(Object o) {
@@ -227,6 +253,6 @@ public class OSIUser implements ICreationDate, ICreatorUser, IModificationDate, 
 
 	@Override
 	public String toString() {
-		return String.format("%s@%s", getUsername(), getServiceInstance());
+		return String.format("[%s]%s", getUsername(), getServiceInstance());
 	}
 }
