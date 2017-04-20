@@ -31,4 +31,8 @@ public interface IOSIUserService {
 	List<User> getModifierUserList();
 
 	// ==============================
+
+	void saveOrUpdate(OSIUser entity, String password);
+
+	String getPassword(Long userId);
 }

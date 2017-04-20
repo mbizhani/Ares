@@ -1,5 +1,8 @@
 package org.devocative.ares.service.oservice;
 
+import org.devocative.adroit.StringEncryptorUtil;
+import org.devocative.ares.AresErrorCode;
+import org.devocative.ares.AresException;
 import org.devocative.ares.entity.OServer;
 import org.devocative.ares.entity.oservice.OSIUser;
 import org.devocative.ares.entity.oservice.OService;
@@ -26,6 +29,19 @@ public class OSIUserService implements IOSIUserService {
 
 	@Override
 	public void saveOrUpdate(OSIUser entity) {
+		if (entity.getExecutor()) {
+			Long count = persistorService.createQueryBuilder()
+				.addSelect("select count(1)")
+				.addFrom(OSIUser.class, "ent")
+				.addWhere("and ent.executor = true and ent.serviceInstance = :si")
+				.addParam("si", entity.getServiceInstance())
+				.object();
+
+			if (count > 0) {
+				throw new AresException(AresErrorCode.DuplicateExecutor);
+			}
+		}
+
 		entity.setServer(entity.getServiceInstance().getServer());
 		entity.setService(entity.getServiceInstance().getService());
 
@@ -88,6 +104,27 @@ public class OSIUserService implements IOSIUserService {
 	}
 
 	// ==============================
+
+	@Override
+	public void saveOrUpdate(OSIUser entity, String password) {
+		if (password != null) {
+			entity.setPassword(StringEncryptorUtil.encrypt(password));
+		}
+
+		saveOrUpdate(entity);
+	}
+
+	@Override
+	public String getPassword(Long userId) {
+		String password = persistorService.createQueryBuilder()
+			.addSelect("select ent.password")
+			.addFrom(OSIUser.class, "ent")
+			.addWhere("and ent.id = :id")
+			.addParam("id", userId)
+			.object();
+
+		return StringEncryptorUtil.decrypt(password);
+	}
 
 	public OSIUser findAdminForSI(Long serviceInstId) {
 		List<OSIUser> list = persistorService.createQueryBuilder()

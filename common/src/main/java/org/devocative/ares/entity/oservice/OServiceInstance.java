@@ -8,7 +8,9 @@ import java.util.Date;
 import java.util.List;
 
 @Entity
-@Table(name = "t_ars_service_inst")
+@Table(name = "t_ars_service_inst", uniqueConstraints = {
+	@UniqueConstraint(name = "uk_ars_serviceInst", columnNames = {"f_server", "f_service"})
+})
 public class OServiceInstance implements ICreationDate, ICreatorUser, IModificationDate, IModifierUser {
 	private static final long serialVersionUID = 2007755808784442971L;
 

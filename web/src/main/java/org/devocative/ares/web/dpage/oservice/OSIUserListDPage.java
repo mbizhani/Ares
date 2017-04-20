@@ -1,10 +1,10 @@
-//overwrite
 package org.devocative.ares.web.dpage.oservice;
 
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.markup.html.form.Form;
 import org.apache.wicket.model.CompoundPropertyModel;
 import org.apache.wicket.model.IModel;
+import org.apache.wicket.model.Model;
 import org.apache.wicket.model.ResourceModel;
 import org.devocative.ares.AresPrivilegeKey;
 import org.devocative.ares.entity.oservice.ERemoteMode;
@@ -29,8 +29,10 @@ import org.devocative.wickomp.grid.WDataGrid;
 import org.devocative.wickomp.grid.WSortField;
 import org.devocative.wickomp.grid.column.OColumnList;
 import org.devocative.wickomp.grid.column.OPropertyColumn;
+import org.devocative.wickomp.grid.column.link.OAjaxLinkColumn;
 import org.devocative.wickomp.html.WAjaxLink;
 import org.devocative.wickomp.html.WFloatTable;
+import org.devocative.wickomp.html.WMessager;
 import org.devocative.wickomp.html.window.WModalWindow;
 import org.devocative.wickomp.opt.OSize;
 
@@ -170,6 +172,18 @@ public class OSIUserListDPage extends DPage implements IGridDataSource<OSIUser> 
 					window.show(target);
 				}
 			});
+		}
+
+		if (hasPermission(AresPrivilegeKey.OSIUserShowPassword)) {
+			columnList.add(new OAjaxLinkColumn<OSIUser>(new Model<String>(), AresIcon.SHOW.setTooltip(new ResourceModel("OSIUser.showPassword", "Show Password"))) {
+				private static final long serialVersionUID = 635615474L;
+
+				@Override
+				public void onClick(AjaxRequestTarget target, IModel<OSIUser> rowData) {
+					String password = oSIUserService.getPassword(rowData.getObject().getId());
+					WMessager.copyToClipboard(password, target);
+				}
+			}.setConfirmMessage("Are you sure?"));
 		}
 
 		OGrid<OSIUser> oGrid = new OGrid<>();

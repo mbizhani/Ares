@@ -6,7 +6,9 @@ import javax.persistence.*;
 import java.util.Date;
 
 @Entity
-@Table(name = "t_ars_service_prop")
+@Table(name = "t_ars_service_prop", uniqueConstraints = {
+	@UniqueConstraint(name = "uk_ars_serviceProp", columnNames = {"c_name", "f_service"})
+})
 public class OServiceProperty implements ICreationDate, ICreatorUser, IModificationDate, IModifierUser {
 	private static final long serialVersionUID = -7345944329689292247L;
 

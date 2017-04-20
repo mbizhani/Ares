@@ -6,7 +6,9 @@ import javax.persistence.*;
 import java.util.Date;
 
 @Entity
-@Table(name = "t_ars_service_inst_prop_val")
+@Table(name = "t_ars_service_inst_prop_val", uniqueConstraints = {
+	@UniqueConstraint(name = "uk_ars_siPropVal", columnNames = {"f_property", "f_service_inst"})
+})
 public class OSIPropertyValue implements ICreationDate, ICreatorUser, IModificationDate, IModifierUser {
 	private static final long serialVersionUID = 8592429112321349167L;
 
