@@ -1,5 +1,6 @@
 package org.devocative.ares.service.command;
 
+import org.devocative.ares.cmd.CommandOutput;
 import org.devocative.ares.cmd.ICommandResultCallBack;
 import org.devocative.ares.iservice.command.ICommandService;
 import org.devocative.ares.vo.CommandQVO;
@@ -29,11 +30,15 @@ public class CommandExecutionDTask extends DTask implements ICommandResultCallBa
 
 	@Override
 	public void execute() {
-		commandService.executeCommand(commandQVO.getCommandId(), commandQVO.getServiceInstance(), commandQVO.getParams(), this);
+		try {
+			commandService.executeCommand(commandQVO.getCommandId(), commandQVO.getServiceInstance(), commandQVO.getParams(), this);
+		} catch (Exception e) {
+			onResult(new CommandOutput(CommandOutput.Type.ERROR, e.getMessage()));
+		}
 	}
 
 	@Override
-	public void onResult(String lineOfResult) {
+	public void onResult(CommandOutput lineOfResult) {
 		setResult(lineOfResult);
 	}
 }

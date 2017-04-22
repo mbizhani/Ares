@@ -13,6 +13,7 @@ import org.devocative.ares.web.AresIcon;
 import org.devocative.ares.web.panel.CommandExecPanel;
 import org.devocative.demeter.web.DPage;
 import org.devocative.demeter.web.component.DAjaxButton;
+import org.devocative.demeter.web.component.grid.OEditAjaxColumn;
 import org.devocative.wickomp.WModel;
 import org.devocative.wickomp.form.WBooleanInput;
 import org.devocative.wickomp.form.WSelectionInput;
@@ -86,7 +87,7 @@ public class CommandListDPage extends DPage implements IGridDataSource<Command> 
 		super.onInitialize();
 
 		final WModalWindow window = new WModalWindow("window");
-		window.getOptions().setHeight(OSize.percent(80)).setWidth(OSize.percent(80));
+		//window.getOptions().setHeight(OSize.percent(80)).setWidth(OSize.percent(80));
 		add(window);
 
 		add(new WAjaxLink("add", AresIcon.ADD) {
@@ -147,7 +148,7 @@ public class CommandListDPage extends DPage implements IGridDataSource<Command> 
 			.setFormatter(ONumberFormatter.integer())
 			.setStyle("direction:ltr"));
 
-		columnList.add(new OAjaxLinkColumn<Command>(new Model<String>(), AresIcon.EDIT) {
+		columnList.add(new OEditAjaxColumn<Command>() {
 			private static final long serialVersionUID = 1205302042L;
 
 			@Override
@@ -155,7 +156,7 @@ public class CommandListDPage extends DPage implements IGridDataSource<Command> 
 				window.setContent(new CommandFormDPage(window.getContentId(), rowData.getObject()));
 				window.show(target);
 			}
-		}.setField("EDIT"));
+		});
 
 		columnList.add(new OAjaxLinkColumn<Command>(new Model<String>(), AresIcon.EXECUTE) {
 			private static final long serialVersionUID = 1205302042L;

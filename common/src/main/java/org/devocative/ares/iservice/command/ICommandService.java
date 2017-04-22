@@ -34,7 +34,7 @@ public interface ICommandService {
 
 	void checkAndSave(OService oService, XCommand xCommand);
 
-	Object executeCommand(Long commandId, OServiceInstance serviceInstance, Map<String, String> params, ICommandResultCallBack callBack);
+	Object executeCommand(Long commandId, OServiceInstance serviceInstance, Map<String, String> params, ICommandResultCallBack callBack) throws Exception;
 
 	Connection getConnection(OServiceInstanceTargetVO targetVO);
 }

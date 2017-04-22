@@ -78,7 +78,7 @@ public class CommandLogService implements ICommandLogService {
 	// ==============================
 
 	@Override
-	public void insertLog(Command command, OServiceInstance serviceInstance, Map<String, ?> params, String error) {
+	public void insertLog(Command command, OServiceInstance serviceInstance, Map<String, ?> params, Exception error) {
 		StringBuilder builder = new StringBuilder();
 		for (Map.Entry<String, ?> entry : params.entrySet()) {
 			builder
@@ -92,8 +92,12 @@ public class CommandLogService implements ICommandLogService {
 		log.setCommand(command);
 		log.setServiceInstance(serviceInstance);
 		log.setParams(builder.toString());
-		log.setSuccessful(error == null);
-		log.setError(error);
+		if (error == null) {
+			log.setSuccessful(true);
+		} else {
+			log.setSuccessful(false);
+			log.setError(error.getMessage());
+		}
 
 		saveOrUpdate(log);
 		persistorService.commitOrRollback();

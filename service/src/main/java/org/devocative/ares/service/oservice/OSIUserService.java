@@ -126,10 +126,16 @@ public class OSIUserService implements IOSIUserService {
 		return StringEncryptorUtil.decrypt(password);
 	}
 
-	public OSIUser findAdminForSI(Long serviceInstId) {
+	@Override
+	public String getPassword(OSIUser user) {
+		return StringEncryptorUtil.decrypt(user.getPassword());
+	}
+
+		@Override
+	public OSIUser findExecutorForSI(Long serviceInstId) {
 		List<OSIUser> list = persistorService.createQueryBuilder()
 			.addFrom(OSIUser.class, "ent")
-			.addWhere("and ent.admin = true")
+			.addWhere("and ent.executor = true")
 			.addWhere("and ent.enabled = true")
 			.addWhere("and ent.serviceInstance.id = :serviceInstId")
 			.addParam("serviceInstId", serviceInstId)

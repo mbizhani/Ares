@@ -22,7 +22,7 @@ import java.util.Map;
 public class CommandCenter {
 	private static final Logger logger = LoggerFactory.getLogger(CommandCenter.class);
 
-	private static final JSch J_SCH = new JSch();
+	private final JSch J_SCH = new JSch();
 
 	private ICommandService commandService;
 	private OServiceInstanceTargetVO targetVO;
@@ -86,8 +86,8 @@ public class CommandCenter {
 			if (!SSH.containsKey(targetVO.getId())) {
 				logger.info("Try to get SSH connection: {}", targetVO.getName());
 
-				Session session = J_SCH.getSession(targetVO.getUser().getUsername(), targetVO.getAddress(), targetVO.getPort());
-				session.setPassword(targetVO.getUser().getPassword());
+				Session session = J_SCH.getSession(targetVO.getUsername(), targetVO.getAddress(), targetVO.getPort());
+				session.setPassword(targetVO.getPassword());
 				session.setConfig("StrictHostKeyChecking", "no");
 				session.connect(30000); // making a connection with timeout.
 
@@ -97,11 +97,23 @@ public class CommandCenter {
 
 			Session session = SSH.get(targetVO.getId());
 
-			logger.info("Sending SSH Command: cmd=[{}] si=[{}]", cmd, targetVO);
-			resultCallBack.onResult(String.format("# CMD:> %s\n\n", cmd));
+			String finalCmd = cmd;
+			if (targetVO.isSudoer() && !cmd.startsWith("sudo -S")) {
+				/*
+				NOTE: in /etc/sudoers the line
+				Defaults    requiretty
+				must be commented, unless sudo -S does not work!
+				*/
+				finalCmd = String.format("sudo -S -p '' %s", cmd);
+				cmd = String.format("sudo -S %s", cmd);
+			}
+
+			logger.info("Sending SSH Command: cmd=[{}] si=[{}]", finalCmd, targetVO);
+			String prompt = String.format("[%s@%s]$ %s", targetVO.getUsername(), targetVO.getAddress(), cmd);
+			resultCallBack.onResult(new CommandOutput(CommandOutput.Type.PROMPT, prompt));
 
 			ChannelExec channelExec = (ChannelExec) session.openChannel("exec");
-			channelExec.setCommand(cmd);
+			channelExec.setCommand(finalCmd);
 			channelExec.setInputStream(null);
 			channelExec.setErrStream(null);
 
@@ -111,24 +123,26 @@ public class CommandCenter {
 			InputStream err = channelExec.getErrStream();
 			BufferedReader errBr = new BufferedReader(new InputStreamReader(err));
 
-			OutputStream out = null;
-			if (stdin != null) {
-				out = channelExec.getOutputStream();
-			}
+			OutputStream out = channelExec.getOutputStream();
 
 			channelExec.connect();
 
-			if (out != null) {
-				for (String s : stdin) {
-					out.write((s + "\n").getBytes());
-				}
+			if (targetVO.isSudoer()) {
+				out.write((targetVO.getPassword() + "\n").getBytes());
 				out.flush();
+			}
+
+			for (String s : stdin) {
+				if (s != null) {
+					out.write((s + "\n").getBytes());
+					out.flush();
+				}
 			}
 
 			while (true) {
 				String line;
 				while ((line = br.readLine()) != null) {
-					resultCallBack.onResult(line);
+					resultCallBack.onResult(new CommandOutput(line));
 					logger.debug("\tResult = {}", line);
 					result.append(line).append("\n");
 				}
@@ -141,7 +155,7 @@ public class CommandCenter {
 			while (true) {
 				String line;
 				while ((line = errBr.readLine()) != null) {
-					resultCallBack.onResult(line);
+					resultCallBack.onResult(new CommandOutput(CommandOutput.Type.ERROR, line));
 					logger.error("\tResult = {}", line);
 				}
 				if (channelExec.isClosed()) {
@@ -182,7 +196,8 @@ public class CommandCenter {
 			Connection connection = DB_CONN.get(targetVO.getId());
 
 			logger.info("Execute query: si=[{}] sql=[{}]", targetVO, sql);
-			resultCallBack.onResult(String.format("# SQL:> %s\n\n", sql));
+			String prompt = String.format("[%s@%s]$ %s", targetVO.getUsername(), targetVO.getAddress(), sql);
+			resultCallBack.onResult(new CommandOutput(CommandOutput.Type.PROMPT, prompt));
 
 			Statement statement = connection.createStatement();
 			if (statement.execute(sql)) {

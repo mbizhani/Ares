@@ -2,6 +2,7 @@ package org.devocative.ares.service.oservice;
 
 import org.devocative.ares.entity.OServer;
 import org.devocative.ares.entity.oservice.*;
+import org.devocative.ares.iservice.oservice.IOSIUserService;
 import org.devocative.ares.iservice.oservice.IOServiceInstanceService;
 import org.devocative.ares.vo.OServiceInstanceTargetVO;
 import org.devocative.ares.vo.filter.oservice.OServiceInstanceFVO;
@@ -28,7 +29,7 @@ public class OServiceInstanceService implements IOServiceInstanceService {
 	private IPersistorService persistorService;
 
 	@Autowired
-	private OSIUserService siUserService;
+	private IOSIUserService siUserService;
 
 	@Autowired
 	private IStringTemplateService stringTemplateService;
@@ -136,9 +137,11 @@ public class OServiceInstanceService implements IOServiceInstanceService {
 			props.put(propertyValue.getProperty().getName(), propertyValue.getValue());
 		}
 
-		OSIUser adminForSI = siUserService.findAdminForSI(serviceInstance.getId());
+		OSIUser executorForSI = siUserService.findExecutorForSI(serviceInstance.getId());
+		String password = siUserService.getPassword(executorForSI);
 
-		OServiceInstanceTargetVO targetVO = new OServiceInstanceTargetVO(serviceInstance, adminForSI, props);
+		OServiceInstanceTargetVO targetVO = new OServiceInstanceTargetVO(serviceInstance, executorForSI.getUsername(), password, props)
+			.setSudoer(true); //TODO
 
 		if (serviceInstance.getService().getConnectionPattern() != null) {
 			Map<String, Object> params = new HashMap<>();

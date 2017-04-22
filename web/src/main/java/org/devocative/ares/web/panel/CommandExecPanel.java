@@ -12,6 +12,7 @@ import org.apache.wicket.model.CompoundPropertyModel;
 import org.apache.wicket.model.Model;
 import org.apache.wicket.model.ResourceModel;
 import org.apache.wicket.util.string.Strings;
+import org.devocative.ares.cmd.CommandOutput;
 import org.devocative.ares.entity.command.Command;
 import org.devocative.ares.entity.oservice.OServiceInstance;
 import org.devocative.ares.iservice.command.ICommandService;
@@ -28,6 +29,8 @@ import org.devocative.wickomp.async.IAsyncResponseHandler;
 import org.devocative.wickomp.form.WSelectionInput;
 import org.devocative.wickomp.form.WTextInput;
 import org.devocative.wickomp.html.WFloatTable;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
 import java.io.PrintWriter;
@@ -40,6 +43,7 @@ import java.util.Map;
 
 public class CommandExecPanel extends DPanel implements IAsyncResponseHandler {
 	private static final long serialVersionUID = 6094381569285095361L;
+	private static final Logger logger = LoggerFactory.getLogger(CommandExecPanel.class);
 
 	private Long commandId;
 	private Map<String, Object> params = new HashMap<>();
@@ -61,8 +65,16 @@ public class CommandExecPanel extends DPanel implements IAsyncResponseHandler {
 
 	@Override
 	public void onAsyncResult(String handlerId, IPartialPageRequestHandler handler, Serializable result) {
-		String script = String.format("$('#%s').append('<div>%s</div>');", log.getMarkupId(), Strings.escapeMarkup(result.toString(), true));
+		logger.debug("onAsyncResult: {}", result);
+
+		CommandOutput line = (CommandOutput) result;
+		CharSequence sequence = Strings.escapeMarkup(line.getLine(), true, true);
+		String script = String.format("$('#%s').append(\"<div class='ars-cmd-%s'>%s</div>\");",
+			log.getMarkupId(),
+			line.getType().name().toLowerCase(),
+			sequence);
 		handler.appendJavaScript(script);
+		handler.appendJavaScript(String.format("$('#%1$s').scrollTop($('#%1$s')[0].scrollHeight);", log.getMarkupId()));
 	}
 
 	@Override
@@ -110,7 +122,7 @@ public class CommandExecPanel extends DPanel implements IAsyncResponseHandler {
 					fieldFormItem = new WTextInput(xParam.getName());
 				}
 
-				view.add(fieldFormItem.setRequired(xParam.getRequired()).setLabel(new Model<String>(xParam.getName())));
+				view.add(fieldFormItem.setRequired(xParam.getRequired()).setLabel(new Model<>(xParam.getName())));
 				item.add(view);
 			}
 		});

@@ -35,4 +35,8 @@ public interface IOSIUserService {
 	void saveOrUpdate(OSIUser entity, String password);
 
 	String getPassword(Long userId);
+
+	String getPassword(OSIUser user);
+
+	OSIUser findExecutorForSI(Long serviceInstId);
 }

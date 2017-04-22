@@ -168,9 +168,9 @@ public class CommandService implements ICommandService, IMissedHitHandler<Long, 
 	}
 
 	@Override
-	public Object executeCommand(Long commandId, OServiceInstance serviceInstance, Map<String, String> params, ICommandResultCallBack callBack) {
+	public Object executeCommand(Long commandId, OServiceInstance serviceInstance, Map<String, String> params, ICommandResultCallBack callBack) throws Exception {
 		Object result = null;
-		String error;
+		Exception error = null;
 
 		Command command = load(commandId);
 		XCommand xCommand = command.getXCommand();
@@ -178,8 +178,8 @@ public class CommandService implements ICommandService, IMissedHitHandler<Long, 
 		try {
 			OServiceInstanceTargetVO targetVO = serviceInstanceService.getTargetVO(serviceInstance.getId());
 
-			logger.info("ExecuteCommand: cmd=[{}] si=[{}] user=[{}] admin=[{}] params=#[{}]",
-				command.getName(), serviceInstance, securityService.getCurrentUser(), targetVO.getUser(), targetVO.getProp());
+			logger.info("ExecuteCommand: cmd=[{}] si=[{}] user=[{}] executor=[{}] params=#[{}]",
+				command.getName(), serviceInstance, securityService.getCurrentUser(), targetVO.getUsername(), targetVO.getProp());
 
 			Map<String, Object> cmdParams = new HashMap<>();
 			cmdParams.putAll(params);
@@ -195,12 +195,12 @@ public class CommandService implements ICommandService, IMissedHitHandler<Long, 
 
 			result = runner.getResult();
 			error = runner.getError();
-		} catch (Exception e) {
-			logger.error("Execute Command: ", e);
-			error = e.getMessage() != null ? e.getMessage() : e.getClass().getName();
+			if (error != null) {
+				throw error;
+			}
+		} finally {
+			commandLogService.insertLog(command, serviceInstance, params, error);
 		}
-
-		commandLogService.insertLog(command, serviceInstance, params, error);
 
 		return result;
 	}
@@ -209,8 +209,7 @@ public class CommandService implements ICommandService, IMissedHitHandler<Long, 
 	public Connection getConnection(OServiceInstanceTargetVO targetVO) {
 		try {
 			Class.forName(targetVO.getProp().get("driver"));
-
-			return DriverManager.getConnection(targetVO.getConnection(), targetVO.getUser().getUsername(), targetVO.getUser().getPassword());
+			return DriverManager.getConnection(targetVO.getConnection(), targetVO.getUsername(), targetVO.getPassword());
 		} catch (Exception e) {
 			logger.error("getConnection", e);
 			throw new RuntimeException(e);
@@ -240,7 +239,7 @@ public class CommandService implements ICommandService, IMissedHitHandler<Long, 
 		private String cmd;
 		private Map<String, Object> params;
 		private Object result;
-		private String error;
+		private Exception error;
 
 		public CmdRunner(Long cmdId, String cmd, Map<String, Object> params) {
 			this.cmdId = cmdId;
@@ -255,7 +254,7 @@ public class CommandService implements ICommandService, IMissedHitHandler<Long, 
 				result = template.process(params);
 			} catch (Exception e) {
 				logger.error("CmdRunner: ", e);
-				error = e.getMessage() != null ? e.getMessage() : e.getClass().getName();
+				error = e;
 			}
 		}
 
@@ -263,7 +262,7 @@ public class CommandService implements ICommandService, IMissedHitHandler<Long, 
 			return result;
 		}
 
-		public String getError() {
+		public Exception getError() {
 			return error;
 		}
 	}

@@ -26,7 +26,7 @@ public interface ICommandLogService {
 
 	List<User> getCreatorUserList();
 
-	void insertLog(Command command, OServiceInstance serviceInstance, Map<String, ?> params, String error);
+	void insertLog(Command command, OServiceInstance serviceInstance, Map<String, ?> params, Exception error);
 
 	// ==============================
 }

@@ -183,7 +183,7 @@ public class OSIUserListDPage extends DPage implements IGridDataSource<OSIUser> 
 					String password = oSIUserService.getPassword(rowData.getObject().getId());
 					WMessager.copyToClipboard(password, target);
 				}
-			}.setConfirmMessage("Are you sure?"));
+			}.setConfirmMessage("Are you sure?").setField("VIEW_PASS"));
 		}
 
 		OGrid<OSIUser> oGrid = new OGrid<>();
