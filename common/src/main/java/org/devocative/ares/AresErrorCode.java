@@ -3,7 +3,8 @@ package org.devocative.ares;
 import org.devocative.demeter.imodule.DErrorCode;
 
 public enum AresErrorCode implements DErrorCode {
-	DuplicateExecutor("Duplicate Executor")
+	DuplicateExecutor("Duplicate Executor"),
+	CommandNotFound("Command not found")
 	//SQLExecution("SQL Execution"),
 	;
 

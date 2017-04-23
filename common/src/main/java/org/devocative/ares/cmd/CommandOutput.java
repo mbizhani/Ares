@@ -6,17 +6,17 @@ public class CommandOutput implements Serializable {
 	private static final long serialVersionUID = -4930950993675996103L;
 
 	private Type type;
-	private String line;
+	private Object output;
 
 	// ------------------------------
 
-	public CommandOutput(String line) {
-		this(Type.LINE, line);
+	public CommandOutput(Object output) {
+		this(Type.LINE, output);
 	}
 
-	public CommandOutput(Type type, String line) {
+	public CommandOutput(Type type, Object output) {
 		this.type = type;
-		this.line = line;
+		this.output = output;
 	}
 
 	// ------------------------------
@@ -25,13 +25,13 @@ public class CommandOutput implements Serializable {
 		return type;
 	}
 
-	public String getLine() {
-		return line;
+	public Object getOutput() {
+		return output;
 	}
 
 	@Override
 	public String toString() {
-		return String.format("%s:%s", getType(), getLine());
+		return String.format("%s:%s", getType(), getOutput());
 	}
 
 	// ------------------------------
@@ -39,6 +39,7 @@ public class CommandOutput implements Serializable {
 	public enum Type {
 		PROMPT,
 		LINE,
+		TABULAR,
 		ERROR
 	}
 }

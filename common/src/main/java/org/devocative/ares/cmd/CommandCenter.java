@@ -43,12 +43,19 @@ public class CommandCenter {
 
 	// ------------------------------
 
-	public Object exec(String commandName, Map<String, Object> params) {
+	public Object exec(String commandName, Map<String, String> params) {
 		return exec(commandName, targetVO, params);
 	}
 
-	public Object exec(String commandName, OServiceInstanceTargetVO target, Map<String, Object> params) {
-		return null;
+	public Object exec(String commandName, OServiceInstanceTargetVO target, Map<String, String> params) {
+		try {
+			return commandService.executeCommand(commandName, target.getServiceInstance(), params, resultCallBack);
+		} catch (Exception e) {
+			logger.error("CommandCenter.exec: " + commandName, e);
+			setException(e);
+		}
+
+		return null; //TODO
 	}
 
 	// ---------------
@@ -85,6 +92,7 @@ public class CommandCenter {
 		try {
 			if (!SSH.containsKey(targetVO.getId())) {
 				logger.info("Try to get SSH connection: {}", targetVO.getName());
+				resultCallBack.onResult(new CommandOutput(CommandOutput.Type.PROMPT, "connecting ..."));
 
 				Session session = J_SCH.getSession(targetVO.getUsername(), targetVO.getAddress(), targetVO.getPort());
 				session.setPassword(targetVO.getPassword());

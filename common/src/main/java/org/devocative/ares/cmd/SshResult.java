@@ -26,4 +26,15 @@ public class SshResult {
 	public ConsoleResultProcessing toTabular(String[] columns) {
 		return new ConsoleResultProcessing(stdout).setPossibleColumns(columns);
 	}
+
+	public ConsoleResultProcessing toTabular() {
+		return new ConsoleResultProcessing(stdout);
+	}
+
+	// ---------------
+
+	@Override
+	public String toString() {
+		return String.format("Exit Status = %s", exitStatus);
+	}
 }

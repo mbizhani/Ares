@@ -4,6 +4,8 @@ import com.thoughtworks.xstream.XStream;
 import org.devocative.adroit.cache.ICache;
 import org.devocative.adroit.cache.IMissedHitHandler;
 import org.devocative.adroit.xml.AdroitXStream;
+import org.devocative.ares.AresErrorCode;
+import org.devocative.ares.AresException;
 import org.devocative.ares.cmd.CommandCenter;
 import org.devocative.ares.cmd.ICommandResultCallBack;
 import org.devocative.ares.entity.command.Command;
@@ -168,11 +170,37 @@ public class CommandService implements ICommandService, IMissedHitHandler<Long, 
 	}
 
 	@Override
+	public Object executeCommand(String command, OServiceInstance serviceInstance, Map<String, String> params, ICommandResultCallBack callBack) throws Exception {
+		Command cmd = loadByNameAndOService(serviceInstance.getService(), command);
+		if (cmd == null) {
+			throw new AresException(AresErrorCode.CommandNotFound, command);
+		}
+		return executeCommand(cmd, serviceInstance, params, callBack);
+	}
+
+	@Override
 	public Object executeCommand(Long commandId, OServiceInstance serviceInstance, Map<String, String> params, ICommandResultCallBack callBack) throws Exception {
+		Command command = load(commandId);
+		return executeCommand(command, serviceInstance, params, callBack);
+	}
+
+	@Override
+	public Connection getConnection(OServiceInstanceTargetVO targetVO) {
+		try {
+			Class.forName(targetVO.getProp().get("driver"));
+			return DriverManager.getConnection(targetVO.getConnection(), targetVO.getUsername(), targetVO.getPassword());
+		} catch (Exception e) {
+			logger.error("getConnection", e);
+			throw new RuntimeException(e);
+		}
+	}
+
+	// ------------------------------
+
+	private Object executeCommand(Command command, OServiceInstance serviceInstance, Map<String, String> params, ICommandResultCallBack callBack) throws Exception {
 		Object result = null;
 		Exception error = null;
 
-		Command command = load(commandId);
 		XCommand xCommand = command.getXCommand();
 
 		try {
@@ -193,6 +221,8 @@ public class CommandService implements ICommandService, IMissedHitHandler<Long, 
 			th.start();
 			th.join();
 
+			center.closeAll();
+
 			result = runner.getResult();
 			error = runner.getError();
 			if (error != null) {
@@ -201,22 +231,8 @@ public class CommandService implements ICommandService, IMissedHitHandler<Long, 
 		} finally {
 			commandLogService.insertLog(command, serviceInstance, params, error);
 		}
-
 		return result;
 	}
-
-	@Override
-	public Connection getConnection(OServiceInstanceTargetVO targetVO) {
-		try {
-			Class.forName(targetVO.getProp().get("driver"));
-			return DriverManager.getConnection(targetVO.getConnection(), targetVO.getUsername(), targetVO.getPassword());
-		} catch (Exception e) {
-			logger.error("getConnection", e);
-			throw new RuntimeException(e);
-		}
-	}
-
-	// ------------------------------
 
 	private Command loadByNameAndOService(OService oService, String name) {
 		return persistorService.createQueryBuilder()

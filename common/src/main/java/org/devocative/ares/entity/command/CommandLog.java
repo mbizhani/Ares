@@ -24,7 +24,7 @@ public class CommandLog implements ICreationDate, ICreatorUser {
 		})
 	private Long id;
 
-	@Column(name = "c_params", nullable = false, length = 1000)
+	@Column(name = "c_params", length = 1000)
 	private String params;
 
 	@Column(name = "b_successful", nullable = false)
