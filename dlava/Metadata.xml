@@ -356,6 +356,9 @@
 				<field name="service">
 					<finfo hasForm="false"/>
 				</field>
+				<field name="rowMod">
+					<finfo hasForm="false"/>
+				</field>
 				<field name="creationDate">
 					<finfo hasForm="false" hasTimePart="true"/>
 				</field>

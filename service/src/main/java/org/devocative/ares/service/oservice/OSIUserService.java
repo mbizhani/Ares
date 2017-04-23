@@ -9,6 +9,7 @@ import org.devocative.ares.entity.oservice.OService;
 import org.devocative.ares.entity.oservice.OServiceInstance;
 import org.devocative.ares.iservice.oservice.IOSIUserService;
 import org.devocative.ares.vo.filter.oservice.OSIUserFVO;
+import org.devocative.demeter.entity.ERowMod;
 import org.devocative.demeter.entity.User;
 import org.devocative.demeter.iservice.persistor.IPersistorService;
 import org.slf4j.Logger;
@@ -44,6 +45,9 @@ public class OSIUserService implements IOSIUserService {
 
 		entity.setServer(entity.getServiceInstance().getServer());
 		entity.setService(entity.getServiceInstance().getService());
+		if (entity.getRowMod() == null) {
+			entity.setRowMod(ERowMod.CREATOR);
+		}
 
 		persistorService.saveOrUpdate(entity);
 	}
@@ -131,7 +135,7 @@ public class OSIUserService implements IOSIUserService {
 		return StringEncryptorUtil.decrypt(user.getPassword());
 	}
 
-		@Override
+	@Override
 	public OSIUser findExecutorForSI(Long serviceInstId) {
 		List<OSIUser> list = persistorService.createQueryBuilder()
 			.addFrom(OSIUser.class, "ent")

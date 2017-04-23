@@ -12,9 +12,11 @@ import org.devocative.ares.entity.oservice.OSIUser;
 import org.devocative.ares.iservice.oservice.IOSIUserService;
 import org.devocative.ares.vo.filter.oservice.OSIUserFVO;
 import org.devocative.ares.web.AresIcon;
+import org.devocative.demeter.entity.ERowMod;
 import org.devocative.demeter.web.DPage;
 import org.devocative.demeter.web.component.DAjaxButton;
 import org.devocative.demeter.web.component.grid.OEditAjaxColumn;
+import org.devocative.demeter.web.component.grid.ORowModAjaxColumn;
 import org.devocative.wickomp.WModel;
 import org.devocative.wickomp.form.WBooleanInput;
 import org.devocative.wickomp.form.WSelectionInput;
@@ -29,7 +31,6 @@ import org.devocative.wickomp.grid.WDataGrid;
 import org.devocative.wickomp.grid.WSortField;
 import org.devocative.wickomp.grid.column.OColumnList;
 import org.devocative.wickomp.grid.column.OPropertyColumn;
-import org.devocative.wickomp.grid.column.link.OAjaxLinkColumn;
 import org.devocative.wickomp.html.WAjaxLink;
 import org.devocative.wickomp.html.WFloatTable;
 import org.devocative.wickomp.html.WMessager;
@@ -116,6 +117,9 @@ public class OSIUserListDPage extends DPage implements IGridDataSource<OSIUser> 
 			.setLabel(new ResourceModel("OSIUser.server")));
 		floatTable.add(new WSelectionInput("service", oSIUserService.getServiceList(), true)
 			.setLabel(new ResourceModel("OSIUser.service")));
+		floatTable.add(new WSelectionInput("rowMod", ERowMod.list(), true)
+			.setLabel(new ResourceModel("entity.rowMod"))
+			.setVisible(getCurrentUser().isRoot()));
 		floatTable.add(new WDateRangeInput("creationDate")
 			.setTimePartVisible(true)
 			.setLabel(new ResourceModel("entity.creationDate")));
@@ -150,6 +154,9 @@ public class OSIUserListDPage extends DPage implements IGridDataSource<OSIUser> 
 		columnList.add(new OPropertyColumn<OSIUser>(new ResourceModel("OSIUser.serviceInstance"), "serviceInstance"));
 		columnList.add(new OPropertyColumn<OSIUser>(new ResourceModel("OSIUser.server"), "server"));
 		columnList.add(new OPropertyColumn<OSIUser>(new ResourceModel("OSIUser.service"), "service"));
+		if (getCurrentUser().isRoot()) {
+			columnList.add(new OPropertyColumn<OSIUser>(new ResourceModel("entity.rowMod"), "rowMod"));
+		}
 		columnList.add(new OPropertyColumn<OSIUser>(new ResourceModel("entity.creationDate"), "creationDate")
 			.setFormatter(ODateFormatter.getDateTimeByUserPreference())
 			.setStyle("direction:ltr"));
@@ -175,7 +182,7 @@ public class OSIUserListDPage extends DPage implements IGridDataSource<OSIUser> 
 		}
 
 		if (hasPermission(AresPrivilegeKey.OSIUserShowPassword)) {
-			columnList.add(new OAjaxLinkColumn<OSIUser>(new Model<String>(), AresIcon.SHOW.setTooltip(new ResourceModel("OSIUser.showPassword", "Show Password"))) {
+			columnList.add(new ORowModAjaxColumn<OSIUser>(new Model<String>(), AresIcon.SHOW.setTooltip(new ResourceModel("OSIUser.showPassword", "Show Password"))) {
 				private static final long serialVersionUID = 635615474L;
 
 				@Override
@@ -183,7 +190,7 @@ public class OSIUserListDPage extends DPage implements IGridDataSource<OSIUser> 
 					String password = oSIUserService.getPassword(rowData.getObject().getId());
 					WMessager.copyToClipboard(password, target);
 				}
-			}.setConfirmMessage("Are you sure?").setField("VIEW_PASS"));
+			}.setField("VIEW_PASS"));
 		}
 
 		OGrid<OSIUser> oGrid = new OGrid<>();

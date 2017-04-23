@@ -10,7 +10,7 @@ import java.util.Date;
 @Table(name = "t_ars_service_inst_user", uniqueConstraints = {
 	@UniqueConstraint(name = "uk_ars_user_username", columnNames = {"c_username", "f_service_inst"})
 })
-public class OSIUser implements ICreationDate, ICreatorUser, IModificationDate, IModifierUser {
+public class OSIUser implements IRowMod, ICreationDate, ICreatorUser, IModificationDate, IModifierUser {
 	private static final long serialVersionUID = 753142909119873415L;
 
 	@Id
@@ -53,6 +53,10 @@ public class OSIUser implements ICreationDate, ICreatorUser, IModificationDate, 
 	private OService service;
 
 	// ---------------
+
+	@Embedded
+	@AttributeOverride(name = "id", column = @Column(name = "e_mod", nullable = false))
+	private ERowMod rowMod;
 
 	//@NotAudited
 	@Column(name = "d_creation", nullable = false, columnDefinition = "date")
@@ -168,6 +172,16 @@ public class OSIUser implements ICreationDate, ICreatorUser, IModificationDate, 
 	}
 
 	// ---------------
+
+	@Override
+	public ERowMod getRowMod() {
+		return rowMod;
+	}
+
+	@Override
+	public void setRowMod(ERowMod rowMod) {
+		this.rowMod = rowMod;
+	}
 
 	@Override
 	public Date getCreationDate() {
