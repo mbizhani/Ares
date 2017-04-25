@@ -382,5 +382,32 @@
 				</field>
 			</fields>
 		</class>
+		<class fqn="org.devocative.ares.entity.TerminalConnection">
+			<cinfo hasForm="false"/>
+			<id ref="id"/>
+			<fields>
+				<field name="id">
+					<finfo/>
+				</field>
+				<field name="active">
+					<finfo/>
+				</field>
+				<field name="disconnection">
+					<finfo hasTimePart="true"/>
+				</field>
+				<field name="target">
+					<finfo/>
+				</field>
+				<field name="creationDate">
+					<finfo hasForm="false" hasTimePart="true"/>
+				</field>
+				<field name="creatorUser">
+					<finfo hasForm="false"/>
+				</field>
+				<field name="creatorUserId">
+					<finfo ignore="true"/>
+				</field>
+			</fields>
+		</class>
 	</classes>
 </meta>

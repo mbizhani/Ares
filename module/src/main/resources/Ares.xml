@@ -23,6 +23,8 @@
 		<entity type="org.devocative.ares.entity.oservice.OServiceProperty"/>
 		<entity type="org.devocative.ares.entity.oservice.OSIPropertyValue"/>
 		<entity type="org.devocative.ares.entity.oservice.OSIUser"/>
+
+		<entity type="org.devocative.ares.entity.TerminalConnection"/>
 	</entities>
 
 	<tasks>
@@ -32,38 +34,59 @@
 	<dPages>
 		<dPage type="org.devocative.ares.web.dpage.OServerListDPage"
 			   title="KEY:dPage.ars.OServerList"
-			   uri="/oservers"
-			   inMenu="true"/>
+			   uri="/servers"
+			   inMenu="true"
+			   roles="User"
+				/>
 
 		<dPage type="org.devocative.ares.web.dpage.oservice.OServiceListDPage"
 			   title="KEY:dPage.ars.OServiceList"
-			   uri="/oservices"
-			   inMenu="true"/>
+			   uri="/services"
+			   inMenu="true"
+			   roles="User"
+				/>
 
 		<dPage type="org.devocative.ares.web.dpage.oservice.OServiceInstanceListDPage"
 			   title="KEY:dPage.ars.OServiceInstanceList"
-			   uri="/osrvcinst"
-			   inMenu="true"/>
+			   uri="/instances"
+			   inMenu="true"
+			   roles="User"
+				/>
 
 		<dPage type="org.devocative.ares.web.dpage.command.CommandListDPage"
 			   title="KEY:dPage.ars.CommandList"
 			   uri="/commands"
-			   inMenu="true"/>
+			   inMenu="true"
+			   roles="User"
+				/>
 
 		<dPage type="org.devocative.ares.web.dpage.command.CommandLogListDPage"
 			   title="KEY:dPage.ars.CommandLogList"
 			   uri="/cmdlogs"
-			   inMenu="true"/>
+			   inMenu="true"
+			   roles="User"
+				/>
 
 		<dPage type="org.devocative.ares.web.dpage.oservice.OServicePropertyListDPage"
 			   title="KEY:dPage.ars.OServicePropertyList"
-			   uri="/oproperties"
-			   inMenu="true"/>
+			   uri="/properties"
+			   inMenu="true"
+			   roles="User"
+				/>
 
 		<dPage type="org.devocative.ares.web.dpage.oservice.OSIUserListDPage"
 			   title="KEY:dPage.ars.OSIUserList"
-			   uri="/ousers"
-			   inMenu="true"/>
+			   uri="/users"
+			   inMenu="true"
+			   roles="User"
+				/>
+
+		<dPage type="org.devocative.ares.web.dpage.TerminalConnectionListDPage"
+			   title="KEY:dPage.ars.TerminalConnection"
+			   uri="/terminals"
+			   inMenu="true"
+			   roles="Admin"
+				/>
 
 		<!--<dPage type=""
 			   title="KEY:dPage.ars."
