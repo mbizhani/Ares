@@ -1,11 +1,14 @@
 package org.devocative.ares.entity.oservice;
 
 import org.devocative.demeter.entity.*;
+import org.hibernate.envers.Audited;
+import org.hibernate.envers.NotAudited;
 
 import javax.persistence.*;
 import java.util.Date;
 import java.util.List;
 
+@Audited
 @Entity
 @Table(name = "t_ars_service", uniqueConstraints = {
 	@UniqueConstraint(name = "uk_ars_service", columnNames = {"c_name"})
@@ -41,17 +44,17 @@ public class OService implements ICreationDate, ICreatorUser, IModificationDate,
 
 	// --------------- CREATE / MODIFY
 
-	//@NotAudited
+	@NotAudited
 	@Column(name = "d_creation", nullable = false, columnDefinition = "date")
 	private Date creationDate;
 
-	//@NotAudited
+	@NotAudited
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "f_creator_user", insertable = false, updatable = false,
 		foreignKey = @ForeignKey(name = "service_crtrusr2user"))
 	private User creatorUser;
 
-	//@NotAudited
+	@NotAudited
 	@Column(name = "f_creator_user")
 	private Long creatorUserId;
 
