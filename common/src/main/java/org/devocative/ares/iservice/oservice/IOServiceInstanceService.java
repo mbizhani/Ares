@@ -33,4 +33,6 @@ public interface IOServiceInstanceService {
 	void updateProperties(OService oService, OServiceInstance oServiceInstance);
 
 	OServiceInstanceTargetVO getTargetVO(Long serviceInstanceId);
+
+	OServiceInstanceTargetVO getTargetVOByUser(Long osiUserId);
 }

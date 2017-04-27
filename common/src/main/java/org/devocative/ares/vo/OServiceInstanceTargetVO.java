@@ -1,5 +1,6 @@
 package org.devocative.ares.vo;
 
+import org.devocative.ares.entity.oservice.OSIUser;
 import org.devocative.ares.entity.oservice.OServiceInstance;
 
 import java.io.Serializable;
@@ -10,16 +11,17 @@ public class OServiceInstanceTargetVO implements Serializable {
 
 	private String connection;
 	private Map<String, String> prop;
-	private OServiceInstance serviceInstance;
-	private String username;
 	private String password;
 	private boolean sudoer = false;
 
+	private OSIUser user;
+	private OServiceInstance serviceInstance;
+
 	// ------------------------------
 
-	public OServiceInstanceTargetVO(OServiceInstance serviceInstance, String username, String password, Map<String, String> prop) {
+	public OServiceInstanceTargetVO(OServiceInstance serviceInstance, OSIUser user, String password, Map<String, String> prop) {
 		this.serviceInstance = serviceInstance;
-		this.username = username;
+		this.user = user;
 		this.password = password;
 		this.prop = prop;
 	}
@@ -42,10 +44,6 @@ public class OServiceInstanceTargetVO implements Serializable {
 		return serviceInstance.getPortSafely();
 	}
 
-	public OServiceInstance getServiceInstance() {
-		return serviceInstance;
-	}
-
 	public String getConnection() {
 		return connection;
 	}
@@ -55,7 +53,7 @@ public class OServiceInstanceTargetVO implements Serializable {
 	}
 
 	public String getUsername() {
-		return username;
+		return user.getUsername();
 	}
 
 	public String getPassword() {
@@ -73,5 +71,15 @@ public class OServiceInstanceTargetVO implements Serializable {
 	public OServiceInstanceTargetVO setSudoer(boolean sudoer) {
 		this.sudoer = sudoer;
 		return this;
+	}
+
+	// ---------------
+
+	public OServiceInstance getServiceInstance() {
+		return serviceInstance;
+	}
+
+	public OSIUser getUser() {
+		return user;
 	}
 }

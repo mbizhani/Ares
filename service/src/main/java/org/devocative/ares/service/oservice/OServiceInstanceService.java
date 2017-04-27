@@ -130,17 +130,30 @@ public class OServiceInstanceService implements IOServiceInstanceService {
 	@Override
 	public OServiceInstanceTargetVO getTargetVO(Long serviceInstanceId) {
 		OServiceInstance serviceInstance = load(serviceInstanceId);
+		OSIUser executorForSI = siUserService.findExecutorForSI(serviceInstance.getId());
 
+		return createTargetVO(serviceInstance, executorForSI)
+			.setSudoer(true);
+	}
+
+	@Override
+	public OServiceInstanceTargetVO getTargetVOByUser(Long osiUserId) {
+		OSIUser user = siUserService.load(osiUserId);
+		OServiceInstance serviceInstance = user.getServiceInstance();
+		return createTargetVO(serviceInstance, user);
+	}
+
+	// ------------------------------
+
+	private OServiceInstanceTargetVO createTargetVO(OServiceInstance serviceInstance, OSIUser user) {
 		Map<String, String> props = new HashMap<>();
 		List<OSIPropertyValue> properties = serviceInstance.getPropertyValues();
 		for (OSIPropertyValue propertyValue : properties) {
 			props.put(propertyValue.getProperty().getName(), propertyValue.getValue());
 		}
 
-		OSIUser executorForSI = siUserService.findExecutorForSI(serviceInstance.getId());
-		String password = siUserService.getPassword(executorForSI);
-
-		OServiceInstanceTargetVO targetVO = new OServiceInstanceTargetVO(serviceInstance, executorForSI.getUsername(), password, props)
+		String password = siUserService.getPassword(user);
+		OServiceInstanceTargetVO targetVO = new OServiceInstanceTargetVO(serviceInstance, user, password, props)
 			.setSudoer(true); //TODO
 
 		if (serviceInstance.getService().getConnectionPattern() != null) {
@@ -150,6 +163,7 @@ public class OServiceInstanceService implements IOServiceInstanceService {
 			String connection = (String) template.process(params);
 			targetVO.setConnection(connection);
 		}
+
 		return targetVO;
 	}
 }

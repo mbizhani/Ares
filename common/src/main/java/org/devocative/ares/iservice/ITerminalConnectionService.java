@@ -1,4 +1,3 @@
-//overwrite
 package org.devocative.ares.iservice;
 
 import org.devocative.ares.entity.TerminalConnection;
@@ -24,4 +23,10 @@ public interface ITerminalConnectionService {
 	List<User> getCreatorUserList();
 
 	// ==============================
+
+	Long createShellTerminal(Long osiUserId, IAsyncTextResult textResult);
+
+	void sendMessage(Long connId, String key, Integer specialKey);
+
+	void closeConnection(Long connId);
 }
