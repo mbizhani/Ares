@@ -29,4 +29,6 @@ public interface ITerminalConnectionService {
 	void sendMessage(Long connId, String key, Integer specialKey);
 
 	void closeConnection(Long connId);
+
+	void closeIdleConnections();
 }

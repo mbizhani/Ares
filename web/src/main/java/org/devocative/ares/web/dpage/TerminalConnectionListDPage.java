@@ -1,10 +1,10 @@
-//overwrite
 package org.devocative.ares.web.dpage;
 
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.markup.html.form.Form;
 import org.apache.wicket.model.CompoundPropertyModel;
 import org.apache.wicket.model.IModel;
+import org.apache.wicket.model.Model;
 import org.apache.wicket.model.ResourceModel;
 import org.devocative.ares.entity.TerminalConnection;
 import org.devocative.ares.iservice.ITerminalConnectionService;
@@ -107,6 +107,7 @@ public class TerminalConnectionListDPage extends DPage implements IGridDataSourc
 		add(form);
 
 		OColumnList<TerminalConnection> columnList = new OColumnList<>();
+		columnList.add(new OPropertyColumn<TerminalConnection>(new Model<>("ID"), "id"));
 		columnList.add(new OPropertyColumn<TerminalConnection>(new ResourceModel("TerminalConnection.active"), "active")
 			.setFormatter(OBooleanFormatter.bool()));
 		columnList.add(new OPropertyColumn<TerminalConnection>(new ResourceModel("TerminalConnection.disconnection"), "disconnection")

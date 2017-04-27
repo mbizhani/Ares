@@ -24,7 +24,7 @@ public class ShellConnectionDTask extends DTask implements ITerminalProcess {
 	@Autowired
 	private ITerminalConnectionService connectionService;
 
-	private Long connId;
+	private long connId;
 	private OServiceInstanceTargetVO targetVO;
 	private IAsyncTextResult asyncTextResult;
 
@@ -33,6 +33,7 @@ public class ShellConnectionDTask extends DTask implements ITerminalProcess {
 	private ChannelShell channel;
 	private PrintStream commander;
 	private ShellTextProcessor processor;
+	private long lastActivityTime;
 
 	// ------------------------------
 
@@ -43,6 +44,7 @@ public class ShellConnectionDTask extends DTask implements ITerminalProcess {
 		connId = shellConnectionVO.getConnectionId();
 		targetVO = shellConnectionVO.getTargetVO();
 		asyncTextResult = shellConnectionVO.getTextResult();
+		lastActivityTime = System.currentTimeMillis();
 	}
 
 	@Override
@@ -79,7 +81,13 @@ public class ShellConnectionDTask extends DTask implements ITerminalProcess {
 	// ---------------
 
 	@Override
+	public long getConnectionId() {
+		return connId;
+	}
+
+	@Override
 	public void send(String txt, Integer specialKey) {
+		lastActivityTime = System.currentTimeMillis();
 		//logger.debug("ShellConnectionDTask.send: txt={} webSpecialKey={}", txt, specialKey);
 		try {
 			if (txt != null) {
@@ -110,6 +118,12 @@ public class ShellConnectionDTask extends DTask implements ITerminalProcess {
 		if (session.isConnected()) {
 			session.disconnect();
 		}
+		asyncTextResult.onMessage("\n\nSSH session closed!");
+	}
+
+	@Override
+	public long getLastActivityTime() {
+		return lastActivityTime;
 	}
 
 	// ------------------------------

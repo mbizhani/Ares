@@ -19,6 +19,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -29,6 +30,8 @@ public class TerminalConnectionService implements ITerminalConnectionService {
 	private static final Logger logger = LoggerFactory.getLogger(TerminalConnectionService.class);
 
 	private static final Map<Long, ITerminalProcess> CONNECTIONS = new ConcurrentHashMap<>();
+
+	private Long lastIdleCheck;
 
 	@Autowired
 	private IPersistorService persistorService;
@@ -139,8 +142,29 @@ public class TerminalConnectionService implements ITerminalConnectionService {
 			connection.setDisconnection(new Date());
 			saveOrUpdate(connection);
 			persistorService.commitOrRollback();
+		}
+	}
+
+	@Override
+	public void closeIdleConnections() {
+		if (lastIdleCheck == null) {
+			lastIdleCheck = System.currentTimeMillis();
+			logger.info("TerminalConnection: idle check init [{}]", new Date());
 		} else {
-			logger.warn("Closing invalid connection: connId=[{}]", connId);
+			logger.info("TerminalConnection: idle check [{}]", new Date());
+
+			List<ITerminalProcess> processes = new ArrayList<>(CONNECTIONS.values());
+
+			long now = System.currentTimeMillis();
+			long diff = now - lastIdleCheck;
+			for (ITerminalProcess process : processes) {
+				long lastActivityTime = process.getLastActivityTime();
+				if ((now - lastActivityTime) > diff) {
+					logger.info("TerminalConnection: idle connection [{}]", process.getConnectionId());
+					closeConnection(process.getConnectionId());
+				}
+			}
+			lastIdleCheck = now;
 		}
 	}
 }
