@@ -3,6 +3,7 @@ package org.devocative.ares.web.dpage;
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.event.Broadcast;
 import org.apache.wicket.event.IEvent;
+import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.markup.html.list.ListItem;
 import org.apache.wicket.markup.html.list.ListView;
 import org.apache.wicket.model.IModel;
@@ -33,7 +34,7 @@ public class TerminalConsoleDPage extends DPage {
 	private static final Logger logger = LoggerFactory.getLogger(TerminalConsoleDPage.class);
 
 	@Inject
-	private IOSIUserService iosiUserService;
+	private IOSIUserService osiUserService;
 
 	@Inject
 	private ITerminalConnectionService terminalConnectionService;
@@ -77,7 +78,8 @@ public class TerminalConsoleDPage extends DPage {
 		};
 		add(tabPanel);
 
-		add(new ListView<OSIUser>("connections", iosiUserService.list()) {
+		List<OSIUser> allowedOnes = osiUserService.findAllowedOnes();
+		add(new ListView<OSIUser>("connections", allowedOnes) {
 			private static final long serialVersionUID = -2856412103432642301L;
 
 			@Override
@@ -108,5 +110,7 @@ public class TerminalConsoleDPage extends DPage {
 				});
 			}
 		});
+
+		add(new Label("message", "No allowed terminal!").setVisible(allowedOnes.isEmpty()));
 	}
 }

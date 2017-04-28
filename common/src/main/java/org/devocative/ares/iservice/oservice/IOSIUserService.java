@@ -41,4 +41,8 @@ public interface IOSIUserService {
 	String getPassword(OSIUser user);
 
 	OSIUser findExecutorForSI(Long serviceInstId);
+
+	List<OSIUser> findAllowedOnes();
+
+	boolean isOSIUserAllowed(Long osiUserId);
 }

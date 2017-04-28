@@ -1,10 +1,13 @@
 package org.devocative.ares.service;
 
+import org.devocative.ares.AresErrorCode;
+import org.devocative.ares.AresException;
 import org.devocative.ares.entity.TerminalConnection;
 import org.devocative.ares.entity.oservice.ERemoteMode;
 import org.devocative.ares.entity.oservice.OSIUser;
 import org.devocative.ares.iservice.IAsyncTextResult;
 import org.devocative.ares.iservice.ITerminalConnectionService;
+import org.devocative.ares.iservice.oservice.IOSIUserService;
 import org.devocative.ares.iservice.oservice.IOServiceInstanceService;
 import org.devocative.ares.service.terminal.ITerminalProcess;
 import org.devocative.ares.vo.OServiceInstanceTargetVO;
@@ -41,6 +44,9 @@ public class TerminalConnectionService implements ITerminalConnectionService {
 
 	@Autowired
 	private ITaskService taskService;
+
+	@Autowired
+	private IOSIUserService osiUserService;
 
 	// ------------------------------
 
@@ -93,7 +99,11 @@ public class TerminalConnectionService implements ITerminalConnectionService {
 	// ==============================
 
 	@Override
-	public Long createShellTerminal(Long osiUserId, IAsyncTextResult textResult) {
+	public Long createTerminal(Long osiUserId, IAsyncTextResult textResult) {
+		if (!osiUserService.isOSIUserAllowed(osiUserId)) {
+			throw new AresException(AresErrorCode.TerminalConnectionAccessViolation);
+		}
+
 		OServiceInstanceTargetVO targetVOByUser = serviceInstanceService.getTargetVOByUser(osiUserId);
 
 		TerminalConnection connection = new TerminalConnection();
@@ -121,7 +131,7 @@ public class TerminalConnectionService implements ITerminalConnectionService {
 	public void sendMessage(Long connId, String key, Integer specialKey) {
 		//logger.debug("sendMessage: connId={}", connId);
 
-		if (CONNECTIONS.containsKey(connId)) {
+		if (connId != null && CONNECTIONS.containsKey(connId)) {
 			ITerminalProcess process = CONNECTIONS.get(connId);
 			process.send(key, specialKey);
 		} else {
@@ -131,7 +141,7 @@ public class TerminalConnectionService implements ITerminalConnectionService {
 
 	@Override
 	public synchronized void closeConnection(Long connId) {
-		if (CONNECTIONS.containsKey(connId)) {
+		if (connId != null && CONNECTIONS.containsKey(connId)) {
 			logger.info("Closing Terminal Connection: {}", connId);
 
 			CONNECTIONS.get(connId).close();

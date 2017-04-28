@@ -47,15 +47,27 @@ public class ShellTerminalPanel extends DPanel {
 
 			@Override
 			protected void onConnect() {
-				connectionId = terminalConnectionService.createShellTerminal(osiUserId, asyncTextResult);
-				logger.info("ShellTerminalPanel Created: OSIUserId=[{}] ConnectionId=[{}]", osiUserId, connectionId);
+				try {
+					connectionId = terminalConnectionService.createTerminal(osiUserId, asyncTextResult);
+					logger.info("ShellTerminalPanel Created: OSIUserId=[{}] ConnectionId=[{}]", osiUserId, connectionId);
 
-				send(ShellTerminalPanel.this, Broadcast.BUBBLE, new TerminalTabInfo(tabId, connectionId));
+					if (tabId != null) {
+						send(ShellTerminalPanel.this, Broadcast.BUBBLE, new TerminalTabInfo(tabId, connectionId));
+					}
+				} catch (Exception e) {
+					logger.error("ShellTerminalPanel.onConnect: ", e);
+					asyncTextResult.onMessage("\n\nERR: " + e.getMessage());
+				}
 			}
 
 			@Override
 			protected void onMessage(String key, Integer specialKey) {
-				terminalConnectionService.sendMessage(connectionId, key, specialKey);
+				try {
+					terminalConnectionService.sendMessage(connectionId, key, specialKey);
+				} catch (Exception e) {
+					logger.error("ShellTerminalPanel.onMessage: key=[{}] specialKey=[{}] connId=[{}]",
+						key, specialKey, connectionId, e);
+				}
 			}
 
 			@Override

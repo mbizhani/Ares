@@ -11,7 +11,11 @@ import org.devocative.ares.iservice.oservice.IOSIUserService;
 import org.devocative.ares.vo.filter.oservice.OSIUserFVO;
 import org.devocative.demeter.entity.ERowMod;
 import org.devocative.demeter.entity.User;
+import org.devocative.demeter.iservice.ISecurityService;
+import org.devocative.demeter.iservice.persistor.EJoinMode;
 import org.devocative.demeter.iservice.persistor.IPersistorService;
+import org.devocative.demeter.iservice.persistor.IQueryBuilder;
+import org.devocative.demeter.vo.UserVO;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,6 +29,9 @@ public class OSIUserService implements IOSIUserService {
 
 	@Autowired
 	private IPersistorService persistorService;
+
+	@Autowired
+	private ISecurityService securityService;
 
 	// ------------------------------
 
@@ -155,5 +162,48 @@ public class OSIUserService implements IOSIUserService {
 		}
 
 		return null;
+	}
+
+	@Override
+	public List<OSIUser> findAllowedOnes() {
+		UserVO currentUser = securityService.getCurrentUser();
+
+		IQueryBuilder queryBuilder = persistorService.createQueryBuilder()
+			.addSelect("select ent")
+			.addFrom(OSIUser.class, "ent")
+			.addWhere("and ent.enabled = true");
+
+		if (!currentUser.isAdmin()) {
+			queryBuilder
+				.addJoin("usr", "ent.allowedUsers", EJoinMode.Left)
+				.addWhere("and (usr.id=:userId or (ent.rowMod=:creator and ent.creatorUserId=:userId))")
+				.addParam("userId", currentUser.getUserId())
+				.addParam("creator", ERowMod.CREATOR);
+		}
+
+		return queryBuilder.list();
+	}
+
+	@Override
+	public boolean isOSIUserAllowed(Long osiUserId) {
+		UserVO currentUser = securityService.getCurrentUser();
+
+		IQueryBuilder queryBuilder = persistorService.createQueryBuilder()
+			.addSelect("select count(ent.id)")
+			.addFrom(OSIUser.class, "ent")
+			.addWhere("and ent.enabled = true")
+			.addWhere("and ent.id=:osiUserId")
+			.addParam("osiUserId", osiUserId);
+
+		if (!currentUser.isAdmin()) {
+			queryBuilder
+				.addJoin("usr", "ent.allowedUsers", EJoinMode.Left)
+				.addWhere("and (usr.id=:userId or (ent.rowMod=:creator and ent.creatorUserId=:userId))")
+				.addParam("userId", currentUser.getUserId())
+				.addParam("creator", ERowMod.CREATOR);
+		}
+
+		Long count = queryBuilder.object();
+		return count == 1;
 	}
 }

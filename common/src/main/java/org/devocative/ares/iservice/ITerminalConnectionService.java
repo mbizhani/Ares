@@ -24,7 +24,7 @@ public interface ITerminalConnectionService {
 
 	// ==============================
 
-	Long createShellTerminal(Long osiUserId, IAsyncTextResult textResult);
+	Long createTerminal(Long osiUserId, IAsyncTextResult textResult);
 
 	void sendMessage(Long connId, String key, Integer specialKey);
 
