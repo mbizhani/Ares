@@ -254,6 +254,15 @@ public class CommandCenter {
 		return null;
 	}
 
+	public void userPasswordUpdated(String username, String password) {
+		userPasswordUpdated(targetVO, username, password);
+	}
+
+	public void userPasswordUpdated(OServiceInstanceTargetVO targetVO, String username, String password) {
+		logger.info("CommandCenter.userPasswordUpdated: target=[{}] username=[{}]", targetVO, username);
+		commandService.userPasswordUpdated(targetVO, username, password);
+	}
+
 	public void error(String message) {
 
 	}

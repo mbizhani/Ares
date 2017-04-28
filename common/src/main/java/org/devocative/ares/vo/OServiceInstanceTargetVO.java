@@ -82,4 +82,11 @@ public class OServiceInstanceTargetVO implements Serializable {
 	public OSIUser getUser() {
 		return user;
 	}
+
+	// ---------------
+
+	@Override
+	public String toString() {
+		return String.format("srvInst=%s osiUser=%s", serviceInstance, getUsername());
+	}
 }

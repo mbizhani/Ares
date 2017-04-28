@@ -39,4 +39,6 @@ public interface ICommandService {
 	Object executeCommand(Long commandId, OServiceInstance serviceInstance, Map<String, String> params, ICommandResultCallBack callBack) throws Exception;
 
 	Connection getConnection(OServiceInstanceTargetVO targetVO);
+
+	void userPasswordUpdated(OServiceInstanceTargetVO targetVO, String username, String password);
 }

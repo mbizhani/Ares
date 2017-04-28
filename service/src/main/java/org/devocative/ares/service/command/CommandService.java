@@ -10,13 +10,16 @@ import org.devocative.ares.cmd.CommandCenter;
 import org.devocative.ares.cmd.ICommandResultCallBack;
 import org.devocative.ares.entity.command.Command;
 import org.devocative.ares.entity.command.ConfigLob;
+import org.devocative.ares.entity.oservice.OSIUser;
 import org.devocative.ares.entity.oservice.OService;
 import org.devocative.ares.entity.oservice.OServiceInstance;
 import org.devocative.ares.iservice.command.ICommandLogService;
 import org.devocative.ares.iservice.command.ICommandService;
-import org.devocative.ares.service.oservice.OServiceInstanceService;
+import org.devocative.ares.iservice.oservice.IOSIUserService;
+import org.devocative.ares.iservice.oservice.IOServiceInstanceService;
 import org.devocative.ares.vo.OServiceInstanceTargetVO;
 import org.devocative.ares.vo.filter.command.CommandFVO;
+import org.devocative.ares.vo.filter.oservice.OSIUserFVO;
 import org.devocative.ares.vo.xml.XCommand;
 import org.devocative.demeter.entity.User;
 import org.devocative.demeter.iservice.ICacheService;
@@ -34,6 +37,7 @@ import org.springframework.stereotype.Service;
 import javax.annotation.PostConstruct;
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -55,7 +59,10 @@ public class CommandService implements ICommandService, IMissedHitHandler<Long, 
 	private IStringTemplateService stringTemplateService;
 
 	@Autowired
-	private OServiceInstanceService serviceInstanceService;
+	private IOServiceInstanceService serviceInstanceService;
+
+	@Autowired
+	private IOSIUserService osiUserService;
 
 	@Autowired
 	private ICommandLogService commandLogService;
@@ -195,6 +202,19 @@ public class CommandService implements ICommandService, IMissedHitHandler<Long, 
 		}
 	}
 
+	@Override
+	public void userPasswordUpdated(OServiceInstanceTargetVO targetVO, String username, String password) {
+		OSIUserFVO fvo = new OSIUserFVO();
+		fvo.setServiceInstance(Collections.singletonList(targetVO.getServiceInstance()));
+		fvo.setUsername(username);
+		List<OSIUser> search = osiUserService.search(fvo, 1, 1);
+
+		if (search.size() == 1) {
+			OSIUser user = search.get(0);
+			osiUserService.saveOrUpdate(user, password);
+		}
+	}
+
 	// ------------------------------
 
 	private Object executeCommand(Command command, OServiceInstance serviceInstance, Map<String, String> params, ICommandResultCallBack callBack) throws Exception {
@@ -266,8 +286,12 @@ public class CommandService implements ICommandService, IMissedHitHandler<Long, 
 		@Override
 		public void run() {
 			try {
+				securityService.authenticate(securityService.getSystemUser());
+
 				IStringTemplate template = stringTemplateService.create("CMD_" + cmdId, cmd, TemplateEngineType.GroovyShell);
 				result = template.process(params);
+
+				persistorService.endSession();
 			} catch (Exception e) {
 				logger.error("CmdRunner: ", e);
 				error = e;
