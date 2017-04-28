@@ -22,7 +22,7 @@ public class ShellConnectionDTask extends DTask implements ITerminalProcess {
 	private static final Logger logger = LoggerFactory.getLogger(ShellConnectionDTask.class);
 
 	@Autowired
-	private ITerminalConnectionService connectionService;
+	private ITerminalConnectionService terminalConnectionService;
 
 	private long connId;
 	private OServiceInstanceTargetVO targetVO;
@@ -74,7 +74,8 @@ public class ShellConnectionDTask extends DTask implements ITerminalProcess {
 
 			new SshServerReader(in).run();
 		} catch (Exception e) {
-			asyncTextResult.onMessage("ERROR: " + e.getMessage());
+			asyncTextResult.onMessage("\n\nERR: " + e.getMessage());
+			terminalConnectionService.closeConnection(connId);
 		}
 	}
 
@@ -105,20 +106,20 @@ public class ShellConnectionDTask extends DTask implements ITerminalProcess {
 
 			if (channel.isClosed()) {
 				logger.warn("Channel closed: connId=[{}]", connId);
-				connectionService.closeConnection(connId);
+				terminalConnectionService.closeConnection(connId);
 			}
 		}
 	}
 
 	@Override
 	public void close() {
-		if (channel.isConnected()) {
+		if (channel != null && channel.isConnected()) {
 			channel.disconnect();
 		}
-		if (session.isConnected()) {
+		if (session != null && session.isConnected()) {
 			session.disconnect();
 		}
-		asyncTextResult.onMessage("\n\nSSH session closed!");
+		asyncTextResult.onMessage("\n\nTerminal Closed!");
 	}
 
 	@Override
@@ -159,7 +160,7 @@ public class ShellConnectionDTask extends DTask implements ITerminalProcess {
 
 					if (channel.isClosed()) {
 						logger.warn("Channel closed: connId=[{}]", connId);
-						connectionService.closeConnection(connId);
+						terminalConnectionService.closeConnection(connId);
 						break;
 					}
 				}
@@ -168,7 +169,7 @@ public class ShellConnectionDTask extends DTask implements ITerminalProcess {
 
 				if (channel.isClosed()) {
 					logger.warn("Channel closed: connId=[{}]", connId);
-					connectionService.closeConnection(connId);
+					terminalConnectionService.closeConnection(connId);
 				}
 			}
 		}
