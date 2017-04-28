@@ -26,6 +26,8 @@ public interface IOSIUserService {
 
 	List<OService> getServiceList();
 
+	List<User> getAllowedUsersList();
+
 	List<User> getCreatorUserList();
 
 	List<User> getModifierUserList();

@@ -98,6 +98,11 @@ public class OSIUserService implements IOSIUserService {
 	}
 
 	@Override
+	public List<User> getAllowedUsersList() {
+		return persistorService.list(User.class);
+	}
+
+	@Override
 	public List<User> getCreatorUserList() {
 		return persistorService.list(User.class);
 	}

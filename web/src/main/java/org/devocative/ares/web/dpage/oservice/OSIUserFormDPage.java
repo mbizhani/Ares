@@ -89,6 +89,8 @@ public class OSIUserFormDPage extends DPage {
 		floatTable.add(new WSelectionInput("serviceInstance", oSIUserService.getServiceInstanceList(), false)
 			.setRequired(true)
 			.setLabel(new ResourceModel("OSIUser.serviceInstance")));
+		floatTable.add(new WSelectionInput("allowedUsers", oSIUserService.getAllowedUsersList(), true)
+			.setLabel(new ResourceModel("OSIUser.allowedUsers")));
 
 		Form<OSIUser> form = new Form<>("form", new CompoundPropertyModel<>(entity));
 		form.add(new WEqualInputValidator(password, password2));

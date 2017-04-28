@@ -25,6 +25,7 @@ public class OSIUserFVO implements Serializable {
 	private List<OServiceInstance> serviceInstance;
 	private List<OServer> server;
 	private List<OService> service;
+	private List<User> allowedUsers;
 	private List<ERowMod> rowMod;
 	private RangeVO<Date> creationDate;
 	private List<User> creatorUser;
@@ -87,6 +88,14 @@ public class OSIUserFVO implements Serializable {
 
 	public void setService(List<OService> service) {
 		this.service = service;
+	}
+
+	public List<User> getAllowedUsers() {
+		return allowedUsers;
+	}
+
+	public void setAllowedUsers(List<User> allowedUsers) {
+		this.allowedUsers = allowedUsers;
 	}
 
 	public List<ERowMod> getRowMod() {

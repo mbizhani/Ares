@@ -356,6 +356,9 @@
 				<field name="service">
 					<finfo hasForm="false"/>
 				</field>
+				<field name="allowedUsers">
+					<finfo/>
+				</field>
 				<field name="rowMod">
 					<finfo hasForm="false"/>
 				</field>

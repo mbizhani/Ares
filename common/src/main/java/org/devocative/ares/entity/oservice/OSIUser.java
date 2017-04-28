@@ -7,6 +7,7 @@ import org.hibernate.envers.NotAudited;
 
 import javax.persistence.*;
 import java.util.Date;
+import java.util.List;
 
 @Audited
 @Entity
@@ -54,6 +55,15 @@ public class OSIUser implements IRowMod, ICreationDate, ICreatorUser, IModificat
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "f_service", nullable = false, foreignKey = @ForeignKey(name = "siUser2service"))
 	private OService service;
+
+	@ManyToMany(fetch = FetchType.LAZY)
+	@JoinTable(name = "mt_ars_srvInstUser_user",
+		joinColumns = {@JoinColumn(name = "f_srv_inst_user", nullable = false)},
+		inverseJoinColumns = {@JoinColumn(name = "f_user", nullable = false)},
+		foreignKey = @ForeignKey(name = "srvInstUserUser2user"),
+		inverseForeignKey = @ForeignKey(name = "srvInstUserUser2siUser")
+	)
+	private List<User> allowedUsers;
 
 	// ---------------
 
@@ -172,6 +182,14 @@ public class OSIUser implements IRowMod, ICreationDate, ICreatorUser, IModificat
 
 	public void setService(OService service) {
 		this.service = service;
+	}
+
+	public List<User> getAllowedUsers() {
+		return allowedUsers;
+	}
+
+	public void setAllowedUsers(List<User> allowedUsers) {
+		this.allowedUsers = allowedUsers;
 	}
 
 	// ---------------
