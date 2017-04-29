@@ -1,6 +1,5 @@
 package org.devocative.ares.cmd;
 
-import com.jcraft.jsch.ChannelExec;
 import com.jcraft.jsch.JSch;
 import com.jcraft.jsch.Session;
 import org.devocative.ares.iservice.command.ICommandService;
@@ -9,10 +8,6 @@ import org.devocative.ares.vo.TabularVO;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.BufferedReader;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.OutputStream;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -86,92 +81,24 @@ public class CommandCenter {
 
 	// Main ssh()
 	public SshResult ssh(String cmd, OServiceInstanceTargetVO targetVO, boolean force, String... stdin) {
-		int exitStatus = 0;
-		StringBuilder result = new StringBuilder();
+		int exitStatus = -1;
+		String result = null;
 
 		try {
-			if (!SSH.containsKey(targetVO.getId())) {
-				logger.info("Try to get SSH connection: {}", targetVO.getName());
-				resultCallBack.onResult(new CommandOutput(CommandOutput.Type.PROMPT, "connecting ..."));
+			ShellCommandExecutor executor = new ShellCommandExecutor(
+				targetVO, J_SCH, SSH.get(targetVO.getId()), resultCallBack, cmd, stdin);
 
-				Session session = J_SCH.getSession(targetVO.getUsername(), targetVO.getAddress(), targetVO.getPort());
-				session.setPassword(targetVO.getPassword());
-				session.setConfig("StrictHostKeyChecking", "no");
-				session.connect(30000); // making a connection with timeout.
+			Thread th = new Thread(executor);
+			th.start();
+			th.join();
 
-				SSH.put(targetVO.getId(), session);
-				logger.info("Successful SSH connection: {}", targetVO.getName());
+			if (executor.hasException()) {
+				throw executor.getException();
 			}
 
-			Session session = SSH.get(targetVO.getId());
-
-			String finalCmd = cmd;
-			if (targetVO.isSudoer() && !cmd.startsWith("sudo -S")) {
-				/*
-				NOTE: in /etc/sudoers the line
-				Defaults    requiretty
-				must be commented, unless sudo -S does not work!
-				*/
-				finalCmd = String.format("sudo -S -p '' %s", cmd);
-				cmd = String.format("sudo -S %s", cmd);
-			}
-
-			logger.info("Sending SSH Command: cmd=[{}] si=[{}]", finalCmd, targetVO);
-			String prompt = String.format("[%s@%s]$ %s", targetVO.getUsername(), targetVO.getAddress(), cmd);
-			resultCallBack.onResult(new CommandOutput(CommandOutput.Type.PROMPT, prompt));
-
-			ChannelExec channelExec = (ChannelExec) session.openChannel("exec");
-			channelExec.setCommand(finalCmd);
-			channelExec.setInputStream(null);
-			channelExec.setErrStream(null);
-
-			InputStream in = channelExec.getInputStream();
-			BufferedReader br = new BufferedReader(new InputStreamReader(in));
-
-			InputStream err = channelExec.getErrStream();
-			BufferedReader errBr = new BufferedReader(new InputStreamReader(err));
-
-			OutputStream out = channelExec.getOutputStream();
-
-			channelExec.connect();
-
-			if (targetVO.isSudoer()) {
-				out.write((targetVO.getPassword() + "\n").getBytes());
-				out.flush();
-			}
-
-			for (String s : stdin) {
-				if (s != null) {
-					out.write((s + "\n").getBytes());
-					out.flush();
-				}
-			}
-
-			while (true) {
-				String line;
-				while ((line = br.readLine()) != null) {
-					resultCallBack.onResult(new CommandOutput(line));
-					logger.debug("\tResult = {}", line);
-					result.append(line).append("\n");
-				}
-				if (channelExec.isClosed()) {
-					exitStatus = channelExec.getExitStatus();
-					break;
-				}
-			}
-
-			while (true) {
-				String line;
-				while ((line = errBr.readLine()) != null) {
-					resultCallBack.onResult(new CommandOutput(CommandOutput.Type.ERROR, line));
-					logger.error("\tResult = {}", line);
-				}
-				if (channelExec.isClosed()) {
-					break;
-				}
-			}
-
-			channelExec.disconnect();
+			exitStatus = executor.getExitStatus();
+			result = executor.getResult();
+			SSH.put(targetVO.getId(), executor.getSession());
 
 			logger.info("Executed SSH Command: exitStatus=[{}] cmd=[{}] si=[{}]", exitStatus, cmd, targetVO);
 
@@ -183,7 +110,7 @@ public class CommandCenter {
 			setException(e);
 		}
 
-		return new SshResult(result.toString(), exitStatus);
+		return new SshResult(result, exitStatus);
 	}
 
 	// ---------------

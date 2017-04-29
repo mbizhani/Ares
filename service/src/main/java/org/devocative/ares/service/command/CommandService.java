@@ -218,6 +218,8 @@ public class CommandService implements ICommandService, IMissedHitHandler<Long, 
 	// ------------------------------
 
 	private Object executeCommand(Command command, OServiceInstance serviceInstance, Map<String, String> params, ICommandResultCallBack callBack) throws Exception {
+		logger.debug("CommandService.executeCommand: currentUser=[{}] cmd=[{}]", securityService.getCurrentUser(), command.getName());
+
 		Object result = null;
 		Exception error = null;
 
@@ -237,10 +239,7 @@ public class CommandService implements ICommandService, IMissedHitHandler<Long, 
 			cmdParams.put("target", targetVO);
 
 			CmdRunner runner = new CmdRunner(command.getId(), xCommand.getBody(), cmdParams);
-			Thread th = new Thread(runner);
-			th.start();
-			th.join();
-
+			runner.run();
 			center.closeAll();
 
 			result = runner.getResult();
@@ -286,14 +285,12 @@ public class CommandService implements ICommandService, IMissedHitHandler<Long, 
 		@Override
 		public void run() {
 			try {
-				securityService.authenticate(securityService.getSystemUser());
-
 				IStringTemplate template = stringTemplateService.create("CMD_" + cmdId, cmd, TemplateEngineType.GroovyShell);
 				result = template.process(params);
 
 				persistorService.endSession();
 			} catch (Exception e) {
-				logger.error("CmdRunner: ", e);
+				logger.error("CommandService.CmdRunner: ", e);
 				error = e;
 			}
 		}

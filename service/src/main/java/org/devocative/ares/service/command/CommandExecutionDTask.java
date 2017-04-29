@@ -7,6 +7,8 @@ import org.devocative.ares.iservice.command.ICommandService;
 import org.devocative.ares.vo.CommandQVO;
 import org.devocative.ares.vo.TabularVO;
 import org.devocative.demeter.iservice.task.DTask;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
@@ -14,6 +16,7 @@ import org.springframework.stereotype.Component;
 @Scope("prototype")
 @Component("arsCommandExecutionDTask")
 public class CommandExecutionDTask extends DTask implements ICommandResultCallBack {
+	private static final Logger logger = LoggerFactory.getLogger(CommandExecutionDTask.class);
 
 	private CommandQVO commandQVO;
 
@@ -33,6 +36,8 @@ public class CommandExecutionDTask extends DTask implements ICommandResultCallBa
 	@Override
 	public void execute() {
 		try {
+			logger.info("CommandExecutionDTask: currentUser=[{}] cmd=[{}]", getCurrentUser(), commandQVO.getCommandId());
+
 			Object result = commandService.executeCommand(commandQVO.getCommandId(), commandQVO.getServiceInstance(), commandQVO.getParams(), this);
 			if (result != null) {
 				if (result instanceof TabularVO) {
