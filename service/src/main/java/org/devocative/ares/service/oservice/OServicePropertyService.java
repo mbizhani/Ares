@@ -76,7 +76,7 @@ public class OServicePropertyService implements IOServicePropertyService {
 	// ==============================
 
 	@Override
-	public void checkAndSave(OService oService, String propertyName, Boolean required) {
+	public void checkAndSave(OService oService, String propertyName, Boolean required, String value) {
 		OServicePropertyFVO fvo = new OServicePropertyFVO();
 		fvo.setName(propertyName);
 		fvo.setService(Collections.singletonList(oService));
@@ -84,7 +84,8 @@ public class OServicePropertyService implements IOServicePropertyService {
 		if (count(fvo) == 0) {
 			OServiceProperty property = new OServiceProperty();
 			property.setName(propertyName);
-			property.setRequired(required);
+			property.setRequired(value != null ? false : required);
+			property.setValue(value);
 			property.setService(oService);
 			saveOrUpdate(property);
 

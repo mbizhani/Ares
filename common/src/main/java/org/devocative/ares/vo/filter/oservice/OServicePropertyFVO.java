@@ -16,6 +16,7 @@ public class OServicePropertyFVO implements Serializable {
 
 	private String name;
 	private Boolean required;
+	private String value;
 	private List<OService> service;
 	private RangeVO<Date> creationDate;
 	private List<User> creatorUser;
@@ -38,6 +39,14 @@ public class OServicePropertyFVO implements Serializable {
 
 	public void setRequired(Boolean required) {
 		this.required = required;
+	}
+
+	public String getValue() {
+		return value;
+	}
+
+	public void setValue(String value) {
+		this.value = value;
 	}
 
 	public List<OService> getService() {

@@ -124,7 +124,7 @@ public class OServiceService implements IOServiceService {
 
 			if (xService.getProperties() != null) {
 				for (XProperty xProperty : xService.getProperties()) {
-					propertyService.checkAndSave(oService, xProperty.getName(), xProperty.getRequired());
+					propertyService.checkAndSave(oService, xProperty.getName(), xProperty.getRequired(), xProperty.getValue());
 				}
 			}
 

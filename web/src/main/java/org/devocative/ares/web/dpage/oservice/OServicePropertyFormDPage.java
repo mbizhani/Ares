@@ -66,6 +66,8 @@ public class OServicePropertyFormDPage extends DPage {
 		floatTable.add(new WBooleanInput("required")
 			.setRequired(true)
 			.setLabel(new ResourceModel("OServiceProperty.required")));
+		floatTable.add(new WTextInput("value")
+			.setLabel(new ResourceModel("OServiceProperty.value")));
 		floatTable.add(new WSelectionInput("service", oServicePropertyService.getServiceList(), false)
 			.setRequired(true)
 			.setLabel(new ResourceModel("OServiceProperty.service")));

@@ -260,6 +260,9 @@
 				<field name="required">
 					<finfo/>
 				</field>
+				<field name="value">
+					<finfo/>
+				</field>
 				<field name="service">
 					<finfo/>
 				</field>

@@ -32,6 +32,9 @@ public class OServiceProperty implements ICreationDate, ICreatorUser, IModificat
 	@Column(name = "b_required", nullable = false)
 	private Boolean required;
 
+	@Column(name = "c_value")
+	private String value;
+
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "f_service", nullable = false, foreignKey = @ForeignKey(name = "srvcprop2service"))
 	private OService service;
@@ -91,6 +94,14 @@ public class OServiceProperty implements ICreationDate, ICreatorUser, IModificat
 
 	public void setRequired(Boolean required) {
 		this.required = required;
+	}
+
+	public String getValue() {
+		return value;
+	}
+
+	public void setValue(String value) {
+		this.value = value;
 	}
 
 	public OService getService() {

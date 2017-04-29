@@ -52,9 +52,6 @@ public class OServiceInstanceFormDPage extends DPage {
 		super(id, Collections.<String>emptyList());
 
 		this.entity = entity;
-		if (entity.getPropertyValues() != null) {
-			propertyValuesList.addAll(entity.getPropertyValues());
-		}
 	}
 
 	// ---------------
@@ -85,6 +82,12 @@ public class OServiceInstanceFormDPage extends DPage {
 		floatTable.add(service
 			.setRequired(true)
 			.setLabel(new ResourceModel("OServiceInstance.service")));
+
+		if (entity.getService() != null) {
+			oServiceInstanceService.updateProperties(entity.getService(), entity);
+			propertyValuesList.clear();
+			propertyValuesList.addAll(entity.getPropertyValues());
+		}
 
 		propertyValues = new WebMarkupContainer("propertyValues");
 		propertyValues.setOutputMarkupId(true);

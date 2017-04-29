@@ -103,6 +103,8 @@ public class OServicePropertyListDPage extends DPage implements IGridDataSource<
 			.setLabel(new ResourceModel("OServiceProperty.name")));
 		floatTable.add(new WBooleanInput("required")
 			.setLabel(new ResourceModel("OServiceProperty.required")));
+		floatTable.add(new WTextInput("value")
+			.setLabel(new ResourceModel("OServiceProperty.value")));
 		floatTable.add(new WSelectionInput("service", oServicePropertyService.getServiceList(), true)
 			.setLabel(new ResourceModel("OServiceProperty.service")));
 		floatTable.add(new WDateRangeInput("creationDate")
@@ -133,6 +135,7 @@ public class OServicePropertyListDPage extends DPage implements IGridDataSource<
 		columnList.add(new OPropertyColumn<OServiceProperty>(new ResourceModel("OServiceProperty.name"), "name"));
 		columnList.add(new OPropertyColumn<OServiceProperty>(new ResourceModel("OServiceProperty.required"), "required")
 			.setFormatter(OBooleanFormatter.bool()));
+		columnList.add(new OPropertyColumn<OServiceProperty>(new ResourceModel("OServiceProperty.value"), "value"));
 		columnList.add(new OPropertyColumn<OServiceProperty>(new ResourceModel("OServiceProperty.service"), "service"));
 		columnList.add(new OPropertyColumn<OServiceProperty>(new ResourceModel("entity.creationDate"), "creationDate")
 			.setFormatter(ODateFormatter.getDateTimeByUserPreference())

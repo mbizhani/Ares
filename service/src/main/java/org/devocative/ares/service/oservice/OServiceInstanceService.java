@@ -106,6 +106,10 @@ public class OServiceInstanceService implements IOServiceInstanceService {
 
 		if (oService.equals(oServiceInstance.getService())) {
 			for (OServiceProperty property : oService.getProperties()) {
+				if (property.getValue() != null) {
+					continue;
+				}
+
 				boolean foundProp = false;
 
 				for (OSIPropertyValue propertyValue : propertyValues) {
@@ -122,7 +126,9 @@ public class OServiceInstanceService implements IOServiceInstanceService {
 		} else if (propertyValues != null) {
 			propertyValues.clear();
 			for (OServiceProperty property : oService.getProperties()) {
-				propertyValues.add(new OSIPropertyValue(property, oServiceInstance));
+				if (property.getValue() == null) {
+					propertyValues.add(new OSIPropertyValue(property, oServiceInstance));
+				}
 			}
 		}
 	}
@@ -147,9 +153,13 @@ public class OServiceInstanceService implements IOServiceInstanceService {
 
 	private OServiceInstanceTargetVO createTargetVO(OServiceInstance serviceInstance, OSIUser user) {
 		Map<String, String> props = new HashMap<>();
-		List<OSIPropertyValue> properties = serviceInstance.getPropertyValues();
-		for (OSIPropertyValue propertyValue : properties) {
+		for (OSIPropertyValue propertyValue : serviceInstance.getPropertyValues()) {
 			props.put(propertyValue.getProperty().getName(), propertyValue.getValue());
+		}
+		for (OServiceProperty property : serviceInstance.getService().getProperties()) {
+			if (property.getValue() != null) {
+				props.put(property.getName(), property.getValue());
+			}
 		}
 
 		String password = siUserService.getPassword(user);

@@ -13,6 +13,9 @@ public class XProperty implements Serializable {
 	private String name;
 
 	@XStreamAsAttribute
+	private String value;
+
+	@XStreamAsAttribute
 	private Boolean required;
 
 	// ------------------------------
@@ -25,8 +28,16 @@ public class XProperty implements Serializable {
 		this.name = name;
 	}
 
+	public String getValue() {
+		return value;
+	}
+
+	public void setValue(String value) {
+		this.value = value;
+	}
+
 	public Boolean getRequired() {
-		return required;
+		return required != null ? required : false;
 	}
 
 	public void setRequired(Boolean required) {

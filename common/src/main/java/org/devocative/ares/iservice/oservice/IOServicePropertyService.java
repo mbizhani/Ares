@@ -26,5 +26,5 @@ public interface IOServicePropertyService {
 
 	// ==============================
 
-	void checkAndSave(OService oService, String propertyName, Boolean required);
+	void checkAndSave(OService oService, String propertyName, Boolean required, String value);
 }
