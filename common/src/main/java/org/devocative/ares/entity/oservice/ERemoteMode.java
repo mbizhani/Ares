@@ -74,4 +74,13 @@ public class ERemoteMode implements Serializable {
 	public static List<ERemoteMode> list() {
 		return new ArrayList<>(ID_TO_LIT.values());
 	}
+
+	public static ERemoteMode findByName(String name) {
+		for (ERemoteMode remoteMode : ID_TO_LIT.values()) {
+			if(remoteMode.getName().equals(name)) {
+				return remoteMode;
+			}
+		}
+		return null;
+	}
 }

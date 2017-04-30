@@ -1,23 +1,42 @@
 <operation>
 	<services>
-		<service name="Oracle" type="Database"
-				 connectionPattern="jdbc:oracle:thin:@${target.address}:${target.port}:${target.prop.sid}">
+		<service name="OracleDB"
+				 connectionPattern="jdbc:oracle:thin:@${target.address}:${target.port}:${target.prop.sid}"
+				 adminPort="1521">
 
 			<properties>
-				<property name="driver" required="true"/>
+				<property name="driver" value="oracle.jdbc.driver.OracleDriver"/>
 				<property name="sid" required="true"/>
-				<property name="dbDir" required="true"/>
-				<property name="osDbDir" required="true"/>
+				<property name="pumpDbDir" required="true"/>
+				<property name="pumpOsDir" required="true"/>
 			</properties>
 
 			<commands>
+				<command name="showUsers">
+					<params/>
+					<body><![CDATA[
+$cmd.sql("select user_id, username, account_status, lock_date, default_tablespace, created from dba_users")]]></body>
+				</command>
+
+				<command name="changePassword">
+					<params>
+						<param name="username" required="true"/>
+						<param name="newPassword" required="true"/>
+					</params>
+
+					<body><![CDATA[
+$cmd.sql("alter user ${username} identified by \"${newPassword}\" account unlock")
+$cmd.userPasswordUpdated(username, newPassword)
+]]></body>
+				</command>
+
 				<command name="checkDBUser">
 					<params>
-						<param name="username" type="string" required="true"/>
+						<param name="schema" type="string" required="true"/>
 					</params>
 					<body>
 						<![CDATA[
-return $cmd.sql("select count(1) from all_users where username='${username}'") > 0]]></body>
+$cmd.sql("select count(1) from all_users where username=upper('${schema}')") > 0]]></body>
 				</command>
 
 				<command name="truncateDBUser">
@@ -26,11 +45,11 @@ return $cmd.sql("select count(1) from all_users where username='${username}'") >
 					</params>
 					<body>
 						<![CDATA[
-$cmd.sqlBlock("""
+$cmd.sql("""
 DECLARE
 	scname varchar2(20);
 BEGIN
-	scname := '${schema}.toUpperCase()';
+	scname := '${schema.toUpperCase()}';
 
 	--Bye Sequences!
 	for i in (select us.sequence_name from all_sequences us where us.sequence_owner = scname) loop
@@ -57,21 +76,22 @@ end;
 					</params>
 					<body>
 						<![CDATA[
-if(!$cmd.exec("checkDBUser", [username:sourceSchema])) {
-	$cmd.error("No user ${sourceSchema} to export dump from")
+if(!$cmd.exec("checkDBUser", [schema:sourceSchema])) {
+	$cmd.error("Invalid user '${sourceSchema}' to create dump file")
 }
 
-if(!$cmd.exec("checkDBUser", [username:destSchema])) {
-	$cmd.error("No user ${destSchema} to import dump to")
-}
+$cmd.exec("backupSchema", [schema:destSchema])
 
-$cmd.exec("truncateDBUser", [username:destSchema])
+$cmd.exec("truncateDBUser", [schema:destSchema])
 
-def osService = target.findRelated("Linux");
+def osService = $cmd.findOf("SSH")
 
-$cmd.ssh("sudo -S su - oracle -c 'expdp ${target.username}/${target.password} schemas=${sourceSchema} directory=${target.prop.dbDir} dumpfile=${sourceSchema}.dmp logfile=${sourceSchema}.log'", osService, osService.password)
+$cmd.ssh("su - oracle -c 'expdp ${target.username}/${target.password} schemas=${sourceSchema} directory=${target.prop.pumpDbDir} dumpfile=${sourceSchema}.dmp logfile=${sourceSchema}.log'", osService)
 
-$cmd.ssh("sudo -S su - oracle -c 'impdp ${target.username}/${target.password} remap_schema=${sourceSchema}:${destSchema} directory=${target.prop.dbDir} dumpfile=${destSchema}.dmp logfile=${destSchema}.log'", osService, osService.password)]]></body>
+$cmd.ssh("su - oracle -c 'impdp ${target.username}/${target.password} remap_schema=${sourceSchema}:${destSchema} directory=${target.prop.pumpDbDir} dumpfile=${sourceSchema}.dmp logfile=${destSchema}.log'", osService, true)
+
+$cmd.ssh("su - oracle -c 'rm -f ${target.prop.pumpOsDir}/${sourceSchema}.dmp'", osService)
+]]></body>
 				</command>
 
 				<command name="backupSchema">
@@ -80,16 +100,18 @@ $cmd.ssh("sudo -S su - oracle -c 'impdp ${target.username}/${target.password} re
 					</params>
 					<body>
 						<![CDATA[
-if(!$cmd.exec("checkDBUser", target, [username:schema])) {
-	$cmd.error("No user ${schema} to export dump from")
+if(!$cmd.exec("checkDBUser", [schema:schema])) {
+	$cmd.error("Invalid user '${schema}' to create dump file")
 }
 
-$cmd.ssh("sudo su - oracle -c 'expdp ${target.username}/${target.password} schemas=${schema} directory=${target.prop.dbDir} dumpfile=${schema}_bkup_${$cmd.now('yyyyMMdd_HHmmss', 'fa')}.dmp logfile=${schema}.log'", osService)]]></body>
+def osService = $cmd.findOf("SSH")
+
+$cmd.ssh("su - oracle -c 'expdp ${target.username}/${target.password} schemas=${schema} directory=${target.prop.pumpDbDir} dumpfile=${schema}_bkup_${$cmd.now()}.dmp logfile=${schema}.log'", osService)]]></body>
 				</command>
 			</commands>
 		</service>
 
-		<service name="SSH" type="OS">
+		<service name="Linux" adminPort="22">
 			<commands>
 				<command name="changePassword">
 					<params>
@@ -98,20 +120,34 @@ $cmd.ssh("sudo su - oracle -c 'expdp ${target.username}/${target.password} schem
 					</params>
 
 					<body><![CDATA[
-$cmd.ssh("sudo -S passwd ${username} --stdin", [target.password, newPassword]);]]></body>
+$cmd.ssh("passwd ${username} --stdin", newPassword)
+$cmd.userPasswordUpdated(username, newPassword)
+]]></body>
 				</command>
 
-				<command name="test">
+				<command name="ll">
 					<params>
-						<param name="text" required="true"/>
+						<param name="dir" required="true"/>
 					</params>
 
 					<body><![CDATA[
-$cmd.ssh("ls -l /")
-$cmd.ssh("echo ${text}")
+$cmd.ssh("echo dir=${dir}")
+$cmd.ssh("ls -l ${dir}")
+]]></body>
+				</command>
+
+				<command name="netstat">
+					<params/>
+
+					<body><![CDATA[
+$cmd.ssh("netstat -antp")
+	.toTabular()
+	.setIgnoreStartingLines(1)
+	.setPossibleColumns("Proto", "Recv-Q", "Send-Q", "Local Address", "Foreign Address", "State", "PID/Program name")
 ]]></body>
 				</command>
 			</commands>
 		</service>
+
 	</services>
 </operation>

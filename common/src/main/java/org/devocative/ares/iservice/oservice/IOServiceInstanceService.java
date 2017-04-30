@@ -1,6 +1,7 @@
 package org.devocative.ares.iservice.oservice;
 
 import org.devocative.ares.entity.OServer;
+import org.devocative.ares.entity.oservice.ERemoteMode;
 import org.devocative.ares.entity.oservice.OService;
 import org.devocative.ares.entity.oservice.OServiceInstance;
 import org.devocative.ares.vo.OServiceInstanceTargetVO;
@@ -37,4 +38,6 @@ public interface IOServiceInstanceService {
 	OServiceInstanceTargetVO getTargetVO(Long serviceInstanceId);
 
 	OServiceInstanceTargetVO getTargetVOByUser(Long osiUserId);
+
+	OServiceInstanceTargetVO getTargetVOByServer(Long serviceInstanceId, ERemoteMode remoteMode);
 }

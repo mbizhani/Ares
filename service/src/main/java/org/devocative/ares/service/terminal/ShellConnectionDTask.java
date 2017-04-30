@@ -59,7 +59,7 @@ public class ShellConnectionDTask extends DTask implements ITerminalProcess {
 	@Override
 	public void execute() {
 		logger.info("ShellConnectionDTask: starting SSH currentUser=[{}] connId=[{}} osiUser=[{}]",
-			securityService.getCurrentUser(), connId, targetVO.getUser());
+			securityService.getCurrentUser(), connId, targetVO.getUser().getUsername());
 
 		try {
 			session = jsch.getSession(targetVO.getUsername(), targetVO.getAddress(), targetVO.getPort());

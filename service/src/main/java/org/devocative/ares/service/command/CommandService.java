@@ -10,6 +10,7 @@ import org.devocative.ares.cmd.CommandCenter;
 import org.devocative.ares.cmd.ICommandResultCallBack;
 import org.devocative.ares.entity.command.Command;
 import org.devocative.ares.entity.command.ConfigLob;
+import org.devocative.ares.entity.oservice.ERemoteMode;
 import org.devocative.ares.entity.oservice.OSIUser;
 import org.devocative.ares.entity.oservice.OService;
 import org.devocative.ares.entity.oservice.OServiceInstance;
@@ -153,7 +154,7 @@ public class CommandService implements ICommandService, IMissedHitHandler<Long, 
 
 	@Override
 	public void checkAndSave(OService oService, XCommand xCommand) {
-		Command command = loadByNameAndOService(oService, xCommand.getName());
+		Command command = loadByNameAndOService(oService.getId(), xCommand.getName());
 
 		if (command == null) {
 			ConfigLob lob = new ConfigLob();
@@ -178,7 +179,7 @@ public class CommandService implements ICommandService, IMissedHitHandler<Long, 
 
 	@Override
 	public Object executeCommand(String command, OServiceInstance serviceInstance, Map<String, String> params, ICommandResultCallBack callBack) throws Exception {
-		Command cmd = loadByNameAndOService(serviceInstance.getService(), command);
+		Command cmd = loadByNameAndOService(serviceInstance.getService().getId(), command);
 		if (cmd == null) {
 			throw new AresException(AresErrorCode.CommandNotFound, command);
 		}
@@ -212,6 +213,16 @@ public class CommandService implements ICommandService, IMissedHitHandler<Long, 
 		if (search.size() == 1) {
 			OSIUser user = search.get(0);
 			osiUserService.saveOrUpdate(user, password);
+		}
+	}
+
+	@Override
+	public OServiceInstanceTargetVO findOf(Long serviceInstanceId, String remoteMethod) {
+		ERemoteMode remoteMode = ERemoteMode.findByName(remoteMethod);
+		if (remoteMode != null) {
+			return serviceInstanceService.getTargetVOByServer(serviceInstanceId, remoteMode);
+		} else {
+			throw new RuntimeException("Invalid remote method: " + remoteMethod);
 		}
 	}
 
@@ -253,14 +264,17 @@ public class CommandService implements ICommandService, IMissedHitHandler<Long, 
 		return result;
 	}
 
-	private Command loadByNameAndOService(OService oService, String name) {
-		return persistorService.createQueryBuilder()
+	private Command loadByNameAndOService(Long serviceId, String name) {
+		Long cmdId = persistorService.createQueryBuilder()
+			.addSelect("select ent.id")
 			.addFrom(Command.class, "ent")
 			.addWhere("and ent.name = :name")
 			.addParam("name", name)
 			.addWhere("and ent.service.id = :serviceId")
-			.addParam("serviceId", oService.getId())
+			.addParam("serviceId", serviceId)
 			.object();
+
+		return load(cmdId);
 	}
 
 	private XCommand loadXCommand(Command command) {

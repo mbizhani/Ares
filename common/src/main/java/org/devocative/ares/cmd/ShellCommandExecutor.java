@@ -73,8 +73,8 @@ public class ShellCommandExecutor extends AbstractCommandExecutor {
 
 		ChannelExec channelExec = (ChannelExec) session.openChannel("exec");
 		channelExec.setCommand(finalCmd);
-		channelExec.setInputStream(null);
-		channelExec.setErrStream(null);
+		//channelExec.setInputStream(null);
+		//channelExec.setErrStream(null);
 
 		InputStream in = channelExec.getInputStream();
 		BufferedReader br = new BufferedReader(new InputStreamReader(in));
@@ -100,29 +100,33 @@ public class ShellCommandExecutor extends AbstractCommandExecutor {
 
 		StringBuilder result = new StringBuilder();
 		while (true) {
-			String line;
-			while ((line = br.readLine()) != null) {
+			char[] buff = new char[1024];
+			int read;
+			while ((read = br.read(buff)) != -1) {
+				String line = new String(buff, 0, read);
 				resultCallBack.onResult(new CommandOutput(line));
 				logger.debug("\tResult = {}", line);
 				result.append(line).append("\n");
 			}
 			if (channelExec.isClosed()) {
-				exitStatus = channelExec.getExitStatus();
 				break;
 			}
 		}
 
 		while (true) {
-			String line;
-			while ((line = errBr.readLine()) != null) {
-				resultCallBack.onResult(new CommandOutput(CommandOutput.Type.ERROR, line));
-				logger.error("\tResult = {}", line);
+			char[] buff = new char[1024];
+			int read;
+			while ((read = errBr.read(buff)) != -1) {
+				String line = new String(buff, 0, read);
+				resultCallBack.onResult(new CommandOutput(CommandOutput.Type.LINE, line));
+				logger.debug("\tResult = {}", line);
 			}
 			if (channelExec.isClosed()) {
 				break;
 			}
 		}
 
+		exitStatus = channelExec.getExitStatus();
 		channelExec.disconnect();
 
 		setResult(result.toString());

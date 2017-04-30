@@ -44,9 +44,12 @@ public class OSIUser implements IRowMod, ICreationDate, ICreatorUser, IModificat
 	@AttributeOverride(name = "id", column = @Column(name = "e_remote_mode", nullable = false))
 	private ERemoteMode remoteMode;
 
-	@ManyToOne(fetch = FetchType.EAGER)
+	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "f_service_inst", nullable = false, foreignKey = @ForeignKey(name = "siUser2serviceInstance"))
 	private OServiceInstance serviceInstance;
+
+	@Column(name = "f_service_inst", insertable = false, updatable = false)
+	private Long serviceInstanceId;
 
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "f_server", nullable = false, foreignKey = @ForeignKey(name = "siUser2server"))
@@ -166,6 +169,10 @@ public class OSIUser implements IRowMod, ICreationDate, ICreatorUser, IModificat
 
 	public void setServiceInstance(OServiceInstance serviceInstance) {
 		this.serviceInstance = serviceInstance;
+	}
+
+	public Long getServiceInstanceId() {
+		return serviceInstanceId;
 	}
 
 	public OServer getServer() {

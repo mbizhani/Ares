@@ -41,4 +41,6 @@ public interface ICommandService {
 	Connection getConnection(OServiceInstanceTargetVO targetVO);
 
 	void userPasswordUpdated(OServiceInstanceTargetVO targetVO, String username, String password);
+
+	OServiceInstanceTargetVO findOf(Long serviceInstanceId, String remoteMethod);
 }

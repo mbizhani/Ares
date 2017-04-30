@@ -1,5 +1,7 @@
 package org.devocative.ares.service.oservice;
 
+import org.devocative.adroit.cache.ICache;
+import org.devocative.adroit.cache.IMissedHitHandler;
 import org.devocative.ares.AresErrorCode;
 import org.devocative.ares.AresException;
 import org.devocative.ares.entity.OServer;
@@ -9,6 +11,7 @@ import org.devocative.ares.iservice.oservice.IOServiceInstanceService;
 import org.devocative.ares.vo.OServiceInstanceTargetVO;
 import org.devocative.ares.vo.filter.oservice.OServiceInstanceFVO;
 import org.devocative.demeter.entity.User;
+import org.devocative.demeter.iservice.ICacheService;
 import org.devocative.demeter.iservice.persistor.IPersistorService;
 import org.devocative.demeter.iservice.template.IStringTemplate;
 import org.devocative.demeter.iservice.template.IStringTemplateService;
@@ -18,14 +21,17 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.PostConstruct;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 @Service("arsOServiceInstanceService")
-public class OServiceInstanceService implements IOServiceInstanceService {
+public class OServiceInstanceService implements IOServiceInstanceService, IMissedHitHandler<Long, OServiceInstance> {
 	private static final Logger logger = LoggerFactory.getLogger(OServiceInstanceService.class);
+
+	private ICache<Long, OServiceInstance> serviceInstanceCache;
 
 	@Autowired
 	private IPersistorService persistorService;
@@ -36,18 +42,20 @@ public class OServiceInstanceService implements IOServiceInstanceService {
 	@Autowired
 	private IStringTemplateService stringTemplateService;
 
+	@Autowired
+	private ICacheService cacheService;
+
 	// ------------------------------
 
 	@Override
 	public void saveOrUpdate(OServiceInstance entity) {
 		persistorService.saveOrUpdate(entity);
+		serviceInstanceCache.remove(entity.getId());
 	}
 
 	@Override
 	public OServiceInstance load(Long id) {
-		OServiceInstance oServiceInstance = persistorService.get(OServiceInstance.class, id);
-		updateProperties(oServiceInstance.getService(), oServiceInstance);
-		return oServiceInstance;
+		return serviceInstanceCache.get(id);
 	}
 
 	@Override
@@ -96,6 +104,19 @@ public class OServiceInstanceService implements IOServiceInstanceService {
 	}
 
 	// ==============================
+
+	@PostConstruct
+	public void initOServiceInstanceService() {
+		serviceInstanceCache = cacheService.create("ARS_SRV_INST", 50);
+		serviceInstanceCache.setMissedHitHandler(this);
+	}
+
+	@Override
+	public OServiceInstance loadForCache(Long key) {
+		OServiceInstance oServiceInstance = persistorService.get(OServiceInstance.class, key);
+		updateProperties(oServiceInstance.getService(), oServiceInstance);
+		return oServiceInstance;
+	}
 
 	@Override
 	public List<OServiceInstance> findListForCommandExecution(Long serviceId) {
@@ -147,27 +168,40 @@ public class OServiceInstanceService implements IOServiceInstanceService {
 
 	@Override
 	public OServiceInstanceTargetVO getTargetVO(Long serviceInstanceId) {
-		OServiceInstance serviceInstance = load(serviceInstanceId);
-		OSIUser executorForSI = siUserService.findExecutorForSI(serviceInstance.getId());
+		OSIUser executorForSI = siUserService.findExecutorForSI(serviceInstanceId);
 
 		if (executorForSI == null) {
 			throw new AresException(AresErrorCode.ExecutorUserNotFound);
 		}
 
-		return createTargetVO(serviceInstance, executorForSI)
+		return createTargetVO(executorForSI)
 			.setSudoer(true);
 	}
 
 	@Override
 	public OServiceInstanceTargetVO getTargetVOByUser(Long osiUserId) {
 		OSIUser user = siUserService.load(osiUserId);
-		OServiceInstance serviceInstance = user.getServiceInstance();
-		return createTargetVO(serviceInstance, user);
+		return createTargetVO(user);
+	}
+
+	@Override
+	public OServiceInstanceTargetVO getTargetVOByServer(Long serviceInstanceId, ERemoteMode remoteMode) {
+		OServiceInstance serviceInstance = load(serviceInstanceId);
+		OSIUser executor = siUserService.findExecutor(serviceInstance.getServer().getId(), remoteMode);
+
+		if (executor == null) {
+			throw new AresException(AresErrorCode.ExecutorUserNotFound);
+		}
+
+		return createTargetVO(executor)
+			.setSudoer(true);
 	}
 
 	// ------------------------------
 
-	private OServiceInstanceTargetVO createTargetVO(OServiceInstance serviceInstance, OSIUser user) {
+	private OServiceInstanceTargetVO createTargetVO(OSIUser user) {
+		OServiceInstance serviceInstance = load(user.getServiceInstanceId());
+
 		Map<String, String> props = new HashMap<>();
 		for (OSIPropertyValue propertyValue : serviceInstance.getPropertyValues()) {
 			props.put(propertyValue.getProperty().getName(), propertyValue.getValue());

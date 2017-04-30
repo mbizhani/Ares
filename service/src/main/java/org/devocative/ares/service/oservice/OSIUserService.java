@@ -4,6 +4,7 @@ import org.devocative.adroit.StringEncryptorUtil;
 import org.devocative.ares.AresErrorCode;
 import org.devocative.ares.AresException;
 import org.devocative.ares.entity.OServer;
+import org.devocative.ares.entity.oservice.ERemoteMode;
 import org.devocative.ares.entity.oservice.OSIUser;
 import org.devocative.ares.entity.oservice.OService;
 import org.devocative.ares.entity.oservice.OServiceInstance;
@@ -155,6 +156,25 @@ public class OSIUserService implements IOSIUserService {
 			.addWhere("and ent.enabled = true")
 			.addWhere("and ent.serviceInstance.id = :serviceInstId")
 			.addParam("serviceInstId", serviceInstId)
+			.list();
+
+		if (list.size() > 0) {
+			return list.get(0);
+		}
+
+		return null;
+	}
+
+	@Override
+	public OSIUser findExecutor(Long serverId, ERemoteMode remoteMode) {
+		List<OSIUser> list = persistorService.createQueryBuilder()
+			.addFrom(OSIUser.class, "ent")
+			.addWhere("and ent.executor = true")
+			.addWhere("and ent.enabled = true")
+			.addWhere("and ent.server.id = :serverId")
+			.addParam("serverId", serverId)
+			.addWhere("and ent.remoteMode=:remoteMode")
+			.addParam("remoteMode", remoteMode)
 			.list();
 
 		if (list.size() > 0) {

@@ -2,6 +2,7 @@ package org.devocative.ares.cmd;
 
 import com.jcraft.jsch.JSch;
 import com.jcraft.jsch.Session;
+import org.devocative.adroit.CalendarUtil;
 import org.devocative.ares.iservice.command.ICommandService;
 import org.devocative.ares.vo.OServiceInstanceTargetVO;
 import org.slf4j.Logger;
@@ -9,6 +10,7 @@ import org.slf4j.LoggerFactory;
 
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -42,7 +44,9 @@ public class CommandCenter {
 
 	public Object exec(String commandName, OServiceInstanceTargetVO target, Map<String, String> params) {
 		try {
-			return commandService.executeCommand(commandName, target.getServiceInstance(), params, resultCallBack);
+			Object result = commandService.executeCommand(commandName, target.getServiceInstance(), params, resultCallBack);
+			logger.info("CommandCenter.exec: commandName=[{}}", commandName);
+			return result;
 		} catch (Exception e) {
 			logger.error("CommandCenter.exec: " + commandName, e);
 			setException(e);
@@ -100,8 +104,12 @@ public class CommandCenter {
 
 			logger.info("Executed SSH Command: exitStatus=[{}] cmd=[{}] si=[{}]", exitStatus, cmd, targetVO);
 
-			if (exitStatus != 0 && !force) {
-				throw new RuntimeException("Invalid ssh command exitStatus: " + exitStatus);
+			if (exitStatus != 0) {
+				if (force) {
+					resultCallBack.onResult(new CommandOutput(CommandOutput.Type.LINE, "WARNING: exitStatus: " + exitStatus));
+				} else {
+					throw new RuntimeException("Invalid ssh command exitStatus: " + exitStatus);
+				}
 			}
 		} catch (Exception e) {
 			logger.error("CommandCenter.ssh", e);
@@ -142,12 +150,16 @@ public class CommandCenter {
 
 	// ---------------
 
-	public String now(String format, String locale) {
-		return "";
+	public String now() {
+		return now("yyyyMMdd_HHmmss");
 	}
 
-	public OServiceInstanceTargetVO findRelated(String type) {
-		return null;
+	public String now(String format) {
+		return CalendarUtil.formatDate(new Date(), format);
+	}
+
+	public OServiceInstanceTargetVO findOf(String remoteMode) {
+		return commandService.findOf(targetVO.getId(), remoteMode);
 	}
 
 	public void userPasswordUpdated(String username, String password) {
@@ -160,15 +172,16 @@ public class CommandCenter {
 	}
 
 	public void error(String message) {
-
+		//resultCallBack.onResult(new CommandOutput(CommandOutput.Type.ERROR, "Error: " + message));
+		throw new RuntimeException(message);
 	}
 
 	public void warn(String message) {
-
+		resultCallBack.onResult(new CommandOutput(CommandOutput.Type.LINE, "Warn: " + message));
 	}
 
 	public void info(String message) {
-
+		resultCallBack.onResult(new CommandOutput(CommandOutput.Type.LINE, "Info: " + message));
 	}
 
 	public void sleep(long millis) {
