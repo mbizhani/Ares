@@ -7,6 +7,7 @@ import org.devocative.ares.iservice.IAsyncTextResult;
 import org.devocative.ares.iservice.ITerminalConnectionService;
 import org.devocative.ares.vo.OServiceInstanceTargetVO;
 import org.devocative.ares.vo.ShellConnectionVO;
+import org.devocative.demeter.iservice.ISecurityService;
 import org.devocative.demeter.iservice.task.DTask;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -23,6 +24,9 @@ public class ShellConnectionDTask extends DTask implements ITerminalProcess {
 
 	@Autowired
 	private ITerminalConnectionService terminalConnectionService;
+
+	@Autowired
+	private ISecurityService securityService;
 
 	private long connId;
 	private OServiceInstanceTargetVO targetVO;
@@ -54,6 +58,9 @@ public class ShellConnectionDTask extends DTask implements ITerminalProcess {
 
 	@Override
 	public void execute() {
+		logger.info("ShellConnectionDTask: starting SSH currentUser=[{}] connId=[{}} osiUser=[{}]",
+			securityService.getCurrentUser(), connId, targetVO.getUser());
+
 		try {
 			session = jsch.getSession(targetVO.getUsername(), targetVO.getAddress(), targetVO.getPort());
 
@@ -63,7 +70,7 @@ public class ShellConnectionDTask extends DTask implements ITerminalProcess {
 
 			channel = (ChannelShell) session.openChannel("shell");
 			channel.setPtyType("xterm");
-			processor = new ShellTextProcessor();
+			processor = new ShellTextProcessor(connId, securityService.getCurrentUser().getUsername());
 
 			InputStream in = channel.getInputStream();
 			OutputStream out = channel.getOutputStream();

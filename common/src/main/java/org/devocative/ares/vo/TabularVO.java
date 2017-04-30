@@ -3,15 +3,15 @@ package org.devocative.ares.vo;
 import java.io.Serializable;
 import java.util.List;
 
-public class TabularVO implements Serializable {
+public class TabularVO<T> implements Serializable {
 	private static final long serialVersionUID = 5985989025821421183L;
 
 	private List<String> columns;
-	private List<List<String>> rows;
+	private List<List<T>> rows;
 
 	// ------------------------------
 
-	public TabularVO(List<String> columns, List<List<String>> rows) {
+	public TabularVO(List<String> columns, List<List<T>> rows) {
 		this.columns = columns;
 		this.rows = rows;
 	}
@@ -22,7 +22,7 @@ public class TabularVO implements Serializable {
 		return columns;
 	}
 
-	public List<List<String>> getRows() {
+	public List<List<T>> getRows() {
 		return rows;
 	}
 

@@ -1,5 +1,7 @@
 package org.devocative.ares.service.oservice;
 
+import org.devocative.ares.AresErrorCode;
+import org.devocative.ares.AresException;
 import org.devocative.ares.entity.OServer;
 import org.devocative.ares.entity.oservice.*;
 import org.devocative.ares.iservice.oservice.IOSIUserService;
@@ -96,6 +98,16 @@ public class OServiceInstanceService implements IOServiceInstanceService {
 	// ==============================
 
 	@Override
+	public List<OServiceInstance> findListForCommandExecution(Long serviceId) {
+		return persistorService.createQueryBuilder()
+			.addFrom(OServiceInstance.class, "ent")
+			.addWhere("and ent.service.id=:serviceId")
+			.addParam("serviceId", serviceId)
+				// TODO filter by access
+			.list();
+	}
+
+	@Override
 	public void updateProperties(OService oService, OServiceInstance oServiceInstance) {
 		List<OSIPropertyValue> propertyValues = oServiceInstance.getPropertyValues();
 
@@ -137,6 +149,10 @@ public class OServiceInstanceService implements IOServiceInstanceService {
 	public OServiceInstanceTargetVO getTargetVO(Long serviceInstanceId) {
 		OServiceInstance serviceInstance = load(serviceInstanceId);
 		OSIUser executorForSI = siUserService.findExecutorForSI(serviceInstance.getId());
+
+		if (executorForSI == null) {
+			throw new AresException(AresErrorCode.ExecutorUserNotFound);
+		}
 
 		return createTargetVO(serviceInstance, executorForSI)
 			.setSudoer(true);

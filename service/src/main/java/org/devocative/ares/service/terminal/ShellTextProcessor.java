@@ -6,9 +6,19 @@ import org.slf4j.LoggerFactory;
 public class ShellTextProcessor {
 	private static final Logger logger = LoggerFactory.getLogger(ShellTextProcessor.class);
 
+	private long connId;
+	private String currentUser;
+
 	private boolean doStart = false, clientSent = false, isPrompt = true;
 	private StringBuilder cmdBuilder = new StringBuilder();
 	private int lastSpecialKey, cursor = 0;
+
+	// ------------------------------
+
+	public ShellTextProcessor(long connId, String currentUser) {
+		this.connId = connId;
+		this.currentUser = currentUser;
+	}
 
 	// ------------------------------
 
@@ -52,7 +62,7 @@ public class ShellTextProcessor {
 					case ENTER:
 					case CTR_D:
 						String cmd = lastOne != EShellSpecialKey.CTR_D ? cmdBuilder.toString() : "logout";
-						logger.info("### CMD > {}", cmd);
+						logger.info("### {cmd:'{}', connId:'{}', user:'{}'}", cmd, connId, currentUser);
 						cmdBuilder = new StringBuilder();
 						checkPrompt(msg);
 						cursor = 0;

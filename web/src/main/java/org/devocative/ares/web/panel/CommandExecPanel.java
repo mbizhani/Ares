@@ -75,11 +75,13 @@ public class CommandExecPanel extends DPanel implements IAsyncResponseHandler {
 
 		CommandOutput line = (CommandOutput) result;
 		if (line.getType() != CommandOutput.Type.TABULAR) {
-			CharSequence sequence = Strings.escapeMarkup(line.getOutput().toString(), true, true);
+			String str = Strings.escapeMarkup(line.getOutput().toString().trim(), true, true).toString();
+			str = str.replaceAll("[\n]", "<br/>");
+
 			String script = String.format("$('#%s').append(\"<div class='ars-cmd-%s'>%s</div>\");",
 				log.getMarkupId(),
 				line.getType().name().toLowerCase(),
-				sequence);
+				str);
 			handler.appendJavaScript(script);
 			handler.appendJavaScript(String.format("$('#%1$s').scrollTop($('#%1$s')[0].scrollHeight);", log.getMarkupId()));
 		} else {
@@ -106,6 +108,7 @@ public class CommandExecPanel extends DPanel implements IAsyncResponseHandler {
 
 		Command command = commandService.load(commandId);
 		XCommand xCommand = command.getXCommand();
+		final Long targetServiceId = command.getService().getId();
 
 		List<XParam> xParams = new ArrayList<>();
 		xParams.add(
@@ -129,7 +132,7 @@ public class CommandExecPanel extends DPanel implements IAsyncResponseHandler {
 				FormComponent fieldFormItem;
 
 				if ("service".equals(xParam.getType())) {
-					fieldFormItem = new WSelectionInput(xParam.getName(), serviceInstanceService.list(), false);
+					fieldFormItem = new WSelectionInput(xParam.getName(), serviceInstanceService.findListForCommandExecution(targetServiceId), false);
 				} else {
 					fieldFormItem = new WTextInput(xParam.getName());
 				}
@@ -178,7 +181,7 @@ public class CommandExecPanel extends DPanel implements IAsyncResponseHandler {
 
 	// ------------------------------
 
-	private void renderTabular(TabularVO tabularVO, IPartialPageRequestHandler handler) {
+	private void renderTabular(TabularVO<?> tabularVO, IPartialPageRequestHandler handler) {
 		String tabId = tabular.getMarkupId() + "-tab";
 
 		StringBuilder builder = new StringBuilder();
@@ -188,9 +191,9 @@ public class CommandExecPanel extends DPanel implements IAsyncResponseHandler {
 			builder.append("<th>").append(col).append("</th>");
 		}
 		builder.append("</tr></thead><tbody>");
-		for (List<String> row : tabularVO.getRows()) {
+		for (List<?> row : tabularVO.getRows()) {
 			builder.append("<tr>");
-			for (String cell : row) {
+			for (Object cell : row) {
 				builder.append("<td>").append(cell).append("</td>");
 			}
 			builder.append("</tr>");

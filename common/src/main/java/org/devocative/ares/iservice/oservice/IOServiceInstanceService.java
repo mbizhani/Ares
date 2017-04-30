@@ -30,6 +30,8 @@ public interface IOServiceInstanceService {
 
 	// ==============================
 
+	List<OServiceInstance> findListForCommandExecution(Long serviceId);
+
 	void updateProperties(OService oService, OServiceInstance oServiceInstance);
 
 	OServiceInstanceTargetVO getTargetVO(Long serviceInstanceId);

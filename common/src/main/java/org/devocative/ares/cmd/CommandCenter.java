@@ -4,14 +4,12 @@ import com.jcraft.jsch.JSch;
 import com.jcraft.jsch.Session;
 import org.devocative.ares.iservice.command.ICommandService;
 import org.devocative.ares.vo.OServiceInstanceTargetVO;
-import org.devocative.ares.vo.TabularVO;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.sql.*;
-import java.util.ArrayList;
+import java.sql.Connection;
+import java.sql.SQLException;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 public class CommandCenter {
@@ -86,7 +84,7 @@ public class CommandCenter {
 
 		try {
 			ShellCommandExecutor executor = new ShellCommandExecutor(
-				targetVO, J_SCH, SSH.get(targetVO.getId()), resultCallBack, cmd, stdin);
+				targetVO, resultCallBack, cmd, J_SCH, SSH.get(targetVO.getId()), stdin);
 
 			Thread th = new Thread(executor);
 			th.start();
@@ -97,7 +95,7 @@ public class CommandCenter {
 			}
 
 			exitStatus = executor.getExitStatus();
-			result = executor.getResult();
+			result = executor.getResult().toString();
 			SSH.put(targetVO.getId(), executor.getSession());
 
 			logger.info("Executed SSH Command: exitStatus=[{}] cmd=[{}] si=[{}]", exitStatus, cmd, targetVO);
@@ -122,48 +120,19 @@ public class CommandCenter {
 	public Object sql(String sql, OServiceInstanceTargetVO targetVO) {
 		Object result = null;
 
-		if (!DB_CONN.containsKey(targetVO.getId())) {
-			Connection connection = commandService.getConnection(targetVO);
-			DB_CONN.put(targetVO.getId(), connection);
-		}
-
 		try {
-			Connection connection = DB_CONN.get(targetVO.getId());
+			SqlCommandExecutor executor = new SqlCommandExecutor(targetVO, resultCallBack, sql, DB_CONN.get(targetVO.getId()));
+			Thread th = new Thread(executor);
+			th.start();
+			th.join();
 
-			logger.info("Execute query: si=[{}] sql=[{}]", targetVO, sql);
-			String prompt = String.format("[%s@%s]$ %s", targetVO.getUsername(), targetVO.getAddress(), sql);
-			resultCallBack.onResult(new CommandOutput(CommandOutput.Type.PROMPT, prompt));
-
-			Statement statement = connection.createStatement();
-			if (statement.execute(sql)) {
-				ResultSet rs = statement.getResultSet();
-				ResultSetMetaData metaData = rs.getMetaData();
-
-				List<String> columns = new ArrayList<>();
-				for (int i = 1; i <= metaData.getColumnCount(); i++) {
-					columns.add(metaData.getColumnName(i).toLowerCase());
-				}
-
-				List<List<String>> rows = new ArrayList<>();
-				while (rs.next()) {
-					List<String> row = new ArrayList<>();
-					for (String column : columns) {
-						row.add(rs.getString(column));
-					}
-					rows.add(row);
-				}
-
-				if (columns.size() == 1 && rows.size() == 1) {
-					result = rows.get(0).get(0);
-				} else {
-					result = new TabularVO(columns, rows);
-				}
-			} else {
-				logger.info("Execute non-select query: update count=[{}]", statement.getUpdateCount());
-				result = statement.getUpdateCount();
+			if (executor.hasException()) {
+				throw executor.getException();
 			}
-			statement.close();
-		} catch (SQLException e) {
+
+			result = executor.getResult();
+			DB_CONN.put(targetVO.getId(), executor.getConnection());
+		} catch (Exception e) {
 			logger.error("CommandCenter.sql", e);
 			setException(e);
 		}

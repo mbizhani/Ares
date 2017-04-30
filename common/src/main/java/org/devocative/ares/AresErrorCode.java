@@ -5,7 +5,8 @@ import org.devocative.demeter.imodule.DErrorCode;
 public enum AresErrorCode implements DErrorCode {
 	DuplicateExecutor("Duplicate Executor"),
 	CommandNotFound("Command not found"),
-	TerminalConnectionAccessViolation("Terminal Connection Access Violation")
+	TerminalConnectionAccessViolation("Terminal Connection Access Violation"),
+	ExecutorUserNotFound("Executor User Not Found")
 	//SQLExecution("SQL Execution"),
 	;
 

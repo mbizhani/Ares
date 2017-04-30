@@ -98,7 +98,7 @@ public class ConsoleResultProcessing {
 		logger.debug("Final Columns: {}", columns);
 		logger.debug("Rows: {}", rows);
 
-		return new TabularVO(columns, rows);
+		return new TabularVO<>(columns, rows);
 	}
 
 	// ------------------------------

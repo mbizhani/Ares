@@ -35,6 +35,9 @@ public class Command implements ICreationDate, ICreatorUser, IModificationDate, 
 	@JoinColumn(name = "f_service", nullable = false, foreignKey = @ForeignKey(name = "command2service"))
 	private OService service;
 
+	@Column(name = "f_service", insertable = false, updatable = false)
+	private Long serviceId;
+
 	@OneToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "f_config", nullable = false, foreignKey = @ForeignKey(name = "command2configLob"))
 	private ConfigLob config;
@@ -110,6 +113,10 @@ public class Command implements ICreationDate, ICreatorUser, IModificationDate, 
 
 	public void setService(OService service) {
 		this.service = service;
+	}
+
+	public Long getServiceId() {
+		return serviceId;
 	}
 
 	public ConfigLob getConfig() {

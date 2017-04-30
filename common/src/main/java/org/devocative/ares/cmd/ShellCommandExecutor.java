@@ -5,72 +5,47 @@ import com.jcraft.jsch.JSch;
 import com.jcraft.jsch.JSchException;
 import com.jcraft.jsch.Session;
 import org.devocative.ares.vo.OServiceInstanceTargetVO;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.*;
 
-public class ShellCommandExecutor implements Runnable {
-	private static final Logger logger = LoggerFactory.getLogger(ShellCommandExecutor.class);
-
-	private OServiceInstanceTargetVO targetVO;
+/**
+ * Since in JSch library, when Channel.disconnect() is called,
+ * the current thread is modified and the data in ThreadLocal, like currentUser
+ * are deleted. So by this class, ssh command execution is isolated!
+ */
+public class ShellCommandExecutor extends AbstractCommandExecutor {
 	private JSch jSch;
 	private Session session;
-	private ICommandResultCallBack resultCallBack;
-	private String cmd;
 	private String[] stdin;
 
 	// ---------------
 
-	private StringBuilder result = new StringBuilder();
 	private int exitStatus = -1;
-	private Exception exception;
 
 	// ------------------------------
 
-	public ShellCommandExecutor(OServiceInstanceTargetVO targetVO, JSch jSch, Session session, ICommandResultCallBack resultCallBack, String cmd, String[] stdin) {
-		this.targetVO = targetVO;
+	public ShellCommandExecutor(OServiceInstanceTargetVO targetVO, ICommandResultCallBack resultCallBack, String command, JSch jSch, Session session, String[] stdin) {
+		super(targetVO, resultCallBack, command);
+
 		this.jSch = jSch;
 		this.session = session;
-		this.resultCallBack = resultCallBack;
-		this.cmd = cmd;
 		this.stdin = stdin;
 	}
 
 	// ------------------------------
 
-	@Override
-	public void run() {
-		try {
-			execute();
-		} catch (Exception e) {
-			exception = e;
-		}
-	}
-
 	public Session getSession() {
 		return session;
-	}
-
-	public String getResult() {
-		return result.toString();
 	}
 
 	public int getExitStatus() {
 		return exitStatus;
 	}
 
-	public Exception getException() {
-		return exception;
-	}
-
-	public boolean hasException() {
-		return exception != null;
-	}
-
 	// ------------------------------
 
-	private void execute() throws JSchException, IOException {
+	@Override
+	protected void execute() throws JSchException, IOException {
 		if (session == null) {
 			logger.info("Try to get SSH connection: {}", targetVO.getName());
 			resultCallBack.onResult(new CommandOutput(CommandOutput.Type.PROMPT, "connecting ..."));
@@ -81,19 +56,19 @@ public class ShellCommandExecutor implements Runnable {
 			session.connect(30000); // making a connection with timeout.
 		}
 
-		String finalCmd = cmd;
-		if (targetVO.isSudoer() && !cmd.startsWith("sudo -S")) {
+		String finalCmd = command;
+		if (targetVO.isSudoer() && !command.startsWith("sudo -S")) {
 				/*
 				NOTE: in /etc/sudoers the line
 				Defaults    requiretty
 				must be commented, unless sudo -S does not work!
 				*/
-			finalCmd = String.format("sudo -S -p '' %s", cmd);
-			cmd = String.format("sudo -S %s", cmd);
+			finalCmd = String.format("sudo -S -p '' %s", command);
+			command = String.format("sudo -S %s", command);
 		}
 
 		logger.info("Sending SSH Command: cmd=[{}] si=[{}]", finalCmd, targetVO);
-		String prompt = String.format("[%s@%s]$ %s", targetVO.getUsername(), targetVO.getAddress(), cmd);
+		String prompt = String.format("[%s@%s]$ %s", targetVO.getUsername(), targetVO.getAddress(), command);
 		resultCallBack.onResult(new CommandOutput(CommandOutput.Type.PROMPT, prompt));
 
 		ChannelExec channelExec = (ChannelExec) session.openChannel("exec");
@@ -123,6 +98,7 @@ public class ShellCommandExecutor implements Runnable {
 			}
 		}
 
+		StringBuilder result = new StringBuilder();
 		while (true) {
 			String line;
 			while ((line = br.readLine()) != null) {
@@ -148,5 +124,7 @@ public class ShellCommandExecutor implements Runnable {
 		}
 
 		channelExec.disconnect();
+
+		setResult(result.toString());
 	}
 }

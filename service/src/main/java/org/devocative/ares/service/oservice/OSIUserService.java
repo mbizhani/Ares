@@ -37,7 +37,7 @@ public class OSIUserService implements IOSIUserService {
 
 	@Override
 	public void saveOrUpdate(OSIUser entity) {
-		if (entity.getExecutor()) {
+		if (entity.getId() == null && entity.getExecutor()) {
 			Long count = persistorService.createQueryBuilder()
 				.addSelect("select count(1)")
 				.addFrom(OSIUser.class, "ent")
