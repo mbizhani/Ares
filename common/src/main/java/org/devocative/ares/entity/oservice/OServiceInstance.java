@@ -218,6 +218,6 @@ public class OServiceInstance implements ICreationDate, ICreatorUser, IModificat
 
 	@Override
 	public String toString() {
-		return String.format("%s@%s", getService(), getServer());
+		return String.format("%s(%s)", getServer(), getService());
 	}
 }

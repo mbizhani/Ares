@@ -9,6 +9,7 @@ public abstract class AbstractCommandExecutor implements Runnable {
 
 	protected OServiceInstanceTargetVO targetVO;
 	protected ICommandResultCallBack resultCallBack;
+	protected String prompt;
 	protected String command;
 
 	// ---------------
@@ -18,9 +19,10 @@ public abstract class AbstractCommandExecutor implements Runnable {
 
 	// ------------------------------
 
-	public AbstractCommandExecutor(OServiceInstanceTargetVO targetVO, ICommandResultCallBack resultCallBack, String command) {
+	public AbstractCommandExecutor(OServiceInstanceTargetVO targetVO, ICommandResultCallBack resultCallBack, String prompt, String command) {
 		this.targetVO = targetVO;
 		this.resultCallBack = resultCallBack;
+		this.prompt = prompt;
 		this.command = command;
 	}
 

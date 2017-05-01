@@ -24,8 +24,8 @@ public class ShellCommandExecutor extends AbstractCommandExecutor {
 
 	// ------------------------------
 
-	public ShellCommandExecutor(OServiceInstanceTargetVO targetVO, ICommandResultCallBack resultCallBack, String command, JSch jSch, Session session, String[] stdin) {
-		super(targetVO, resultCallBack, command);
+	public ShellCommandExecutor(OServiceInstanceTargetVO targetVO, ICommandResultCallBack resultCallBack, String prompt, String command, JSch jSch, Session session, String[] stdin) {
+		super(targetVO, resultCallBack, prompt, command);
 
 		this.jSch = jSch;
 		this.session = session;
@@ -64,12 +64,11 @@ public class ShellCommandExecutor extends AbstractCommandExecutor {
 				must be commented, unless sudo -S does not work!
 				*/
 			finalCmd = String.format("sudo -S -p '' %s", command);
-			command = String.format("sudo -S %s", command);
 		}
 
-		logger.info("Sending SSH Command: cmd=[{}] si=[{}]", finalCmd, targetVO);
-		String prompt = String.format("[%s@%s]$ %s", targetVO.getUsername(), targetVO.getAddress(), command);
-		resultCallBack.onResult(new CommandOutput(CommandOutput.Type.PROMPT, prompt));
+		logger.info("Sending SSH Command: cmd=[{}] si=[{}]", prompt, targetVO);
+		String p = String.format("[ %s@%s ]$ %s", targetVO.getUsername(), targetVO.getName(), prompt);
+		resultCallBack.onResult(new CommandOutput(CommandOutput.Type.PROMPT, p));
 
 		ChannelExec channelExec = (ChannelExec) session.openChannel("exec");
 		channelExec.setCommand(finalCmd);

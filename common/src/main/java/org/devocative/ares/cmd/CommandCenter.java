@@ -58,27 +58,27 @@ public class CommandCenter {
 
 	// ---------------
 
-	public SshResult ssh(String cmd) {
-		return ssh(cmd, false, (String) null);
+	public SshResult ssh(String prompt, String cmd) {
+		return ssh(prompt, cmd, false, (String) null);
 	}
 
-	public SshResult ssh(String cmd, boolean force) {
-		return ssh(cmd, force, (String) null);
+	public SshResult ssh(String prompt, String cmd, boolean force) {
+		return ssh(prompt, cmd, force, (String) null);
 	}
 
 	// Main ssh()
-	public SshResult ssh(String cmd, boolean force, String... stdin) {
+	public SshResult ssh(String prompt, String cmd, boolean force, String... stdin) {
 		int exitStatus = -1;
 		String result = null;
 
 		OServiceInstanceTargetVO finalTargetVO = targetVO;
-		if(!ERemoteMode.SSH.equals(finalTargetVO.getUser().getRemoteMode())) {
+		if (!ERemoteMode.SSH.equals(finalTargetVO.getUser().getRemoteMode())) {
 			finalTargetVO = commandService.findOf(finalTargetVO.getId(), ERemoteMode.SSH);
 		}
 
 		try {
 			ShellCommandExecutor executor = new ShellCommandExecutor(
-				finalTargetVO, resultCallBack, cmd, J_SCH, SSH.get(finalTargetVO.getId()), stdin);
+				finalTargetVO, resultCallBack, prompt, cmd, J_SCH, SSH.get(finalTargetVO.getId()), stdin);
 
 			Thread th = new Thread(executor);
 			th.start();
@@ -111,16 +111,16 @@ public class CommandCenter {
 
 	// ---------------
 
-	public Object sql(String sql) {
+	public Object sql(String prompt, String sql) {
 		Object result = null;
 
 		OServiceInstanceTargetVO finalTargetVO = targetVO;
-		if(!ERemoteMode.JDBC.equals(finalTargetVO.getUser().getRemoteMode())) {
+		if (!ERemoteMode.JDBC.equals(finalTargetVO.getUser().getRemoteMode())) {
 			finalTargetVO = commandService.findOf(finalTargetVO.getId(), ERemoteMode.JDBC);
 		}
 
 		try {
-			SqlCommandExecutor executor = new SqlCommandExecutor(finalTargetVO, resultCallBack, sql, DB_CONN.get(finalTargetVO.getId()));
+			SqlCommandExecutor executor = new SqlCommandExecutor(finalTargetVO, resultCallBack, prompt, sql, DB_CONN.get(finalTargetVO.getId()));
 			Thread th = new Thread(executor);
 			th.start();
 			th.join();
