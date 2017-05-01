@@ -3,6 +3,7 @@ package org.devocative.ares.vo.filter.command;
 
 import org.devocative.adroit.vo.RangeVO;
 import org.devocative.ares.entity.command.Command;
+import org.devocative.ares.entity.command.ECommandResult;
 import org.devocative.ares.entity.oservice.OServiceInstance;
 import org.devocative.demeter.entity.User;
 import org.devocative.demeter.iservice.persistor.Filterer;
@@ -16,7 +17,8 @@ public class CommandLogFVO implements Serializable {
 	private static final long serialVersionUID = 1961844763L;
 
 	private String params;
-	private Boolean successful;
+	private List<ECommandResult> result;
+	private RangeVO<Long> duration;
 	private String error;
 	private List<Command> command;
 	private List<OServiceInstance> serviceInstance;
@@ -33,12 +35,20 @@ public class CommandLogFVO implements Serializable {
 		this.params = params;
 	}
 
-	public Boolean getSuccessful() {
-		return successful;
+	public List<ECommandResult> getResult() {
+		return result;
 	}
 
-	public void setSuccessful(Boolean successful) {
-		this.successful = successful;
+	public void setResult(List<ECommandResult> result) {
+		this.result = result;
+	}
+
+	public RangeVO<Long> getDuration() {
+		return duration;
+	}
+
+	public void setDuration(RangeVO<Long> duration) {
+		this.duration = duration;
 	}
 
 	public String getError() {

@@ -53,6 +53,9 @@
 				<field name="xCommand">
 					<finfo ignore="true"/>
 				</field>
+				<field name="serviceId">
+					<finfo/>
+				</field>
 			</fields>
 		</class>
 		<class fqn="org.devocative.ares.entity.command.CommandLog">
@@ -65,7 +68,10 @@
 				<field name="params">
 					<finfo/>
 				</field>
-				<field name="successful">
+				<field name="result">
+					<finfo/>
+				</field>
+				<field name="duration">
 					<finfo/>
 				</field>
 				<field name="error">
@@ -352,6 +358,9 @@
 				</field>
 				<field name="serviceInstance">
 					<finfo/>
+				</field>
+				<field name="serviceInstanceId">
+					<finfo ignore="true"/>
 				</field>
 				<field name="server">
 					<finfo hasForm="false"/>

@@ -90,7 +90,7 @@ $cmd.ssh("su - oracle -c 'expdp ${target.username}/${target.password} schemas=${
 
 $cmd.ssh("su - oracle -c 'impdp ${target.username}/${target.password} remap_schema=${sourceSchema}:${destSchema} directory=${target.prop.pumpDbDir} dumpfile=${sourceSchema}.dmp logfile=${destSchema}.log'", osService, true)
 
-$cmd.ssh("su - oracle -c 'rm -f ${target.prop.pumpOsDir}/${sourceSchema}.dmp'", osService)
+$cmd.ssh("rm -f ${target.prop.pumpOsDir}/${sourceSchema}.dmp")
 ]]></body>
 				</command>
 

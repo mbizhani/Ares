@@ -26,7 +26,9 @@ public interface ICommandLogService {
 
 	List<User> getCreatorUserList();
 
-	void insertLog(Command command, OServiceInstance serviceInstance, Map<String, ?> params, Exception error);
-
 	// ==============================
+
+	Long insertLog(Command command, OServiceInstance serviceInstance, Map<String, ?> params);
+
+	void updateLog(Long logId, Long duration, Exception error);
 }

@@ -27,8 +27,12 @@ public class CommandLog implements ICreationDate, ICreatorUser {
 	@Column(name = "c_params", length = 1000)
 	private String params;
 
-	@Column(name = "b_successful", nullable = false)
-	private Boolean successful;
+	@Embedded
+	@AttributeOverride(name = "id", column = @Column(name = "e_result", nullable = false))
+	private ECommandResult result;
+
+	@Column(name = "n_duration")
+	private Long duration;
 
 	@Column(name = "c_error", length = 2000)
 	private String error;
@@ -75,12 +79,20 @@ public class CommandLog implements ICreationDate, ICreatorUser {
 		this.params = params;
 	}
 
-	public Boolean getSuccessful() {
-		return successful;
+	public ECommandResult getResult() {
+		return result;
 	}
 
-	public void setSuccessful(Boolean successful) {
-		this.successful = successful;
+	public void setResult(ECommandResult result) {
+		this.result = result;
+	}
+
+	public Long getDuration() {
+		return duration;
+	}
+
+	public void setDuration(Long duration) {
+		this.duration = duration;
 	}
 
 	public String getError() {

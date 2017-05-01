@@ -2,6 +2,7 @@ package org.devocative.ares.service.command;
 
 import org.devocative.ares.entity.command.Command;
 import org.devocative.ares.entity.command.CommandLog;
+import org.devocative.ares.entity.command.ECommandResult;
 import org.devocative.ares.entity.oservice.OServiceInstance;
 import org.devocative.ares.iservice.command.ICommandLogService;
 import org.devocative.ares.vo.filter.command.CommandLogFVO;
@@ -78,7 +79,7 @@ public class CommandLogService implements ICommandLogService {
 	// ==============================
 
 	@Override
-	public void insertLog(Command command, OServiceInstance serviceInstance, Map<String, ?> params, Exception error) {
+	public Long insertLog(Command command, OServiceInstance serviceInstance, Map<String, ?> params) {
 		StringBuilder builder = new StringBuilder();
 		for (Map.Entry<String, ?> entry : params.entrySet()) {
 			builder
@@ -92,14 +93,24 @@ public class CommandLogService implements ICommandLogService {
 		log.setCommand(command);
 		log.setServiceInstance(serviceInstance);
 		log.setParams(builder.toString());
-		if (error == null) {
-			log.setSuccessful(true);
-		} else {
-			log.setSuccessful(false);
-			log.setError(error.getMessage());
-		}
+		log.setResult(ECommandResult.RUNNING);
 
 		saveOrUpdate(log);
 		persistorService.commitOrRollback();
+
+		return log.getId();
+	}
+
+	@Override
+	public void updateLog(Long logId, Long duration, Exception error) {
+		persistorService.createQueryBuilder()
+			.addSelect("update CommandLog ent set ent.result=:res, ent.duration=:dur, ent.error=:err")
+			.addWhere("and ent.id=:logId")
+			.addParam("res", error == null ? ECommandResult.SUCCESSFUL : ECommandResult.ERROR)
+			.addParam("dur", duration)
+			.addParam("err", error != null ? error.getMessage() : null)
+			.addParam("logId", logId)
+			.update()
+		;
 	}
 }

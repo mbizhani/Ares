@@ -7,18 +7,19 @@ import org.apache.wicket.model.CompoundPropertyModel;
 import org.apache.wicket.model.IModel;
 import org.apache.wicket.model.ResourceModel;
 import org.devocative.ares.entity.command.CommandLog;
+import org.devocative.ares.entity.command.ECommandResult;
 import org.devocative.ares.iservice.command.ICommandLogService;
 import org.devocative.ares.vo.filter.command.CommandLogFVO;
 import org.devocative.ares.web.AresIcon;
 import org.devocative.demeter.web.DPage;
 import org.devocative.demeter.web.component.DAjaxButton;
 import org.devocative.wickomp.WModel;
-import org.devocative.wickomp.form.WBooleanInput;
 import org.devocative.wickomp.form.WSelectionInput;
 import org.devocative.wickomp.form.WTextInput;
 import org.devocative.wickomp.form.range.WDateRangeInput;
-import org.devocative.wickomp.formatter.OBooleanFormatter;
+import org.devocative.wickomp.form.range.WNumberRangeInput;
 import org.devocative.wickomp.formatter.ODateFormatter;
+import org.devocative.wickomp.formatter.ONumberFormatter;
 import org.devocative.wickomp.grid.IGridDataSource;
 import org.devocative.wickomp.grid.OGrid;
 import org.devocative.wickomp.grid.WDataGrid;
@@ -83,8 +84,10 @@ public class CommandLogListDPage extends DPage implements IGridDataSource<Comman
 		WFloatTable floatTable = new WFloatTable("floatTable");
 		floatTable.add(new WTextInput("params")
 			.setLabel(new ResourceModel("CommandLog.params")));
-		floatTable.add(new WBooleanInput("successful")
-			.setLabel(new ResourceModel("CommandLog.successful")));
+		floatTable.add(new WSelectionInput("result", ECommandResult.list(), true)
+			.setLabel(new ResourceModel("CommandLog.result")));
+		floatTable.add(new WNumberRangeInput("duration", Long.class)
+			.setLabel(new ResourceModel("CommandLog.duration")));
 		floatTable.add(new WTextInput("error")
 			.setLabel(new ResourceModel("CommandLog.error")));
 		floatTable.add(new WSelectionInput("command", commandLogService.getCommandList(), true)
@@ -112,8 +115,10 @@ public class CommandLogListDPage extends DPage implements IGridDataSource<Comman
 
 		OColumnList<CommandLog> columnList = new OColumnList<>();
 		columnList.add(new OPropertyColumn<CommandLog>(new ResourceModel("CommandLog.params"), "params"));
-		columnList.add(new OPropertyColumn<CommandLog>(new ResourceModel("CommandLog.successful"), "successful")
-			.setFormatter(OBooleanFormatter.bool()));
+		columnList.add(new OPropertyColumn<CommandLog>(new ResourceModel("CommandLog.result"), "result"));
+		columnList.add(new OPropertyColumn<CommandLog>(new ResourceModel("CommandLog.duration"), "duration")
+			.setFormatter(ONumberFormatter.integer())
+			.setStyle("direction:ltr"));
 		columnList.add(new OPropertyColumn<CommandLog>(new ResourceModel("CommandLog.error"), "error"));
 		columnList.add(new OPropertyColumn<CommandLog>(new ResourceModel("CommandLog.command"), "command"));
 		columnList.add(new OPropertyColumn<CommandLog>(new ResourceModel("CommandLog.serviceInstance"), "serviceInstance"));

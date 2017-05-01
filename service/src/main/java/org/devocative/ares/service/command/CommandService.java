@@ -183,13 +183,16 @@ public class CommandService implements ICommandService, IMissedHitHandler<Long, 
 		if (cmd == null) {
 			throw new AresException(AresErrorCode.CommandNotFound, command);
 		}
-		return executeCommand(cmd, serviceInstance, params, callBack);
+		return executeCommand(cmd, serviceInstance, params, callBack, null);
 	}
 
 	@Override
 	public Object executeCommand(Long commandId, OServiceInstance serviceInstance, Map<String, String> params, ICommandResultCallBack callBack) throws Exception {
 		Command command = load(commandId);
-		return executeCommand(command, serviceInstance, params, callBack);
+
+		Long logId = commandLogService.insertLog(command, serviceInstance, params);
+
+		return executeCommand(command, serviceInstance, params, callBack, logId);
 	}
 
 	@Override
@@ -228,19 +231,21 @@ public class CommandService implements ICommandService, IMissedHitHandler<Long, 
 
 	// ------------------------------
 
-	private Object executeCommand(Command command, OServiceInstance serviceInstance, Map<String, String> params, ICommandResultCallBack callBack) throws Exception {
+	private Object executeCommand(Command command, OServiceInstance serviceInstance, Map<String, String> params, ICommandResultCallBack callBack, Long logId) throws Exception {
 		logger.debug("CommandService.executeCommand: currentUser=[{}] cmd=[{}]", securityService.getCurrentUser(), command.getName());
 
 		Object result = null;
 		Exception error = null;
+		Long start = System.currentTimeMillis();
 
 		XCommand xCommand = command.getXCommand();
 
 		try {
 			OServiceInstanceTargetVO targetVO = serviceInstanceService.getTargetVO(serviceInstance.getId());
 
-			logger.info("ExecuteCommand: cmd=[{}] si=[{}] user=[{}] executor=[{}] params=#[{}]",
-				command.getName(), serviceInstance, securityService.getCurrentUser(), targetVO.getUsername(), targetVO.getProp());
+			logger.info("Start command execution: cmd=[{}] si=[{}] user=[{}] executor=[{}] params=#[{}] logId=[{}]",
+				command.getName(), serviceInstance, securityService.getCurrentUser(), targetVO.getUsername(),
+				targetVO.getProp(), logId);
 
 			Map<String, Object> cmdParams = new HashMap<>();
 			cmdParams.putAll(params);
@@ -259,7 +264,13 @@ public class CommandService implements ICommandService, IMissedHitHandler<Long, 
 				throw error;
 			}
 		} finally {
-			commandLogService.insertLog(command, serviceInstance, params, error);
+			Long dur = ((System.currentTimeMillis() - start) / 1000);
+			logger.info("Finish command execution: cmd=[{}] si=[{}] user=[{}] dur=[{}] logId=[{}]",
+				command.getName(), serviceInstance, securityService.getCurrentUser(), dur, logId);
+
+			if (logId != null) {
+				commandLogService.updateLog(logId, dur, error);
+			}
 		}
 		return result;
 	}
