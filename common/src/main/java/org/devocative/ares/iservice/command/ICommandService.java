@@ -2,6 +2,7 @@ package org.devocative.ares.iservice.command;
 
 import org.devocative.ares.cmd.ICommandResultCallBack;
 import org.devocative.ares.entity.command.Command;
+import org.devocative.ares.entity.oservice.ERemoteMode;
 import org.devocative.ares.entity.oservice.OService;
 import org.devocative.ares.entity.oservice.OServiceInstance;
 import org.devocative.ares.vo.OServiceInstanceTargetVO;
@@ -42,5 +43,5 @@ public interface ICommandService {
 
 	void userPasswordUpdated(OServiceInstanceTargetVO targetVO, String username, String password);
 
-	OServiceInstanceTargetVO findOf(Long serviceInstanceId, String remoteMethod);
+	OServiceInstanceTargetVO findOf(Long serviceInstanceId, ERemoteMode remoteMode);
 }

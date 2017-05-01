@@ -220,13 +220,8 @@ public class CommandService implements ICommandService, IMissedHitHandler<Long, 
 	}
 
 	@Override
-	public OServiceInstanceTargetVO findOf(Long serviceInstanceId, String remoteMethod) {
-		ERemoteMode remoteMode = ERemoteMode.findByName(remoteMethod);
-		if (remoteMode != null) {
-			return serviceInstanceService.getTargetVOByServer(serviceInstanceId, remoteMode);
-		} else {
-			throw new RuntimeException("Invalid remote method: " + remoteMethod);
-		}
+	public OServiceInstanceTargetVO findOf(Long serviceInstanceId, ERemoteMode remoteMode) {
+		return serviceInstanceService.getTargetVOByServer(serviceInstanceId, remoteMode);
 	}
 
 	// ------------------------------
@@ -292,7 +287,7 @@ public class CommandService implements ICommandService, IMissedHitHandler<Long, 
 		return (XCommand) xstream.fromXML(command.getConfig().getValue());
 	}
 
-	// ------------------------------
+// ------------------------------
 
 	private class CmdRunner implements Runnable {
 		private Long cmdId;

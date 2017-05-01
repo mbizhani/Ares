@@ -15,7 +15,8 @@
 				<command name="showUsers">
 					<params/>
 					<body><![CDATA[
-$cmd.sql("select user_id, username, account_status, lock_date, default_tablespace, created from dba_users")]]></body>
+$cmd.sql("select user_id, username, account_status, lock_date, default_tablespace, created from dba_users")
+]]></body>
 				</command>
 
 				<command name="changePassword">
@@ -36,7 +37,8 @@ $cmd.userPasswordUpdated(username, newPassword)
 					</params>
 					<body>
 						<![CDATA[
-$cmd.sql("select count(1) from all_users where username=upper('${schema}')") > 0]]></body>
+$cmd.sql("select count(1) from all_users where username=upper('${schema}')") > 0
+]]></body>
 				</command>
 
 				<command name="truncateDBUser">
@@ -66,7 +68,8 @@ BEGIN
 		execute immediate 'drop synonym '||scname||'.'|| i.synonym_name;
 	end loop;
 end;
-""")]]></body>
+""")
+]]></body>
 				</command>
 
 				<command name="copySchema">
@@ -84,11 +87,9 @@ $cmd.exec("backupSchema", [schema:destSchema])
 
 $cmd.exec("truncateDBUser", [schema:destSchema])
 
-def osService = $cmd.findOf("SSH")
+$cmd.ssh("su - oracle -c 'expdp ${target.username}/${target.password} schemas=${sourceSchema} directory=${target.prop.pumpDbDir} dumpfile=${sourceSchema}.dmp logfile=${sourceSchema}.log'")
 
-$cmd.ssh("su - oracle -c 'expdp ${target.username}/${target.password} schemas=${sourceSchema} directory=${target.prop.pumpDbDir} dumpfile=${sourceSchema}.dmp logfile=${sourceSchema}.log'", osService)
-
-$cmd.ssh("su - oracle -c 'impdp ${target.username}/${target.password} remap_schema=${sourceSchema}:${destSchema} directory=${target.prop.pumpDbDir} dumpfile=${sourceSchema}.dmp logfile=${destSchema}.log'", osService, true)
+$cmd.ssh("su - oracle -c 'impdp ${target.username}/${target.password} remap_schema=${sourceSchema}:${destSchema} directory=${target.prop.pumpDbDir} dumpfile=${sourceSchema}.dmp logfile=${destSchema}.log'", true)
 
 $cmd.ssh("rm -f ${target.prop.pumpOsDir}/${sourceSchema}.dmp")
 ]]></body>
@@ -104,9 +105,8 @@ if(!$cmd.exec("checkDBUser", [schema:schema])) {
 	$cmd.error("Invalid user '${schema}' to create dump file")
 }
 
-def osService = $cmd.findOf("SSH")
-
-$cmd.ssh("su - oracle -c 'expdp ${target.username}/${target.password} schemas=${schema} directory=${target.prop.pumpDbDir} dumpfile=${schema}_bkup_${$cmd.now()}.dmp logfile=${schema}.log'", osService)]]></body>
+$cmd.ssh("su - oracle -c 'expdp ${target.username}/${target.password} schemas=${schema} directory=${target.prop.pumpDbDir} dumpfile=${schema}_bkup_${$cmd.now()}.dmp logfile=${schema}.log'")
+]]></body>
 				</command>
 			</commands>
 		</service>

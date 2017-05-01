@@ -3,6 +3,7 @@ package org.devocative.ares.cmd;
 import com.jcraft.jsch.JSch;
 import com.jcraft.jsch.Session;
 import org.devocative.adroit.CalendarUtil;
+import org.devocative.ares.entity.oservice.ERemoteMode;
 import org.devocative.ares.iservice.command.ICommandService;
 import org.devocative.ares.vo.OServiceInstanceTargetVO;
 import org.slf4j.Logger;
@@ -19,12 +20,12 @@ public class CommandCenter {
 
 	private final JSch J_SCH = new JSch();
 
-	private ICommandService commandService;
-	private OServiceInstanceTargetVO targetVO;
-	private ICommandResultCallBack resultCallBack;
+	private final ICommandService commandService;
+	private final OServiceInstanceTargetVO targetVO;
+	private final ICommandResultCallBack resultCallBack;
 
-	private Map<Long, Session> SSH = new HashMap<>();
-	private Map<Long, Connection> DB_CONN = new HashMap<>();
+	private final Map<Long, Session> SSH = new HashMap<>();
+	private final Map<Long, Connection> DB_CONN = new HashMap<>();
 
 	private Exception exception;
 
@@ -58,37 +59,26 @@ public class CommandCenter {
 	// ---------------
 
 	public SshResult ssh(String cmd) {
-		return ssh(cmd, targetVO, false, (String) null);
+		return ssh(cmd, false, (String) null);
 	}
 
 	public SshResult ssh(String cmd, boolean force) {
-		return ssh(cmd, targetVO, force, (String) null);
-	}
-
-	public SshResult ssh(String cmd, String... stdin) {
-		return ssh(cmd, targetVO, false, stdin);
-	}
-
-	public SshResult ssh(String cmd, boolean force, String... stdin) {
-		return ssh(cmd, targetVO, force, stdin);
-	}
-
-	public SshResult ssh(String cmd, OServiceInstanceTargetVO targetVO) {
-		return ssh(cmd, targetVO, false, (String) null);
-	}
-
-	public SshResult ssh(String cmd, OServiceInstanceTargetVO targetVO, boolean force) {
-		return ssh(cmd, targetVO, force, (String) null);
+		return ssh(cmd, force, (String) null);
 	}
 
 	// Main ssh()
-	public SshResult ssh(String cmd, OServiceInstanceTargetVO targetVO, boolean force, String... stdin) {
+	public SshResult ssh(String cmd, boolean force, String... stdin) {
 		int exitStatus = -1;
 		String result = null;
 
+		OServiceInstanceTargetVO finalTargetVO = targetVO;
+		if(!ERemoteMode.SSH.equals(finalTargetVO.getUser().getRemoteMode())) {
+			finalTargetVO = commandService.findOf(finalTargetVO.getId(), ERemoteMode.SSH);
+		}
+
 		try {
 			ShellCommandExecutor executor = new ShellCommandExecutor(
-				targetVO, resultCallBack, cmd, J_SCH, SSH.get(targetVO.getId()), stdin);
+				finalTargetVO, resultCallBack, cmd, J_SCH, SSH.get(finalTargetVO.getId()), stdin);
 
 			Thread th = new Thread(executor);
 			th.start();
@@ -100,9 +90,9 @@ public class CommandCenter {
 
 			exitStatus = executor.getExitStatus();
 			result = executor.getResult().toString();
-			SSH.put(targetVO.getId(), executor.getSession());
+			SSH.put(finalTargetVO.getId(), executor.getSession());
 
-			logger.info("Executed SSH Command: exitStatus=[{}] cmd=[{}] si=[{}]", exitStatus, cmd, targetVO);
+			logger.info("Executed SSH Command: exitStatus=[{}] cmd=[{}] si=[{}]", exitStatus, cmd, finalTargetVO);
 
 			if (exitStatus != 0) {
 				if (force) {
@@ -122,14 +112,15 @@ public class CommandCenter {
 	// ---------------
 
 	public Object sql(String sql) {
-		return sql(sql, targetVO);
-	}
-
-	public Object sql(String sql, OServiceInstanceTargetVO targetVO) {
 		Object result = null;
 
+		OServiceInstanceTargetVO finalTargetVO = targetVO;
+		if(!ERemoteMode.JDBC.equals(finalTargetVO.getUser().getRemoteMode())) {
+			finalTargetVO = commandService.findOf(finalTargetVO.getId(), ERemoteMode.JDBC);
+		}
+
 		try {
-			SqlCommandExecutor executor = new SqlCommandExecutor(targetVO, resultCallBack, sql, DB_CONN.get(targetVO.getId()));
+			SqlCommandExecutor executor = new SqlCommandExecutor(finalTargetVO, resultCallBack, sql, DB_CONN.get(finalTargetVO.getId()));
 			Thread th = new Thread(executor);
 			th.start();
 			th.join();
@@ -139,7 +130,7 @@ public class CommandCenter {
 			}
 
 			result = executor.getResult();
-			DB_CONN.put(targetVO.getId(), executor.getConnection());
+			DB_CONN.put(finalTargetVO.getId(), executor.getConnection());
 		} catch (Exception e) {
 			logger.error("CommandCenter.sql", e);
 			setException(e);
@@ -158,15 +149,7 @@ public class CommandCenter {
 		return CalendarUtil.formatDate(new Date(), format);
 	}
 
-	public OServiceInstanceTargetVO findOf(String remoteMode) {
-		return commandService.findOf(targetVO.getId(), remoteMode);
-	}
-
 	public void userPasswordUpdated(String username, String password) {
-		userPasswordUpdated(targetVO, username, password);
-	}
-
-	public void userPasswordUpdated(OServiceInstanceTargetVO targetVO, String username, String password) {
 		logger.info("CommandCenter.userPasswordUpdated: target=[{}] username=[{}]", targetVO, username);
 		commandService.userPasswordUpdated(targetVO, username, password);
 	}
