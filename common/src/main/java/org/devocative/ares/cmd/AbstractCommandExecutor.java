@@ -7,10 +7,10 @@ import org.slf4j.LoggerFactory;
 public abstract class AbstractCommandExecutor implements Runnable {
 	protected static final Logger logger = LoggerFactory.getLogger(AbstractCommandExecutor.class);
 
-	protected OServiceInstanceTargetVO targetVO;
-	protected ICommandResultCallBack resultCallBack;
-	protected String prompt;
-	protected String command;
+	protected final OServiceInstanceTargetVO targetVO;
+	protected final CommandCenterResource resource;
+	protected final String prompt;
+	protected final String command;
 
 	// ---------------
 
@@ -19,9 +19,9 @@ public abstract class AbstractCommandExecutor implements Runnable {
 
 	// ------------------------------
 
-	public AbstractCommandExecutor(OServiceInstanceTargetVO targetVO, ICommandResultCallBack resultCallBack, String prompt, String command) {
+	public AbstractCommandExecutor(OServiceInstanceTargetVO targetVO, CommandCenterResource resource, String prompt, String command) {
 		this.targetVO = targetVO;
-		this.resultCallBack = resultCallBack;
+		this.resource = resource;
 		this.prompt = prompt;
 		this.command = command;
 	}

@@ -1,51 +1,35 @@
 package org.devocative.ares.cmd;
 
-import com.jcraft.jsch.JSch;
-import com.jcraft.jsch.Session;
 import org.devocative.adroit.CalendarUtil;
 import org.devocative.ares.entity.oservice.ERemoteMode;
-import org.devocative.ares.iservice.command.ICommandService;
 import org.devocative.ares.vo.OServiceInstanceTargetVO;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.sql.Connection;
-import java.sql.SQLException;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.Map;
 
 public class CommandCenter {
 	private static final Logger logger = LoggerFactory.getLogger(CommandCenter.class);
 
-	private final JSch J_SCH = new JSch();
-
-	private final ICommandService commandService;
 	private final OServiceInstanceTargetVO targetVO;
-	private final ICommandResultCallBack resultCallBack;
-
-	private final Map<Long, Session> SSH = new HashMap<>();
-	private final Map<Long, Connection> DB_CONN = new HashMap<>();
-
+	private final CommandCenterResource resource;
 	private Exception exception;
 
 	// ------------------------------
 
-	public CommandCenter(ICommandService commandService, OServiceInstanceTargetVO targetVO, ICommandResultCallBack resultCallBack) {
-		this.commandService = commandService;
+	public CommandCenter(OServiceInstanceTargetVO targetVO, CommandCenterResource resource) {
 		this.targetVO = targetVO;
-		this.resultCallBack = resultCallBack;
+		this.resource = resource;
 	}
 
 	// ------------------------------
 
 	public Object exec(String commandName, Map<String, String> params) {
-		return exec(commandName, targetVO, params);
-	}
-
-	public Object exec(String commandName, OServiceInstanceTargetVO target, Map<String, String> params) {
 		try {
-			Object result = commandService.executeCommand(commandName, target.getServiceInstance(), params, resultCallBack);
+			Object result = resource
+				.getCommandService()
+				.callCommand(commandName, targetVO.getServiceInstance(), params, resource);
 			logger.info("CommandCenter.exec: commandName=[{}}", commandName);
 			return result;
 		} catch (Exception e) {
@@ -66,6 +50,10 @@ public class CommandCenter {
 		return ssh(prompt, cmd, force, (String) null);
 	}
 
+	public SshResult ssh(String prompt, String cmd, String... stdin) {
+		return ssh(prompt, cmd, false, stdin);
+	}
+
 	// Main ssh()
 	public SshResult ssh(String prompt, String cmd, boolean force, String... stdin) {
 		int exitStatus = -1;
@@ -73,12 +61,13 @@ public class CommandCenter {
 
 		OServiceInstanceTargetVO finalTargetVO = targetVO;
 		if (!ERemoteMode.SSH.equals(finalTargetVO.getUser().getRemoteMode())) {
-			finalTargetVO = commandService.findOf(finalTargetVO.getId(), ERemoteMode.SSH);
+			finalTargetVO = resource
+				.getCommandService()
+				.findOf(finalTargetVO.getId(), ERemoteMode.SSH);
 		}
 
 		try {
-			ShellCommandExecutor executor = new ShellCommandExecutor(
-				finalTargetVO, resultCallBack, prompt, cmd, J_SCH, SSH.get(finalTargetVO.getId()), stdin);
+			ShellCommandExecutor executor = new ShellCommandExecutor(finalTargetVO, resource, prompt, cmd, stdin);
 
 			Thread th = new Thread(executor);
 			th.start();
@@ -90,13 +79,12 @@ public class CommandCenter {
 
 			exitStatus = executor.getExitStatus();
 			result = executor.getResult().toString();
-			SSH.put(finalTargetVO.getId(), executor.getSession());
 
 			logger.info("Executed SSH Command: exitStatus=[{}] cmd=[{}] si=[{}]", exitStatus, cmd, finalTargetVO);
 
 			if (exitStatus != 0) {
 				if (force) {
-					resultCallBack.onResult(new CommandOutput(CommandOutput.Type.LINE, "WARNING: exitStatus: " + exitStatus));
+					resource.onResult(new CommandOutput(CommandOutput.Type.LINE, "WARNING: exitStatus: " + exitStatus));
 				} else {
 					throw new RuntimeException("Invalid ssh command exitStatus: " + exitStatus);
 				}
@@ -116,11 +104,11 @@ public class CommandCenter {
 
 		OServiceInstanceTargetVO finalTargetVO = targetVO;
 		if (!ERemoteMode.JDBC.equals(finalTargetVO.getUser().getRemoteMode())) {
-			finalTargetVO = commandService.findOf(finalTargetVO.getId(), ERemoteMode.JDBC);
+			finalTargetVO = resource.getCommandService().findOf(finalTargetVO.getId(), ERemoteMode.JDBC);
 		}
 
 		try {
-			SqlCommandExecutor executor = new SqlCommandExecutor(finalTargetVO, resultCallBack, prompt, sql, DB_CONN.get(finalTargetVO.getId()));
+			SqlCommandExecutor executor = new SqlCommandExecutor(finalTargetVO, resource, prompt, sql);
 			Thread th = new Thread(executor);
 			th.start();
 			th.join();
@@ -130,7 +118,6 @@ public class CommandCenter {
 			}
 
 			result = executor.getResult();
-			DB_CONN.put(finalTargetVO.getId(), executor.getConnection());
 		} catch (Exception e) {
 			logger.error("CommandCenter.sql", e);
 			setException(e);
@@ -151,7 +138,7 @@ public class CommandCenter {
 
 	public void userPasswordUpdated(String username, String password) {
 		logger.info("CommandCenter.userPasswordUpdated: target=[{}] username=[{}]", targetVO, username);
-		commandService.userPasswordUpdated(targetVO, username, password);
+		resource.getCommandService().userPasswordUpdated(targetVO, username, password);
 	}
 
 	public void error(String message) {
@@ -160,11 +147,11 @@ public class CommandCenter {
 	}
 
 	public void warn(String message) {
-		resultCallBack.onResult(new CommandOutput(CommandOutput.Type.LINE, "Warn: " + message));
+		resource.onResult(new CommandOutput(CommandOutput.Type.LINE, "Warn: " + message));
 	}
 
 	public void info(String message) {
-		resultCallBack.onResult(new CommandOutput(CommandOutput.Type.LINE, "Info: " + message));
+		resource.onResult(new CommandOutput(CommandOutput.Type.LINE, "Info: " + message));
 	}
 
 	public void sleep(long millis) {
@@ -183,21 +170,6 @@ public class CommandCenter {
 
 	public void setException(Exception exception) {
 		this.exception = exception;
-		closeAll();
 		throw new RuntimeException(exception);
-	}
-
-	public void closeAll() {
-		for (Session session : SSH.values()) {
-			session.disconnect();
-		}
-
-		for (Connection connection : DB_CONN.values()) {
-			try {
-				connection.close();
-			} catch (SQLException e) {
-				logger.error("CommandCenter.closeAll", e);
-			}
-		}
 	}
 }

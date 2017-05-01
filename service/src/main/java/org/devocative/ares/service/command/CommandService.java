@@ -7,6 +7,7 @@ import org.devocative.adroit.xml.AdroitXStream;
 import org.devocative.ares.AresErrorCode;
 import org.devocative.ares.AresException;
 import org.devocative.ares.cmd.CommandCenter;
+import org.devocative.ares.cmd.CommandCenterResource;
 import org.devocative.ares.cmd.ICommandResultCallBack;
 import org.devocative.ares.entity.command.Command;
 import org.devocative.ares.entity.command.ConfigLob;
@@ -36,8 +37,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.PostConstruct;
-import java.sql.Connection;
-import java.sql.DriverManager;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -178,32 +177,38 @@ public class CommandService implements ICommandService, IMissedHitHandler<Long, 
 	}
 
 	@Override
-	public Object executeCommand(String command, OServiceInstance serviceInstance, Map<String, String> params, ICommandResultCallBack callBack) throws Exception {
+	public Object executeCommand(Long commandId, OServiceInstance serviceInstance, Map<String, String> params, ICommandResultCallBack callBack) throws Exception {
+		Long start = System.currentTimeMillis();
+
+		Command command = load(commandId);
+		CommandCenterResource resource = new CommandCenterResource(this, callBack);
+		Long logId = commandLogService.insertLog(command, serviceInstance, params);
+
+		logger.info("Start command execution: cmd=[{}] si=[{}] currentUser=[{}] logId=[{}]",
+			command.getName(), serviceInstance, securityService.getCurrentUser(), logId);
+
+		Exception error = null;
+		try {
+			return executeCommand(command, serviceInstance, params, resource);
+		} catch (Exception e) {
+			error = e;
+			throw e;
+		} finally {
+			Long dur = ((System.currentTimeMillis() - start) / 1000);
+			logger.info("Finish command execution: cmd=[{}] si=[{}] currentUser=[{}] dur=[{}] logId=[{}]",
+				command.getName(), serviceInstance, securityService.getCurrentUser(), dur, logId);
+			commandLogService.updateLog(logId, dur, error);
+			resource.closeAll();
+		}
+	}
+
+	@Override
+	public Object callCommand(String command, OServiceInstance serviceInstance, Map<String, String> params, CommandCenterResource resource) throws Exception {
 		Command cmd = loadByNameAndOService(serviceInstance.getService().getId(), command);
 		if (cmd == null) {
 			throw new AresException(AresErrorCode.CommandNotFound, command);
 		}
-		return executeCommand(cmd, serviceInstance, params, callBack, null);
-	}
-
-	@Override
-	public Object executeCommand(Long commandId, OServiceInstance serviceInstance, Map<String, String> params, ICommandResultCallBack callBack) throws Exception {
-		Command command = load(commandId);
-
-		Long logId = commandLogService.insertLog(command, serviceInstance, params);
-
-		return executeCommand(command, serviceInstance, params, callBack, logId);
-	}
-
-	@Override
-	public Connection getConnection(OServiceInstanceTargetVO targetVO) {
-		try {
-			Class.forName(targetVO.getProp().get("driver"));
-			return DriverManager.getConnection(targetVO.getConnection(), targetVO.getUsername(), targetVO.getPassword());
-		} catch (Exception e) {
-			logger.error("getConnection", e);
-			throw new RuntimeException(e);
-		}
+		return executeCommand(cmd, serviceInstance, params, resource);
 	}
 
 	@Override
@@ -226,47 +231,27 @@ public class CommandService implements ICommandService, IMissedHitHandler<Long, 
 
 	// ------------------------------
 
-	private Object executeCommand(Command command, OServiceInstance serviceInstance, Map<String, String> params, ICommandResultCallBack callBack, Long logId) throws Exception {
+	private Object executeCommand(Command command, OServiceInstance serviceInstance, Map<String, String> params, CommandCenterResource resource) throws Exception {
 		logger.debug("CommandService.executeCommand: currentUser=[{}] cmd=[{}]", securityService.getCurrentUser(), command.getName());
 
-		Object result = null;
-		Exception error = null;
-		Long start = System.currentTimeMillis();
+		OServiceInstanceTargetVO targetVO = serviceInstanceService.getTargetVO(serviceInstance.getId());
 
-		XCommand xCommand = command.getXCommand();
+		Map<String, Object> cmdParams = new HashMap<>();
+		cmdParams.putAll(params);
 
-		try {
-			OServiceInstanceTargetVO targetVO = serviceInstanceService.getTargetVO(serviceInstance.getId());
+		CommandCenter center = new CommandCenter(targetVO, resource);
+		cmdParams.put("$cmd", center);
+		cmdParams.put("target", targetVO);
 
-			logger.info("Start command execution: cmd=[{}] si=[{}] user=[{}] executor=[{}] params=#[{}] logId=[{}]",
-				command.getName(), serviceInstance, securityService.getCurrentUser(), targetVO.getUsername(),
-				targetVO.getProp(), logId);
+		CmdRunner runner = new CmdRunner(command.getId(), command.getXCommand().getBody(), cmdParams);
+		runner.run();
 
-			Map<String, Object> cmdParams = new HashMap<>();
-			cmdParams.putAll(params);
-
-			CommandCenter center = new CommandCenter(this, targetVO, callBack);
-			cmdParams.put("$cmd", center);
-			cmdParams.put("target", targetVO);
-
-			CmdRunner runner = new CmdRunner(command.getId(), xCommand.getBody(), cmdParams);
-			runner.run();
-			center.closeAll();
-
-			result = runner.getResult();
-			error = runner.getError();
-			if (error != null) {
-				throw error;
-			}
-		} finally {
-			Long dur = ((System.currentTimeMillis() - start) / 1000);
-			logger.info("Finish command execution: cmd=[{}] si=[{}] user=[{}] dur=[{}] logId=[{}]",
-				command.getName(), serviceInstance, securityService.getCurrentUser(), dur, logId);
-
-			if (logId != null) {
-				commandLogService.updateLog(logId, dur, error);
-			}
+		Object result = runner.getResult();
+		Exception error = runner.getError();
+		if (error != null) {
+			throw error;
 		}
+
 		return result;
 	}
 

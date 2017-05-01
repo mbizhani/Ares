@@ -8,35 +8,21 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class SqlCommandExecutor extends AbstractCommandExecutor {
-	private Connection connection;
 
-	// ------------------------------
-
-	public SqlCommandExecutor(OServiceInstanceTargetVO targetVO, ICommandResultCallBack resultCallBack, String prompt, String command, Connection connection) {
-		super(targetVO, resultCallBack, prompt, command);
-		this.connection = connection;
+	public SqlCommandExecutor(OServiceInstanceTargetVO targetVO, CommandCenterResource resource, String prompt, String command) {
+		super(targetVO, resource, prompt, command);
 	}
-
-	// ------------------------------
-
-	public Connection getConnection() {
-		return connection;
-	}
-
 
 	// ------------------------------
 
 	@Override
 	protected void execute() throws SQLException, ClassNotFoundException {
 		Object result;
-		if (connection == null) {
-			resultCallBack.onResult(new CommandOutput(CommandOutput.Type.PROMPT, "connecting ..."));
-			connection = createConnection();
-		}
+		Connection connection = resource.createConnection(targetVO);
 
 		logger.info("Execute query: si=[{}] sql=[{}]", targetVO, command);
 		String p = String.format("[ %s@%s ]$ %s", targetVO.getUsername(), targetVO.getName(), prompt);
-		resultCallBack.onResult(new CommandOutput(CommandOutput.Type.PROMPT, p));
+		resource.onResult(new CommandOutput(CommandOutput.Type.PROMPT, p));
 
 		Statement statement = connection.createStatement();
 		if (statement.execute(command)) {
@@ -84,10 +70,5 @@ public class SqlCommandExecutor extends AbstractCommandExecutor {
 		statement.close();
 
 		setResult(result);
-	}
-
-	private Connection createConnection() throws ClassNotFoundException, SQLException {
-		Class.forName(targetVO.getProp().get("driver"));
-		return DriverManager.getConnection(targetVO.getConnection(), targetVO.getUsername(), targetVO.getPassword());
 	}
 }

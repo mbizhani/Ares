@@ -1,7 +1,6 @@
 package org.devocative.ares.cmd;
 
 import com.jcraft.jsch.ChannelExec;
-import com.jcraft.jsch.JSch;
 import com.jcraft.jsch.JSchException;
 import com.jcraft.jsch.Session;
 import org.devocative.ares.vo.OServiceInstanceTargetVO;
@@ -14,8 +13,6 @@ import java.io.*;
  * are deleted. So by this class, ssh command execution is isolated!
  */
 public class ShellCommandExecutor extends AbstractCommandExecutor {
-	private JSch jSch;
-	private Session session;
 	private String[] stdin;
 
 	// ---------------
@@ -24,19 +21,12 @@ public class ShellCommandExecutor extends AbstractCommandExecutor {
 
 	// ------------------------------
 
-	public ShellCommandExecutor(OServiceInstanceTargetVO targetVO, ICommandResultCallBack resultCallBack, String prompt, String command, JSch jSch, Session session, String[] stdin) {
-		super(targetVO, resultCallBack, prompt, command);
-
-		this.jSch = jSch;
-		this.session = session;
+	public ShellCommandExecutor(OServiceInstanceTargetVO targetVO, CommandCenterResource resource, String prompt, String command, String[] stdin) {
+		super(targetVO, resource, prompt, command);
 		this.stdin = stdin;
 	}
 
 	// ------------------------------
-
-	public Session getSession() {
-		return session;
-	}
 
 	public int getExitStatus() {
 		return exitStatus;
@@ -46,15 +36,7 @@ public class ShellCommandExecutor extends AbstractCommandExecutor {
 
 	@Override
 	protected void execute() throws JSchException, IOException {
-		if (session == null) {
-			logger.info("Try to get SSH connection: {}", targetVO.getName());
-			resultCallBack.onResult(new CommandOutput(CommandOutput.Type.PROMPT, "connecting ..."));
-
-			session = jSch.getSession(targetVO.getUsername(), targetVO.getAddress(), targetVO.getPort());
-			session.setPassword(targetVO.getPassword());
-			session.setConfig("StrictHostKeyChecking", "no");
-			session.connect(30000); // making a connection with timeout.
-		}
+		Session session = resource.createSession(targetVO);
 
 		String finalCmd = command;
 		if (targetVO.isSudoer() && !command.startsWith("sudo -S")) {
@@ -68,7 +50,7 @@ public class ShellCommandExecutor extends AbstractCommandExecutor {
 
 		logger.info("Sending SSH Command: cmd=[{}] si=[{}]", prompt, targetVO);
 		String p = String.format("[ %s@%s ]$ %s", targetVO.getUsername(), targetVO.getName(), prompt);
-		resultCallBack.onResult(new CommandOutput(CommandOutput.Type.PROMPT, p));
+		resource.onResult(new CommandOutput(CommandOutput.Type.PROMPT, p));
 
 		ChannelExec channelExec = (ChannelExec) session.openChannel("exec");
 		channelExec.setCommand(finalCmd);
@@ -103,7 +85,7 @@ public class ShellCommandExecutor extends AbstractCommandExecutor {
 			int read;
 			while ((read = br.read(buff)) != -1) {
 				String line = new String(buff, 0, read);
-				resultCallBack.onResult(new CommandOutput(line));
+				resource.onResult(new CommandOutput(line));
 				logger.debug("\tResult = {}", line);
 				result.append(line).append("\n");
 			}
@@ -117,7 +99,7 @@ public class ShellCommandExecutor extends AbstractCommandExecutor {
 			int read;
 			while ((read = errBr.read(buff)) != -1) {
 				String line = new String(buff, 0, read);
-				resultCallBack.onResult(new CommandOutput(CommandOutput.Type.LINE, line));
+				resource.onResult(new CommandOutput(CommandOutput.Type.LINE, line));
 				logger.debug("\tResult = {}", line);
 			}
 			if (channelExec.isClosed()) {

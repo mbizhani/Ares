@@ -1,5 +1,6 @@
 package org.devocative.ares.iservice.command;
 
+import org.devocative.ares.cmd.CommandCenterResource;
 import org.devocative.ares.cmd.ICommandResultCallBack;
 import org.devocative.ares.entity.command.Command;
 import org.devocative.ares.entity.oservice.ERemoteMode;
@@ -10,7 +11,6 @@ import org.devocative.ares.vo.filter.command.CommandFVO;
 import org.devocative.ares.vo.xml.XCommand;
 import org.devocative.demeter.entity.User;
 
-import java.sql.Connection;
 import java.util.List;
 import java.util.Map;
 
@@ -35,11 +35,9 @@ public interface ICommandService {
 
 	void checkAndSave(OService oService, XCommand xCommand);
 
-	Object executeCommand(String command, OServiceInstance serviceInstance, Map<String, String> params, ICommandResultCallBack callBack) throws Exception;
-
 	Object executeCommand(Long commandId, OServiceInstance serviceInstance, Map<String, String> params, ICommandResultCallBack callBack) throws Exception;
 
-	Connection getConnection(OServiceInstanceTargetVO targetVO);
+	Object callCommand(String command, OServiceInstance serviceInstance, Map<String, String> params, CommandCenterResource resource) throws Exception;
 
 	void userPasswordUpdated(OServiceInstanceTargetVO targetVO, String username, String password);
 
