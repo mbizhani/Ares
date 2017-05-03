@@ -63,8 +63,8 @@ public class OSIUser implements IRowMod, ICreationDate, ICreatorUser, IModificat
 	@JoinTable(name = "mt_ars_srvInstUser_user",
 		joinColumns = {@JoinColumn(name = "f_srv_inst_user", nullable = false)},
 		inverseJoinColumns = {@JoinColumn(name = "f_user", nullable = false)},
-		foreignKey = @ForeignKey(name = "srvInstUserUser2user"),
-		inverseForeignKey = @ForeignKey(name = "srvInstUserUser2siUser")
+		foreignKey = @ForeignKey(name = "srvInstUserUser2siUser"),
+		inverseForeignKey = @ForeignKey(name = "srvInstUserUser2user")
 	)
 	private List<User> allowedUsers;
 

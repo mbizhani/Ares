@@ -65,7 +65,7 @@ BEGIN
 	end loop;
 
 	--Bye Synonyms!
-	for i in (select us.synonym_name from dba_synonyms us where us.owner = scname) loop
+	for i in (select us.synonym_name from all_synonyms us where us.owner = scname) loop
 		execute immediate 'drop synonym '||scname||'.'|| i.synonym_name;
 	end loop;
 end;
