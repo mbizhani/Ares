@@ -2,6 +2,8 @@
 package org.devocative.ares.vo.filter;
 
 import org.devocative.adroit.vo.RangeVO;
+import org.devocative.ares.entity.EServerOS;
+import org.devocative.ares.entity.OServer;
 import org.devocative.demeter.entity.User;
 import org.devocative.demeter.iservice.persistor.Filterer;
 
@@ -15,6 +17,10 @@ public class OServerFVO implements Serializable {
 
 	private String name;
 	private String address;
+	private String vmId;
+	private List<EServerOS> serverOS;
+	private List<OServer> hypervisor;
+	private List<User> owner;
 	private RangeVO<Date> creationDate;
 	private List<User> creatorUser;
 	private RangeVO<Date> modificationDate;
@@ -36,6 +42,38 @@ public class OServerFVO implements Serializable {
 
 	public void setAddress(String address) {
 		this.address = address;
+	}
+
+	public String getVmId() {
+		return vmId;
+	}
+
+	public void setVmId(String vmId) {
+		this.vmId = vmId;
+	}
+
+	public List<EServerOS> getServerOS() {
+		return serverOS;
+	}
+
+	public void setServerOS(List<EServerOS> serverOS) {
+		this.serverOS = serverOS;
+	}
+
+	public List<OServer> getHypervisor() {
+		return hypervisor;
+	}
+
+	public void setHypervisor(List<OServer> hypervisor) {
+		this.hypervisor = hypervisor;
+	}
+
+	public List<User> getOwner() {
+		return owner;
+	}
+
+	public void setOwner(List<User> owner) {
+		this.owner = owner;
 	}
 
 	public RangeVO<Date> getCreationDate() {

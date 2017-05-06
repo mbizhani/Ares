@@ -140,6 +140,18 @@
 				<field name="address">
 					<finfo/>
 				</field>
+				<field name="vmId">
+					<finfo/>
+				</field>
+				<field name="serverOS">
+					<finfo/>
+				</field>
+				<field name="hypervisor">
+					<finfo/>
+				</field>
+				<field name="owner">
+					<finfo/>
+				</field>
 				<field name="creationDate">
 					<finfo hasForm="false" hasTimePart="true"/>
 				</field>

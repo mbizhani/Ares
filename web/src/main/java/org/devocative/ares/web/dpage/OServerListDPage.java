@@ -5,14 +5,16 @@ import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.markup.html.form.Form;
 import org.apache.wicket.model.CompoundPropertyModel;
 import org.apache.wicket.model.IModel;
-import org.apache.wicket.model.Model;
 import org.apache.wicket.model.ResourceModel;
+import org.devocative.ares.AresPrivilegeKey;
+import org.devocative.ares.entity.EServerOS;
 import org.devocative.ares.entity.OServer;
 import org.devocative.ares.iservice.IOServerService;
 import org.devocative.ares.vo.filter.OServerFVO;
 import org.devocative.ares.web.AresIcon;
 import org.devocative.demeter.web.DPage;
 import org.devocative.demeter.web.component.DAjaxButton;
+import org.devocative.demeter.web.component.grid.OEditAjaxColumn;
 import org.devocative.wickomp.WModel;
 import org.devocative.wickomp.form.WSelectionInput;
 import org.devocative.wickomp.form.WTextInput;
@@ -25,7 +27,6 @@ import org.devocative.wickomp.grid.WDataGrid;
 import org.devocative.wickomp.grid.WSortField;
 import org.devocative.wickomp.grid.column.OColumnList;
 import org.devocative.wickomp.grid.column.OPropertyColumn;
-import org.devocative.wickomp.grid.column.link.OAjaxLinkColumn;
 import org.devocative.wickomp.html.WAjaxLink;
 import org.devocative.wickomp.html.WFloatTable;
 import org.devocative.wickomp.html.window.WModalWindow;
@@ -84,7 +85,6 @@ public class OServerListDPage extends DPage implements IGridDataSource<OServer> 
 		super.onInitialize();
 
 		final WModalWindow window = new WModalWindow("window");
-		window.getOptions().setHeight(OSize.percent(80)).setWidth(OSize.percent(80));
 		add(window);
 
 		add(new WAjaxLink("add", AresIcon.ADD) {
@@ -95,13 +95,21 @@ public class OServerListDPage extends DPage implements IGridDataSource<OServer> 
 				window.setContent(new OServerFormDPage(window.getContentId()));
 				window.show(target);
 			}
-		});
+		}.setVisible(hasPermission(AresPrivilegeKey.OServerAdd)));
 
 		WFloatTable floatTable = new WFloatTable("floatTable");
 		floatTable.add(new WTextInput("name")
 			.setLabel(new ResourceModel("OServer.name")));
 		floatTable.add(new WTextInput("address")
 			.setLabel(new ResourceModel("OServer.address")));
+		floatTable.add(new WTextInput("vmId")
+			.setLabel(new ResourceModel("OServer.vmId")));
+		floatTable.add(new WSelectionInput("serverOS", EServerOS.list(), true)
+			.setLabel(new ResourceModel("OServer.serverOS")));
+		floatTable.add(new WSelectionInput("hypervisor", oServerService.getHypervisorList(), true)
+			.setLabel(new ResourceModel("OServer.hypervisor")));
+		floatTable.add(new WSelectionInput("owner", oServerService.getOwnerList(), true)
+			.setLabel(new ResourceModel("OServer.owner")));
 		floatTable.add(new WDateRangeInput("creationDate")
 			.setTimePartVisible(true)
 			.setLabel(new ResourceModel("entity.creationDate")));
@@ -129,6 +137,10 @@ public class OServerListDPage extends DPage implements IGridDataSource<OServer> 
 		OColumnList<OServer> columnList = new OColumnList<>();
 		columnList.add(new OPropertyColumn<OServer>(new ResourceModel("OServer.name"), "name"));
 		columnList.add(new OPropertyColumn<OServer>(new ResourceModel("OServer.address"), "address"));
+		columnList.add(new OPropertyColumn<OServer>(new ResourceModel("OServer.vmId"), "vmId"));
+		columnList.add(new OPropertyColumn<OServer>(new ResourceModel("OServer.serverOS"), "serverOS"));
+		columnList.add(new OPropertyColumn<OServer>(new ResourceModel("OServer.hypervisor"), "hypervisor"));
+		columnList.add(new OPropertyColumn<OServer>(new ResourceModel("OServer.owner"), "owner"));
 		columnList.add(new OPropertyColumn<OServer>(new ResourceModel("entity.creationDate"), "creationDate")
 			.setFormatter(ODateFormatter.getDateTimeByUserPreference())
 			.setStyle("direction:ltr"));
@@ -141,15 +153,17 @@ public class OServerListDPage extends DPage implements IGridDataSource<OServer> 
 			.setFormatter(ONumberFormatter.integer())
 			.setStyle("direction:ltr"));
 
-		columnList.add(new OAjaxLinkColumn<OServer>(new Model<String>(), AresIcon.EDIT) {
-			private static final long serialVersionUID = -903024272L;
+		if (hasPermission(AresPrivilegeKey.OServerEdit)) {
+			columnList.add(new OEditAjaxColumn<OServer>() {
+				private static final long serialVersionUID = 585801344L;
 
-			@Override
-			public void onClick(AjaxRequestTarget target, IModel<OServer> rowData) {
-				window.setContent(new OServerFormDPage(window.getContentId(), rowData.getObject()));
-				window.show(target);
-			}
-		}.setField("EDIT"));
+				@Override
+				public void onClick(AjaxRequestTarget target, IModel<OServer> rowData) {
+					window.setContent(new OServerFormDPage(window.getContentId(), rowData.getObject()));
+					window.show(target);
+				}
+			});
+		}
 
 		OGrid<OServer> oGrid = new OGrid<>();
 		oGrid

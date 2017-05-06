@@ -22,6 +22,10 @@ public interface IOServerService {
 
 	long count(OServerFVO filter);
 
+	List<OServer> getHypervisorList();
+
+	List<User> getOwnerList();
+
 	List<User> getCreatorUserList();
 
 	List<User> getModifierUserList();

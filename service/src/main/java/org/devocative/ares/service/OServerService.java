@@ -78,6 +78,16 @@ public class OServerService implements IOServerService {
 	}
 
 	@Override
+	public List<OServer> getHypervisorList() {
+		return persistorService.list(OServer.class);
+	}
+
+	@Override
+	public List<User> getOwnerList() {
+		return persistorService.list(User.class);
+	}
+
+	@Override
 	public List<User> getCreatorUserList() {
 		return persistorService.list(User.class);
 	}

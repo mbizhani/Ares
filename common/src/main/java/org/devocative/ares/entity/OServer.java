@@ -33,6 +33,21 @@ public class OServer implements ICreationDate, ICreatorUser, IModificationDate, 
 	@Column(name = "c_address", nullable = false)
 	private String address;
 
+	@Column(name = "c_vm_id")
+	private String vmId;
+
+	@Embedded
+	@AttributeOverride(name = "id", column = @Column(name = "e_os"))
+	private EServerOS serverOS;
+
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "f_hypervisor", foreignKey = @ForeignKey(name = "server_hyper2server"))
+	private OServer hypervisor;
+
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "f_owner", foreignKey = @ForeignKey(name = "server_owner2user"))
+	private User owner;
+
 	// --------------- CREATE / MODIFY
 
 	@NotAudited
@@ -98,6 +113,38 @@ public class OServer implements ICreationDate, ICreatorUser, IModificationDate, 
 
 	public void setAddress(String address) {
 		this.address = address;
+	}
+
+	public String getVmId() {
+		return vmId;
+	}
+
+	public void setVmId(String vmId) {
+		this.vmId = vmId;
+	}
+
+	public EServerOS getServerOS() {
+		return serverOS;
+	}
+
+	public void setServerOS(EServerOS serverOS) {
+		this.serverOS = serverOS;
+	}
+
+	public OServer getHypervisor() {
+		return hypervisor;
+	}
+
+	public void setHypervisor(OServer hypervisor) {
+		this.hypervisor = hypervisor;
+	}
+
+	public User getOwner() {
+		return owner;
+	}
+
+	public void setOwner(User owner) {
+		this.owner = owner;
 	}
 
 	// --------------- CREATE / MODIFY

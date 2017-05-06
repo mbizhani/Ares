@@ -5,12 +5,14 @@ import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.markup.html.form.Form;
 import org.apache.wicket.model.CompoundPropertyModel;
 import org.apache.wicket.model.ResourceModel;
+import org.devocative.ares.entity.EServerOS;
 import org.devocative.ares.entity.OServer;
 import org.devocative.ares.iservice.IOServerService;
 import org.devocative.ares.web.AresIcon;
 import org.devocative.demeter.web.DPage;
 import org.devocative.demeter.web.UrlUtil;
 import org.devocative.demeter.web.component.DAjaxButton;
+import org.devocative.wickomp.form.WSelectionInput;
 import org.devocative.wickomp.form.WTextInput;
 import org.devocative.wickomp.html.WFloatTable;
 import org.devocative.wickomp.html.window.WModalWindow;
@@ -64,6 +66,14 @@ public class OServerFormDPage extends DPage {
 		floatTable.add(new WTextInput("address")
 			.setRequired(true)
 			.setLabel(new ResourceModel("OServer.address")));
+		floatTable.add(new WTextInput("vmId")
+			.setLabel(new ResourceModel("OServer.vmId")));
+		floatTable.add(new WSelectionInput("serverOS", EServerOS.list(), false)
+			.setLabel(new ResourceModel("OServer.serverOS")));
+		floatTable.add(new WSelectionInput("hypervisor", oServerService.getHypervisorList(), false)
+			.setLabel(new ResourceModel("OServer.hypervisor")));
+		floatTable.add(new WSelectionInput("owner", oServerService.getOwnerList(), false)
+			.setLabel(new ResourceModel("OServer.owner")));
 
 		Form<OServer> form = new Form<>("form", new CompoundPropertyModel<>(entity));
 		form.add(floatTable);

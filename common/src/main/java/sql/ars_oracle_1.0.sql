@@ -18,6 +18,10 @@ CREATE TABLE a_t_ars_server (
 	d_modification  DATE,
 	f_modifier_user NUMBER(19, 0),
 	c_name          VARCHAR2(255 CHAR),
+	e_os            NUMBER(10, 0),
+	c_vm_id         VARCHAR2(255 CHAR),
+	f_hypervisor    NUMBER(19, 0),
+	f_owner         NUMBER(19, 0),
 	PRIMARY KEY (id, r_num)
 );
 
@@ -148,7 +152,11 @@ CREATE TABLE t_ars_server (
 	d_modification  DATE,
 	f_modifier_user NUMBER(19, 0),
 	c_name          VARCHAR2(255 CHAR) NOT NULL,
+	e_os            NUMBER(10, 0),
 	n_version       NUMBER(10, 0)      NOT NULL,
+	c_vm_id         VARCHAR2(255 CHAR),
+	f_hypervisor    NUMBER(19, 0),
+	f_owner         NUMBER(19, 0),
 	PRIMARY KEY (id)
 );
 
@@ -365,8 +373,18 @@ FOREIGN KEY (f_creator_user)
 REFERENCES t_dmt_user;
 
 ALTER TABLE t_ars_server
+ADD CONSTRAINT server_hyper2server
+FOREIGN KEY (f_hypervisor)
+REFERENCES t_ars_server;
+
+ALTER TABLE t_ars_server
 ADD CONSTRAINT server_mdfrusr2user
 FOREIGN KEY (f_modifier_user)
+REFERENCES t_dmt_user;
+
+ALTER TABLE t_ars_server
+ADD CONSTRAINT server_owner2user
+FOREIGN KEY (f_owner)
 REFERENCES t_dmt_user;
 
 ALTER TABLE t_ars_service
