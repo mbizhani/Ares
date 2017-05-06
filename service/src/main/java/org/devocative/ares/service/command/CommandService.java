@@ -265,7 +265,11 @@ public class CommandService implements ICommandService, IMissedHitHandler<Long, 
 			.addParam("serviceId", serviceId)
 			.object();
 
-		return load(cmdId);
+		if (cmdId != null) {
+			return load(cmdId);
+		}
+
+		return null;
 	}
 
 	private XCommand loadXCommand(Command command) {

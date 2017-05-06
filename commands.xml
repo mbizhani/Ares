@@ -151,5 +151,19 @@ $cmd.ssh("netstat", "netstat -antp")
 			</commands>
 		</service>
 
+		<service name="ESXi" adminPort="22">
+
+			<commands>
+				<command name="listVM">
+					<params/>
+
+					<body><![CDATA[
+$cmd.ssh("List of VMs", "vim-cmd vmsvc/getallvms").toTabular("\\s{3,}")
+]]></body>
+				</command>
+			</commands>
+
+		</service>
+
 	</services>
 </operation>

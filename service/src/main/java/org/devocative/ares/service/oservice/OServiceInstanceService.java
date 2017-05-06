@@ -174,8 +174,7 @@ public class OServiceInstanceService implements IOServiceInstanceService, IMisse
 			throw new AresException(AresErrorCode.ExecutorUserNotFound);
 		}
 
-		return createTargetVO(executorForSI)
-			.setSudoer(true);
+		return createTargetVO(executorForSI);
 	}
 
 	@Override
@@ -214,7 +213,7 @@ public class OServiceInstanceService implements IOServiceInstanceService, IMisse
 
 		String password = siUserService.getPassword(user);
 		OServiceInstanceTargetVO targetVO = new OServiceInstanceTargetVO(serviceInstance, user, password, props)
-			.setSudoer(true); //TODO
+			.setSudoer(!"root".equals(user.getUsername())); //TODO
 
 		if (serviceInstance.getService().getConnectionPattern() != null) {
 			Map<String, Object> params = new HashMap<>();
