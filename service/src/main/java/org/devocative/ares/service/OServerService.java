@@ -1,6 +1,6 @@
-//overwrite
 package org.devocative.ares.service;
 
+import org.devocative.adroit.vo.KeyValueVO;
 import org.devocative.ares.entity.OServer;
 import org.devocative.ares.iservice.IOServerService;
 import org.devocative.ares.vo.filter.OServerFVO;
@@ -11,6 +11,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Service("arsOServerService")
@@ -98,4 +99,19 @@ public class OServerService implements IOServerService {
 	}
 
 	// ==============================
+
+	@Override
+	public List<KeyValueVO<String, String>> findGuestsOf(Long hypervisorId) {
+		List<OServer> servers = persistorService.createQueryBuilder()
+			.addFrom(OServer.class, "ent")
+			.addWhere("and ent.hypervisor.id = :hypervisorId")
+			.addParam("hypervisorId", hypervisorId)
+			.list();
+
+		List<KeyValueVO<String, String>> result = new ArrayList<>();
+		for (OServer oServer : servers) {
+			result.add(new KeyValueVO<>(oServer.getVmId(), oServer.getName()));
+		}
+		return result;
+	}
 }

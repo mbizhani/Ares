@@ -35,6 +35,9 @@ public class OServiceInstance implements ICreationDate, ICreatorUser, IModificat
 	@JoinColumn(name = "f_server", nullable = false, foreignKey = @ForeignKey(name = "srvcinst2server"))
 	private OServer server;
 
+	@Column(name = "f_server", insertable = false, updatable = false)
+	private Long serverId;
+
 	@ManyToOne(fetch = FetchType.EAGER)
 	@JoinColumn(name = "f_service", nullable = false, foreignKey = @ForeignKey(name = "srvcinst2service"))
 	private OService service;
@@ -112,6 +115,10 @@ public class OServiceInstance implements ICreationDate, ICreatorUser, IModificat
 
 	public void setServer(OServer server) {
 		this.server = server;
+	}
+
+	public Long getServerId() {
+		return serverId;
 	}
 
 	public OService getService() {

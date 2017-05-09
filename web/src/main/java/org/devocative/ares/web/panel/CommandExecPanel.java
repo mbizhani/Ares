@@ -12,9 +12,11 @@ import org.apache.wicket.model.CompoundPropertyModel;
 import org.apache.wicket.model.Model;
 import org.apache.wicket.model.ResourceModel;
 import org.apache.wicket.util.string.Strings;
+import org.devocative.adroit.vo.KeyValueVO;
 import org.devocative.ares.cmd.CommandOutput;
 import org.devocative.ares.entity.command.Command;
 import org.devocative.ares.entity.oservice.OServiceInstance;
+import org.devocative.ares.iservice.IOServerService;
 import org.devocative.ares.iservice.command.ICommandService;
 import org.devocative.ares.iservice.oservice.IOServiceInstanceService;
 import org.devocative.ares.vo.CommandQVO;
@@ -29,6 +31,7 @@ import org.devocative.wickomp.WebUtil;
 import org.devocative.wickomp.async.AsyncBehavior;
 import org.devocative.wickomp.async.IAsyncResponseHandler;
 import org.devocative.wickomp.form.WSelectionInput;
+import org.devocative.wickomp.form.WSelectionInputAjaxUpdatingBehavior;
 import org.devocative.wickomp.form.WTextInput;
 import org.devocative.wickomp.html.WFloatTable;
 import org.slf4j.Logger;
@@ -52,12 +55,16 @@ public class CommandExecPanel extends DPanel implements IAsyncResponseHandler {
 
 	private AsyncBehavior asyncBehavior;
 	private WebMarkupContainer tabs, log, tabular;
+	private List<WSelectionInput> guestInputs = new ArrayList<>();
 
 	@Inject
 	private ICommandService commandService;
 
 	@Inject
 	private IOServiceInstanceService serviceInstanceService;
+
+	@Inject
+	private IOServerService serverService;
 
 	// ------------------------------
 
@@ -109,6 +116,7 @@ public class CommandExecPanel extends DPanel implements IAsyncResponseHandler {
 		Command command = commandService.load(commandId);
 		XCommand xCommand = command.getXCommand();
 		final Long targetServiceId = command.getService().getId();
+		final boolean hasGuest = xCommand.checkHasGuest();
 
 		List<XParam> xParams = new ArrayList<>();
 		xParams.add(
@@ -132,7 +140,27 @@ public class CommandExecPanel extends DPanel implements IAsyncResponseHandler {
 				FormComponent fieldFormItem;
 
 				if ("service".equals(xParam.getType())) {
-					fieldFormItem = new WSelectionInput(xParam.getName(), serviceInstanceService.findListForCommandExecution(targetServiceId), false);
+					WSelectionInput selectionInput = new WSelectionInput(xParam.getName(), serviceInstanceService.findListForCommandExecution(targetServiceId), false);
+
+					if (hasGuest) {
+						selectionInput.addToChoices(new WSelectionInputAjaxUpdatingBehavior() {
+							private static final long serialVersionUID = -2226097679754487094L;
+
+							@Override
+							protected void onUpdate(AjaxRequestTarget target) {
+								OServiceInstance serviceInstance = (OServiceInstance) getComponent().getDefaultModelObject();
+								List<KeyValueVO<String, String>> guestsOf = serverService.findGuestsOf(serviceInstance.getServerId());
+								for (WSelectionInput guestInput : guestInputs) {
+									guestInput.updateChoices(target, guestsOf);
+								}
+							}
+						});
+					}
+					fieldFormItem = selectionInput;
+				} else if (XCommand.GUEST_TYPE.equals(xParam.getType())) {
+					WSelectionInput selectionInput = new WSelectionInput(xParam.getName(), new ArrayList(), false);
+					guestInputs.add(selectionInput);
+					fieldFormItem = selectionInput;
 				} else {
 					fieldFormItem = new WTextInput(xParam.getName());
 				}
@@ -152,7 +180,13 @@ public class CommandExecPanel extends DPanel implements IAsyncResponseHandler {
 				OServiceInstance serviceInstance = (OServiceInstance) params.remove("target");
 				Map<String, String> cmdParams = new HashMap<>();
 				for (Map.Entry<String, Object> entry : params.entrySet()) {
-					cmdParams.put(entry.getKey(), (String) entry.getValue());
+					if (entry.getValue() instanceof KeyValueVO) {
+						KeyValueVO vo = (KeyValueVO) entry.getValue();
+						cmdParams.put(entry.getKey(), vo.getKey().toString());
+						//cmdParams.put(entry.getKey() + "$Title", vo.getValue().toString());
+					} else {
+						cmdParams.put(entry.getKey(), (String) entry.getValue());
+					}
 				}
 				asyncBehavior.sendAsyncRequest(AresDModule.EXEC_COMMAND, new CommandQVO(commandId, serviceInstance, cmdParams));
 			}
@@ -185,7 +219,7 @@ public class CommandExecPanel extends DPanel implements IAsyncResponseHandler {
 		String tabId = tabular.getMarkupId() + "-tab";
 
 		StringBuilder builder = new StringBuilder();
-		builder.append(String.format("<table id='%s' border='1' style='width:100%%;height:300px'><thead><tr>", tabId));
+		builder.append(String.format("<table id='%s' border='1' style='width:100%%;'><thead><tr>", tabId));
 		for (String col : tabularVO.getColumns()) {
 			//builder.append(String.format("<th data-options=\\\"field:'%s'\\\">", col.replaceAll("\\W",""))).append(col).append("</th>");
 			builder.append("<th>").append(col).append("</th>");

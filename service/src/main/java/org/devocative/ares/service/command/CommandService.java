@@ -241,6 +241,7 @@ public class CommandService implements ICommandService, IMissedHitHandler<Long, 
 
 		CommandCenter center = new CommandCenter(targetVO, resource);
 		cmdParams.put("$cmd", center);
+		cmdParams.put("$params", params);
 		cmdParams.put("target", targetVO);
 
 		CmdRunner runner = new CmdRunner(command.getId(), command.getXCommand().getBody(), cmdParams);

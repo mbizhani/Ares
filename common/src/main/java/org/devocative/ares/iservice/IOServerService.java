@@ -1,6 +1,6 @@
-//overwrite
 package org.devocative.ares.iservice;
 
+import org.devocative.adroit.vo.KeyValueVO;
 import org.devocative.ares.entity.OServer;
 import org.devocative.ares.vo.filter.OServerFVO;
 import org.devocative.demeter.entity.User;
@@ -31,4 +31,6 @@ public interface IOServerService {
 	List<User> getModifierUserList();
 
 	// ==============================
+
+	List<KeyValueVO<String, String>> findGuestsOf(Long hypervisorId);
 }

@@ -161,8 +161,74 @@ $cmd.ssh("netstat", "netstat -antp")
 $cmd.ssh("List of VMs", "vim-cmd vmsvc/getallvms").toTabular("\\s{3,}")
 ]]></body>
 				</command>
-			</commands>
 
+				<command name="powerStat">
+					<params>
+						<param name="Vmid" type="Guest" required="true"/>
+					</params>
+
+					<body><![CDATA[
+$cmd.ssh("Check power status: '${Vmid}'", "vim-cmd vmsvc/power.getstate ${Vmid}").stdout.contains("Powered on")
+]]></body>
+				</command>
+
+				<command name="powerOn">
+					<params>
+						<param name="Vmid" type="Guest" required="true"/>
+					</params>
+
+					<body><![CDATA[
+if(!$cmd.exec("powerStat", $params)) {
+	$cmd.ssh("Power On: '${Vmid}'", "vim-cmd vmsvc/power.on ${Vmid}")
+} else {
+	$cmd.error("Already on")
+}
+]]></body>
+				</command>
+
+				<command name="powerOff">
+					<params>
+						<param name="Vmid" type="Guest" required="true"/>
+					</params>
+
+					<body><![CDATA[
+if($cmd.exec("powerStat", $params)) {
+	$cmd.ssh("Power Off: '${Vmid}'", "vim-cmd vmsvc/power.off ${Vmid}")
+} else {
+	$cmd.error("Already off")
+}
+]]></body>
+				</command>
+
+				<command name="reboot">
+					<params>
+						<param name="Vmid" type="Guest" required="true"/>
+					</params>
+
+					<body><![CDATA[
+if($cmd.exec("powerStat", $params)) {
+	$cmd.ssh("Reboot: '${Vmid}'", "vim-cmd vmsvc/power.reboot ${Vmid}")
+} else {
+	$cmd.error("Already off")
+}
+]]></body>
+				</command>
+
+				<command name="deleteVM">
+					<params>
+						<param name="Vmid" type="Guest" required="true"/>
+					</params>
+
+					<body><![CDATA[
+if(!$cmd.exec("powerStat", $params)) {
+	$cmd.ssh("Delete: '${Vmid}'", "vim-cmd vmsvc/destroy ${Vmid}")
+} else {
+	$cmd.error("Power off before delete")
+}
+]]></body>
+				</command>
+
+			</commands>
 		</service>
 
 	</services>
