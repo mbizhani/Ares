@@ -78,7 +78,7 @@ public class TerminalConsoleDPage extends DPage {
 		};
 		add(tabPanel);
 
-		List<OSIUser> allowedOnes = osiUserService.findAllowedOnes();
+		List<OSIUser> allowedOnes = osiUserService.findAllowedOnes(ERemoteMode.SSH);
 		add(new ListView<OSIUser>("connections", allowedOnes) {
 			private static final long serialVersionUID = -2856412103432642301L;
 

@@ -185,13 +185,15 @@ public class OSIUserService implements IOSIUserService {
 	}
 
 	@Override
-	public List<OSIUser> findAllowedOnes() {
+	public List<OSIUser> findAllowedOnes(ERemoteMode remoteMode) {
 		UserVO currentUser = securityService.getCurrentUser();
 
 		IQueryBuilder queryBuilder = persistorService.createQueryBuilder()
 			.addSelect("select ent")
 			.addFrom(OSIUser.class, "ent")
-			.addWhere("and ent.enabled = true");
+			.addWhere("and ent.enabled = true")
+			.addWhere("and ent.remoteMode = :rm")
+			.addParam("rm", remoteMode);
 
 		if (!currentUser.isAdmin()) {
 			queryBuilder

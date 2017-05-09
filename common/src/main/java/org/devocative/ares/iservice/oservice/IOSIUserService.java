@@ -45,7 +45,7 @@ public interface IOSIUserService {
 
 	OSIUser findExecutor(Long serverId, ERemoteMode remoteMode);
 
-	List<OSIUser> findAllowedOnes();
+	List<OSIUser> findAllowedOnes(ERemoteMode remoteMode);
 
 	boolean isOSIUserAllowed(Long osiUserId);
 }
