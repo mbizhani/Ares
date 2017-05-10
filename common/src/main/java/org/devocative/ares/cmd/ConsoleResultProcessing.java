@@ -165,9 +165,9 @@ public class ConsoleResultProcessing {
 			List<String> cells = new ArrayList<>();
 			copyArrToCollection(lineParts, cells);
 
-			if(lineParts.length < headerParts.length) {
+			if (lineParts.length < headerParts.length) {
 				int diff = headerParts.length - lineParts.length;
-				for(int i=0; i<diff; i++) {
+				for (int i = 0; i < diff; i++) {
 					cells.add("");
 				}
 			}

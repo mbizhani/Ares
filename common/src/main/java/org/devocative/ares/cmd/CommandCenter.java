@@ -162,6 +162,10 @@ public class CommandCenter {
 		}
 	}
 
+	public void log(String log) {
+		logger.debug(log);
+	}
+
 	// ------------------------------
 
 	public Exception getException() {

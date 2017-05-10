@@ -84,10 +84,10 @@ public class ShellCommandExecutor extends AbstractCommandExecutor {
 			char[] buff = new char[1024];
 			int read;
 			while ((read = br.read(buff)) != -1) {
-				String line = new String(buff, 0, read);
-				resource.onResult(new CommandOutput(line));
-				logger.debug("\tResult = {}", line);
-				result.append(line).append("\n");
+				String cmdTxtResult = new String(buff, 0, read);
+				resource.onResult(new CommandOutput(cmdTxtResult));
+				logger.debug("\tResult = {}", cmdTxtResult);
+				result.append(cmdTxtResult);
 			}
 			if (channelExec.isClosed()) {
 				break;

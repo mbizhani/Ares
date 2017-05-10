@@ -225,9 +225,9 @@ public class CommandExecPanel extends DPanel implements IAsyncResponseHandler {
 			builder.append("<th>").append(col).append("</th>");
 		}
 		builder.append("</tr></thead><tbody>");
-		for (List<?> row : tabularVO.getRows()) {
+		for (Map<String, ?> row : tabularVO.getRows()) {
 			builder.append("<tr>");
-			for (Object cell : row) {
+			for (Object cell : row.values()) {
 				builder.append("<td>").append(cell).append("</td>");
 			}
 			builder.append("</tr>");

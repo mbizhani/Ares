@@ -158,7 +158,19 @@ $cmd.ssh("netstat", "netstat -antp")
 					<params/>
 
 					<body><![CDATA[
-$cmd.ssh("List of VMs", "vim-cmd vmsvc/getallvms").toTabular("\\s{3,}")
+def tab = $cmd.ssh("List of VMs", "vim-cmd vmsvc/getallvms")
+	.toTabular("\\s{3,}")
+	.build()
+
+tab.rows.each {
+	$cmd.log("listVM: Before change ${it}")
+	it['PowerStat'] = $cmd.exec("powerStat", [Vmid : it.Vmid])
+	it.File = it.File.replaceAll("\\[", "/vmfs/volumes/").replaceAll("\\] ", "/")
+	it['IpAddress'] = $cmd.exec("getIP", [Vmid : it.Vmid])
+	$cmd.log("listVM: After change ${it}")
+}
+
+return tab
 ]]></body>
 				</command>
 
@@ -225,6 +237,20 @@ if(!$cmd.exec("powerStat", $params)) {
 } else {
 	$cmd.error("Power off before delete")
 }
+]]></body>
+				</command>
+
+				<command name="getIP">
+					<params>
+						<param name="Vmid" type="Guest" required="true"/>
+					</params>
+
+					<body><![CDATA[
+$cmd.ssh("Get IP: '${Vmid}'", """ vim-cmd vmsvc/get.guest ${Vmid} | grep -m 1 "ipAddress = \\"" """, true)
+.stdout
+.trim()
+.replaceAll("ipAddress = \"", "")
+.replaceAll("\",", "")
 ]]></body>
 				</command>
 
