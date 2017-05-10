@@ -4,10 +4,7 @@ import org.devocative.ares.vo.TabularVO;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 
 public class ConsoleResultProcessing {
 	private static final Logger logger = LoggerFactory.getLogger(ConsoleResultProcessing.class);
@@ -71,6 +68,10 @@ public class ConsoleResultProcessing {
 	// ---------------
 
 	public TabularVO build() {
+		return build(null);
+	}
+
+	public TabularVO build(Map<String, String>[] filters) {
 		String[] split = text.split("[\n]");
 
 		List<String> lines = new ArrayList<>();
@@ -98,7 +99,7 @@ public class ConsoleResultProcessing {
 		logger.debug("Final Columns: {}", columns);
 		logger.debug("Rows: {}", rows);
 
-		return new TabularVO<>(columns, rows);
+		return new TabularVO<>(columns, rows, filters);
 	}
 
 	// ------------------------------

@@ -30,6 +30,7 @@ import org.devocative.demeter.web.component.DAjaxButton;
 import org.devocative.wickomp.WebUtil;
 import org.devocative.wickomp.async.AsyncBehavior;
 import org.devocative.wickomp.async.IAsyncResponseHandler;
+import org.devocative.wickomp.form.WBooleanInput;
 import org.devocative.wickomp.form.WSelectionInput;
 import org.devocative.wickomp.form.WSelectionInputAjaxUpdatingBehavior;
 import org.devocative.wickomp.form.WTextInput;
@@ -157,12 +158,20 @@ public class CommandExecPanel extends DPanel implements IAsyncResponseHandler {
 						});
 					}
 					fieldFormItem = selectionInput;
+					//TODO defaultValue
 				} else if (XCommand.GUEST_TYPE.equals(xParam.getType())) {
 					WSelectionInput selectionInput = new WSelectionInput(xParam.getName(), new ArrayList(), false);
 					guestInputs.add(selectionInput);
 					fieldFormItem = selectionInput;
+					//TODO defaultValue
+				} else if (XCommand.BOOLEAN_TYPE.equals(xParam.getType())) {
+					fieldFormItem = new WBooleanInput(xParam.getName());
+					if (xParam.getDefaultValue() != null) {
+						params.put(xParam.getName(), Boolean.valueOf(xParam.getDefaultValue()));
+					}
 				} else {
 					fieldFormItem = new WTextInput(xParam.getName());
+					//TODO defaultValue
 				}
 
 				view.add(fieldFormItem.setRequired(xParam.getRequired()).setLabel(new Model<>(xParam.getName())));
@@ -178,14 +187,14 @@ public class CommandExecPanel extends DPanel implements IAsyncResponseHandler {
 			@Override
 			protected void onSubmit(AjaxRequestTarget target) {
 				OServiceInstance serviceInstance = (OServiceInstance) params.remove("target");
-				Map<String, String> cmdParams = new HashMap<>();
+				Map<String, Object> cmdParams = new HashMap<>();
 				for (Map.Entry<String, Object> entry : params.entrySet()) {
 					if (entry.getValue() instanceof KeyValueVO) {
 						KeyValueVO vo = (KeyValueVO) entry.getValue();
 						cmdParams.put(entry.getKey(), vo.getKey().toString());
 						//cmdParams.put(entry.getKey() + "$Title", vo.getValue().toString());
 					} else {
-						cmdParams.put(entry.getKey(), (String) entry.getValue());
+						cmdParams.put(entry.getKey(), entry.getValue());
 					}
 				}
 				asyncBehavior.sendAsyncRequest(AresDModule.EXEC_COMMAND, new CommandQVO(commandId, serviceInstance, cmdParams));

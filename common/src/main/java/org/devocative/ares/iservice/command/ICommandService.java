@@ -35,9 +35,9 @@ public interface ICommandService {
 
 	void checkAndSave(OService oService, XCommand xCommand);
 
-	Object executeCommand(Long commandId, OServiceInstance serviceInstance, Map<String, String> params, ICommandResultCallBack callBack) throws Exception;
+	Object executeCommand(Long commandId, OServiceInstance serviceInstance, Map<String, Object> params, ICommandResultCallBack callBack) throws Exception;
 
-	Object callCommand(String command, OServiceInstance serviceInstance, Map<String, String> params, CommandCenterResource resource) throws Exception;
+	Object callCommand(String command, OServiceInstance serviceInstance, Map<String, Object> params, CommandCenterResource resource) throws Exception;
 
 	void userPasswordUpdated(OServiceInstanceTargetVO targetVO, String username, String password);
 

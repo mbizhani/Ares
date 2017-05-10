@@ -177,7 +177,7 @@ public class CommandService implements ICommandService, IMissedHitHandler<Long, 
 	}
 
 	@Override
-	public Object executeCommand(Long commandId, OServiceInstance serviceInstance, Map<String, String> params, ICommandResultCallBack callBack) throws Exception {
+	public Object executeCommand(Long commandId, OServiceInstance serviceInstance, Map<String, Object> params, ICommandResultCallBack callBack) throws Exception {
 		Long start = System.currentTimeMillis();
 
 		Command command = load(commandId);
@@ -203,7 +203,7 @@ public class CommandService implements ICommandService, IMissedHitHandler<Long, 
 	}
 
 	@Override
-	public Object callCommand(String command, OServiceInstance serviceInstance, Map<String, String> params, CommandCenterResource resource) throws Exception {
+	public Object callCommand(String command, OServiceInstance serviceInstance, Map<String, Object> params, CommandCenterResource resource) throws Exception {
 		Command cmd = loadByNameAndOService(serviceInstance.getService().getId(), command);
 		if (cmd == null) {
 			throw new AresException(AresErrorCode.CommandNotFound, command);
@@ -231,7 +231,7 @@ public class CommandService implements ICommandService, IMissedHitHandler<Long, 
 
 	// ------------------------------
 
-	private Object executeCommand(Command command, OServiceInstance serviceInstance, Map<String, String> params, CommandCenterResource resource) throws Exception {
+	private Object executeCommand(Command command, OServiceInstance serviceInstance, Map<String, Object> params, CommandCenterResource resource) throws Exception {
 		logger.debug("CommandService.executeCommand: currentUser=[{}] cmd=[{}]", securityService.getCurrentUser(), command.getName());
 
 		OServiceInstanceTargetVO targetVO = serviceInstanceService.getTargetVO(serviceInstance.getId());
@@ -239,9 +239,8 @@ public class CommandService implements ICommandService, IMissedHitHandler<Long, 
 		Map<String, Object> cmdParams = new HashMap<>();
 		cmdParams.putAll(params);
 
-		CommandCenter center = new CommandCenter(targetVO, resource);
-		cmdParams.put("$cmd", center);
-		cmdParams.put("$params", params);
+		cmdParams.put("$cmd", new CommandCenter(targetVO, resource, params));
+		//cmdParams.put("$params", params);
 		cmdParams.put("target", targetVO);
 
 		CmdRunner runner = new CmdRunner(command.getId(), command.getXCommand().getBody(), cmdParams);
@@ -279,7 +278,7 @@ public class CommandService implements ICommandService, IMissedHitHandler<Long, 
 
 // ------------------------------
 
-	private class CmdRunner implements Runnable {
+	private class CmdRunner /*implements Runnable*/ {
 		private Long cmdId;
 		private String cmd;
 		private Map<String, Object> params;
@@ -292,7 +291,7 @@ public class CommandService implements ICommandService, IMissedHitHandler<Long, 
 			this.params = params;
 		}
 
-		@Override
+		//@Override
 		public void run() {
 			try {
 				IStringTemplate template = stringTemplateService.create("CMD_" + cmdId, cmd, TemplateEngineType.GroovyShell);

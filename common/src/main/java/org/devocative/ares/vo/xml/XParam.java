@@ -18,6 +18,9 @@ public class XParam implements Serializable {
 	@XStreamAsAttribute
 	private Boolean required;
 
+	@XStreamAsAttribute
+	private String defaultValue;
+
 	// ------------------------------
 
 	public String getName() {
@@ -39,11 +42,20 @@ public class XParam implements Serializable {
 	}
 
 	public Boolean getRequired() {
-		return required;
+		return required != null ? required : false;
 	}
 
 	public XParam setRequired(Boolean required) {
 		this.required = required;
+		return this;
+	}
+
+	public String getDefaultValue() {
+		return defaultValue;
+	}
+
+	public XParam setDefaultValue(String defaultValue) {
+		this.defaultValue = defaultValue;
 		return this;
 	}
 }

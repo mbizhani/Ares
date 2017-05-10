@@ -12,6 +12,10 @@ public class TabularVO<T> implements Serializable {
 	// ------------------------------
 
 	public TabularVO(List<String> columns, List<List<T>> rows) {
+		this(columns, rows, null);
+	}
+
+	public TabularVO(List<String> columns, List<List<T>> rows, Map<String, T>[] filters) {
 		this.columns = columns;
 
 		for (List<T> row : rows) {
@@ -19,7 +23,10 @@ public class TabularVO<T> implements Serializable {
 			for (int i = 0; i < columns.size(); i++) {
 				map.put(columns.get(i), row.get(i));
 			}
-			data.add(map);
+
+			if (filters == null || filters.length == 0 || isPassed(map, filters)) {
+				data.add(map);
+			}
 		}
 	}
 
@@ -38,5 +45,25 @@ public class TabularVO<T> implements Serializable {
 	@Override
 	public String toString() {
 		return String.format("COLS: %s\nROWS: %s\n", columns, data);
+	}
+
+	// ------------------------------
+
+	private boolean isPassed(Map<String, T> map, Map<String, T>[] filters) {
+		for (Map<String, T> filter : filters) {
+			boolean allOk = true;
+
+			for (Map.Entry<String, T> entry : filter.entrySet()) {
+				if (!entry.getValue().equals(map.get(entry.getKey()))) {
+					allOk = false;
+					break;
+				}
+			}
+
+			if (allOk) {
+				return true;
+			}
+		}
+		return false;
 	}
 }

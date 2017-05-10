@@ -11,6 +11,7 @@ public class XCommand implements Serializable {
 	private static final long serialVersionUID = -3542666842098439595L;
 
 	public static final String GUEST_TYPE = "Guest";
+	public static final String BOOLEAN_TYPE = "boolean";
 
 	@XStreamAsAttribute
 	private String name;

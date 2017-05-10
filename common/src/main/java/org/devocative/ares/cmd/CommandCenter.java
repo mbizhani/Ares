@@ -14,18 +14,24 @@ public class CommandCenter {
 
 	private final OServiceInstanceTargetVO targetVO;
 	private final CommandCenterResource resource;
+	private Map<String, Object> params;
 	private Exception exception;
 
 	// ------------------------------
 
-	public CommandCenter(OServiceInstanceTargetVO targetVO, CommandCenterResource resource) {
+	public CommandCenter(OServiceInstanceTargetVO targetVO, CommandCenterResource resource, Map<String, Object> params) {
 		this.targetVO = targetVO;
 		this.resource = resource;
+		this.params = params;
 	}
 
 	// ------------------------------
 
-	public Object exec(String commandName, Map<String, String> params) {
+	public Object exec(String commandName) {
+		return exec(commandName, params);
+	}
+
+	public Object exec(String commandName, Map<String, Object> params) {
 		try {
 			Object result = resource
 				.getCommandService()
@@ -164,6 +170,10 @@ public class CommandCenter {
 
 	public void log(String log) {
 		logger.debug(log);
+	}
+
+	public boolean isParam(String name) {
+		return params.containsKey(name);
 	}
 
 	// ------------------------------
