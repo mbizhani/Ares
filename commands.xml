@@ -102,11 +102,11 @@ $cmd.ssh("remove generated dump file", "rm -f ${target.prop.pumpOsDir}/${sourceS
 					</params>
 					<body>
 						<![CDATA[
-if(!$cmd.exec("checkDBUser", [schema:schema])) {
+if(!$cmd.exec('checkDBUser', [schema:schema])) {
 	$cmd.error("Invalid user '${schema}' to create dump file")
 }
 
-def file = "${schema}_bkup_${$cmd.now()}.dmp"
+def file = "${schema}_bkup_${$util.now()}.dmp"
 $cmd.ssh("create backup from '${schema}' as '${file}'", "su - oracle -c 'expdp ${target.username}/${target.password} schemas=${schema} directory=${target.prop.pumpDbDir} dumpfile=${file} logfile=${schema}.log'")
 ]]></body>
 				</command>
@@ -161,18 +161,19 @@ $cmd.ssh("netstat", "netstat -antp")
 					</params>
 
 					<body><![CDATA[
-def tab = $cmd.ssh("List of VMs", "vim-cmd vmsvc/getallvms")
-	.toTabular("\\s{3,}")
+def tab = $cmd.ssh('List of VMs', 'vim-cmd vmsvc/getallvms')
+	.toTabular('\\s{3,}')
 	.build($cmd.isParam('Vmid') ? [Vmid:Vmid] : null)
 
 tab.rows.each {
-	$cmd.log("listVM: Before change ${it}")
-	it.File = it.File.replaceAll("\\[", "/vmfs/volumes/").replaceAll("\\] ", "/")
+	$util.log("listVM: Before change ${it}")
+	it['DataStore'] = it.File.find('\\[(.+?)\\]', 1)
+	it.File = it.File.replaceAll('\\[.+?\\] ', '')
 	if(ShowAdvanced) {
-		it['PowerStat'] = $cmd.exec("powerStat", [Vmid : it.Vmid])
-		it['IpAddress'] = $cmd.exec("getIP", [Vmid : it.Vmid])
+		it['PowerStat'] = $cmd.exec('powerStat', [Vmid : it.Vmid])
+		it['IpAddress'] = $cmd.exec('getIP', [Vmid : it.Vmid])
 	}
-	$cmd.log("listVM: After change ${it}")
+	$util.log("listVM: After change ${it}")
 }
 
 return tab
@@ -185,7 +186,7 @@ return tab
 					</params>
 
 					<body><![CDATA[
-$cmd.ssh("Check power status: '${Vmid}'", "vim-cmd vmsvc/power.getstate ${Vmid}").stdout.contains("Powered on")
+$cmd.ssh("Check power status: '${Vmid}'", "vim-cmd vmsvc/power.getstate ${Vmid}").stdout.contains('Powered on')
 ]]></body>
 				</command>
 
@@ -195,7 +196,7 @@ $cmd.ssh("Check power status: '${Vmid}'", "vim-cmd vmsvc/power.getstate ${Vmid}"
 					</params>
 
 					<body><![CDATA[
-if(!$cmd.exec("powerStat")) {
+if(!$cmd.exec('powerStat')) {
 	$cmd.ssh("Power On: '${Vmid}'", "vim-cmd vmsvc/power.on ${Vmid}")
 } else {
 	$cmd.error("Already on")
@@ -209,7 +210,7 @@ if(!$cmd.exec("powerStat")) {
 					</params>
 
 					<body><![CDATA[
-if($cmd.exec("powerStat")) {
+if($cmd.exec('powerStat')) {
 	$cmd.ssh("Power Off: '${Vmid}'", "vim-cmd vmsvc/power.off ${Vmid}")
 } else {
 	$cmd.error("Already off")
@@ -223,10 +224,10 @@ if($cmd.exec("powerStat")) {
 					</params>
 
 					<body><![CDATA[
-if($cmd.exec("powerStat")) {
+if($cmd.exec('powerStat')) {
 	$cmd.ssh("Reboot: '${Vmid}'", "vim-cmd vmsvc/power.reboot ${Vmid}")
 } else {
-	$cmd.error("Already off")
+	$cmd.error('Already off')
 }
 ]]></body>
 				</command>
@@ -237,10 +238,10 @@ if($cmd.exec("powerStat")) {
 					</params>
 
 					<body><![CDATA[
-if(!$cmd.exec("powerStat")) {
+if(!$cmd.exec('powerStat')) {
 	$cmd.ssh("Delete: '${Vmid}'", "vim-cmd vmsvc/destroy ${Vmid}")
 } else {
-	$cmd.error("Power off before delete")
+	$cmd.error('Power off before delete')
 }
 ]]></body>
 				</command>
@@ -253,9 +254,7 @@ if(!$cmd.exec("powerStat")) {
 					<body><![CDATA[
 $cmd.ssh("Get IP: '${Vmid}'", """ vim-cmd vmsvc/get.guest ${Vmid} | grep -m 1 "ipAddress = \\"" """, true)
 .stdout
-.trim()
-.replaceAll("ipAddress = \"", "")
-.replaceAll("\",", "")
+.find('\"(.+?)\"', 1, '')
 ]]></body>
 				</command>
 

@@ -1,12 +1,10 @@
 package org.devocative.ares.cmd;
 
-import org.devocative.adroit.CalendarUtil;
 import org.devocative.ares.entity.oservice.ERemoteMode;
 import org.devocative.ares.vo.OServiceInstanceTargetVO;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Date;
 import java.util.Map;
 
 public class CommandCenter {
@@ -134,14 +132,6 @@ public class CommandCenter {
 
 	// ---------------
 
-	public String now() {
-		return now("yyyyMMdd_HHmmss");
-	}
-
-	public String now(String format) {
-		return CalendarUtil.formatDate(new Date(), format);
-	}
-
 	public void userPasswordUpdated(String username, String password) {
 		logger.info("CommandCenter.userPasswordUpdated: target=[{}] username=[{}]", targetVO, username);
 		resource.getCommandService().userPasswordUpdated(targetVO, username, password);
@@ -158,18 +148,6 @@ public class CommandCenter {
 
 	public void info(String message) {
 		resource.onResult(new CommandOutput(CommandOutput.Type.LINE, "Info: " + message));
-	}
-
-	public void sleep(long millis) {
-		try {
-			Thread.sleep(millis);
-		} catch (InterruptedException e) {
-			throw new RuntimeException(e);
-		}
-	}
-
-	public void log(String log) {
-		logger.debug(log);
 	}
 
 	public boolean isParam(String name) {

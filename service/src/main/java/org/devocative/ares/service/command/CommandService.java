@@ -6,6 +6,7 @@ import org.devocative.adroit.cache.IMissedHitHandler;
 import org.devocative.adroit.xml.AdroitXStream;
 import org.devocative.ares.AresErrorCode;
 import org.devocative.ares.AresException;
+import org.devocative.ares.cmd.CCUtil;
 import org.devocative.ares.cmd.CommandCenter;
 import org.devocative.ares.cmd.CommandCenterResource;
 import org.devocative.ares.cmd.ICommandResultCallBack;
@@ -69,6 +70,8 @@ public class CommandService implements ICommandService, IMissedHitHandler<Long, 
 
 	@Autowired
 	private ISecurityService securityService;
+
+	private CCUtil singleInstOfUtil = new CCUtil();
 
 	// ------------------------------
 
@@ -240,8 +243,8 @@ public class CommandService implements ICommandService, IMissedHitHandler<Long, 
 		cmdParams.putAll(params);
 
 		cmdParams.put("$cmd", new CommandCenter(targetVO, resource, params));
-		//cmdParams.put("$params", params);
 		cmdParams.put("target", targetVO);
+		cmdParams.put("$util", singleInstOfUtil);
 
 		CmdRunner runner = new CmdRunner(command.getId(), command.getXCommand().getBody(), cmdParams);
 		runner.run();
@@ -294,7 +297,9 @@ public class CommandService implements ICommandService, IMissedHitHandler<Long, 
 		//@Override
 		public void run() {
 			try {
-				IStringTemplate template = stringTemplateService.create("CMD_" + cmdId, cmd, TemplateEngineType.GroovyShell);
+				//TODO
+				String b4 = "String.metaClass.find = {String regEx, int group, String defVal = null -> return $util.find(delegate, regEx, group, defVal)}\n";
+				IStringTemplate template = stringTemplateService.create("CMD_" + cmdId, b4 + cmd, TemplateEngineType.GroovyShell);
 				result = template.process(params);
 
 				persistorService.endSession();
