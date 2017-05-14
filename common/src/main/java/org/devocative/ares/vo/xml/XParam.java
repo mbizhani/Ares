@@ -9,6 +9,11 @@ import java.io.Serializable;
 public class XParam implements Serializable {
 	private static final long serialVersionUID = 2089896456604388719L;
 
+	public static final String GUEST_TYPE = "Guest";
+	public static final String BOOLEAN_TYPE = "boolean";
+
+	// ------------------------------
+
 	@XStreamAsAttribute
 	private String name;
 
@@ -57,5 +62,15 @@ public class XParam implements Serializable {
 	public XParam setDefaultValue(String defaultValue) {
 		this.defaultValue = defaultValue;
 		return this;
+	}
+
+	// ---------------
+
+	public Object getDefaultValueObject() {
+		if (BOOLEAN_TYPE.equals(getType())) {
+			return Boolean.valueOf(getDefaultValue());
+		} else {
+			return getDefaultValue();
+		}
 	}
 }

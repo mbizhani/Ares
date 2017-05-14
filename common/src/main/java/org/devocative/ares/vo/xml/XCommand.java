@@ -10,9 +10,6 @@ import java.util.List;
 public class XCommand implements Serializable {
 	private static final long serialVersionUID = -3542666842098439595L;
 
-	public static final String GUEST_TYPE = "Guest";
-	public static final String BOOLEAN_TYPE = "boolean";
-
 	@XStreamAsAttribute
 	private String name;
 
@@ -50,7 +47,7 @@ public class XCommand implements Serializable {
 
 	public boolean checkHasGuest() {
 		for (XParam xParam : getParams()) {
-			if (GUEST_TYPE.equals(xParam.getType())) {
+			if (XParam.GUEST_TYPE.equals(xParam.getType())) {
 				return true;
 			}
 		}

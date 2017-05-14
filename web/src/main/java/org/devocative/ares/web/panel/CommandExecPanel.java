@@ -159,15 +159,15 @@ public class CommandExecPanel extends DPanel implements IAsyncResponseHandler {
 					}
 					fieldFormItem = selectionInput;
 					//TODO defaultValue
-				} else if (XCommand.GUEST_TYPE.equals(xParam.getType())) {
+				} else if (XParam.GUEST_TYPE.equals(xParam.getType())) {
 					WSelectionInput selectionInput = new WSelectionInput(xParam.getName(), new ArrayList(), false);
 					guestInputs.add(selectionInput);
 					fieldFormItem = selectionInput;
 					//TODO defaultValue
-				} else if (XCommand.BOOLEAN_TYPE.equals(xParam.getType())) {
+				} else if (XParam.BOOLEAN_TYPE.equals(xParam.getType())) {
 					fieldFormItem = new WBooleanInput(xParam.getName());
 					if (xParam.getDefaultValue() != null) {
-						params.put(xParam.getName(), Boolean.valueOf(xParam.getDefaultValue()));
+						params.put(xParam.getName(), xParam.getDefaultValueObject());
 					}
 				} else {
 					fieldFormItem = new WTextInput(xParam.getName());
