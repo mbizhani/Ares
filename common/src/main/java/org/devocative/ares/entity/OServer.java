@@ -44,6 +44,9 @@ public class OServer implements ICreationDate, ICreatorUser, IModificationDate, 
 	@JoinColumn(name = "f_hypervisor", foreignKey = @ForeignKey(name = "server_hyper2server"))
 	private OServer hypervisor;
 
+	@Column(name = "f_hypervisor", insertable = false, updatable = false)
+	private Long hypervisorId;
+
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "f_owner", foreignKey = @ForeignKey(name = "server_owner2user"))
 	private User owner;
@@ -137,6 +140,10 @@ public class OServer implements ICreationDate, ICreatorUser, IModificationDate, 
 
 	public void setHypervisor(OServer hypervisor) {
 		this.hypervisor = hypervisor;
+	}
+
+	public Long getHypervisorId() {
+		return hypervisorId;
 	}
 
 	public User getOwner() {

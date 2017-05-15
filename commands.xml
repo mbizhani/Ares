@@ -172,6 +172,21 @@ tab.rows.each {
 	if(ShowAdvanced) {
 		it['PowerStat'] = $cmd.exec('powerStat', [Vmid : it.Vmid])
 		it['IpAddress'] = $cmd.exec('getIP', [Vmid : it.Vmid])
+
+		def vmVMX = $cmd.ssh("Get VMX: ${it.Vmid}", """cat "/vmfs/volumes/${it.DataStore}/${it.File}" """).toMap()
+		it['INFO'] = vmVMX
+
+		def vmdkMap = [:]
+		vmVMX.each { String k, String v ->
+			if (v.endsWith('.vmdk')) {
+				if(v.startsWith('/')) {
+					vmdkMap[k] = v
+				} else {
+					vmdkMap[k] = "/vmfs/volumes/${it.DataStore}/${it.Name}/${v}"
+				}
+			}
+		}
+		it['VMDK'] = vmdkMap
 	}
 	$util.log("listVM: After change ${it}")
 }
@@ -258,32 +273,93 @@ $cmd.ssh("Get IP: '${Vmid}'", """ vim-cmd vmsvc/get.guest ${Vmid} | grep -m 1 "i
 ]]></body>
 				</command>
 
-				<command name="listVMDK">
+				<command name="cloneVM">
 					<params>
-						<param name="Vmid" type="Guest" required="true"/>
+						<param name="srcVmid" type="Guest" required="true"/>
+						<param name="destVM" type="Server" required="true"/>
 					</params>
 
 					<body><![CDATA[
-def result = [:]
-def vm = $cmd.exec('listVM').rows[0]
-$cmd.ssh("Find VMDKs: ${Vmid}", "cat /vmfs/volumes/${vm.DataStore}/${vm.File} | grep vmdk")
-.stdout
-.eachLine { String line ->
-	$util.log("listVMDK.line: ${line}")
+def srcVm = $cmd.exec('listVM', [Vmid: srcVmid, ShowAdvanced: true]).object
 
-	def device = line.split('=')[0].trim()
-	def vmdk = line.find('\"(.+?)\"', 1)
+if (destVM.hypervisorId == target.serverId) { //same hypervisor
 
-	$util.log("listVMDK: device='${device}' vmdk='${vmdk}'")
+	if (destVM['vmId']) { // VM already existed
+		def dstVm = $cmd.exec('listVM', [Vmid: destVM.vmId, ShowAdvanced: true]).object
 
-	if(vmdk.startsWith('/')) {
-		result[device] = vmdk
-	} else {
-		result[device] = "/vmfs/volumes/${vm.DataStore}/${vm.Name}/${vmdk}"
+		if (srcVm.VMDK.size() == dstVm.VMDK.size()) {
+			srcVm.VMDK.each {k, v ->
+				if (!dstVm.VMDK[k]) {
+					$cmd.error("Invalid dest vm ${destVM}: '${k}' not found for vmdk")
+				}
+			}
+
+			srcVm.VMDK.each {k, v ->
+				$cmd.ssh("Copy VMDK: ${k}", """vmkfstools -U "${dstVm.VMDK[k]}"; vmkfstools -i "${v}" "${dstVm.VMDK[k]}" """)
+			}
+		} else {
+			$cmd.error('Invalid number of vmdks')
+		}
+	} else { // new dest VM
+		def newVmxDir = "/vmfs/volumes/${srcVm.DataStore}/${destVM.name}"
+
+		def newVmx =
+""".encoding = "UTF-8"
+config.version = "8"
+virtualHW.version = "10"
+memSize = "${srcVm.INFO.memSize}"
+numvcpus = "${srcVm.INFO['numvcpus'] ? srcVm.INFO.numvcpus : 1}"
+cpuid.coresPerSocket = "${srcVm.INFO['cpuid.coresPerSocket'] ? srcVm.INFO.cpuid.coresPerSocket : 1}"
+displayName = "${destVM.name}"
+guestOS = "${srcVm.INFO.guestOS}"
+ide1:0.startConnected = "FALSE"
+ide1:0.deviceType = "cdrom-raw"
+ide1:0.clientDevice = "TRUE"
+ide1:0.fileName = "emptyBackingString"
+ide1:0.present = "TRUE"
+floppy0.present = "FALSE"
+ethernet0.virtualDev = "e1000"
+ethernet0.networkName = "VM Network"
+ethernet0.addressType = "generated"
+ethernet0.uptCompatibility = "TRUE"
+ethernet0.present = "TRUE"
+scsi0.present = "TRUE"
+scsi0.virtualDev = "${srcVm.INFO['scsi0.virtualDev']}" """
+
+		def newVmdkMap = [:]
+		srcVm.VMDK.each {k, v ->
+			def newVmdk = v.replaceAll(srcVm.Name, destVM.name)
+			newVmdkMap[k] = newVmdk
+			if (newVmdk.startsWith(newVmxDir)) {
+				newVmdk = newVmdk.substring(newVmxDir.length() + 1)
+			}
+
+			newVmx += "\n${k.replaceAll('fileName','deviceType')} = \"scsi-hardDisk\""
+			newVmx += "\n${k} = \"${newVmdk}\""
+			newVmx += "\n${k.replaceAll('fileName','present')} = \"TRUE\""
+		}
+
+		$util.log("Create vmx for '${destVM.name}' in ${newVmxDir}\n${newVmx}")
+
+		$cmd.ssh("Create VMX for new VM",
+"""
+mkdir -p "${newVmxDir}"
+
+cat > "${newVmxDir}/${destVM.name}.vmx" << "EOF2"
+${newVmx}
+EOF2
+""")
+		srcVm.VMDK.each {k, v ->
+			def vmdkDir = $util.substring(newVmdkMap[k], '/', 0)
+			$cmd.ssh("Copy VMDK: ${k}", """mkdir -p \"${vmdkDir}\"; vmkfstools -i "${v}" "${newVmdkMap[k]}" """)
+		}
+
+		$cmd.ssh("Register VM: ${destVM.name}", """vim-cmd solo/registervm "${newVmxDir}/${destVM.name}.vmx" """)
+
 	}
+} else { //different hypervisor, scp required
 }
-return result
-					]]></body>
+]]></body>
 				</command>
 
 			</commands>

@@ -40,6 +40,16 @@ public class CCUtil {
 		return deValue;
 	}
 
+	public String substring(String str, String token, int count) {
+		if (count == 0) {
+			int idx = str.lastIndexOf(token);
+			if (idx > 0) {
+				return str.substring(0, idx);
+			}
+		}
+		return null;
+	}
+
 	public void log(String log) {
 		logger.debug(log);
 	}

@@ -114,4 +114,18 @@ public class OServerService implements IOServerService {
 		}
 		return result;
 	}
+
+	@Override
+	public List<KeyValueVO<Long, String>> findServersAsVM() {
+		List<OServer> servers = persistorService.createQueryBuilder()
+			.addFrom(OServer.class, "ent")
+			.addWhere("and ent.hypervisor is not null")
+			.list();
+
+		List<KeyValueVO<Long, String>> result = new ArrayList<>();
+		for (OServer oServer : servers) {
+			result.add(new KeyValueVO<>(oServer.getId(), oServer.getName()));
+		}
+		return result;
+	}
 }

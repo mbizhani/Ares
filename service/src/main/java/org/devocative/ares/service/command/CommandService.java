@@ -10,12 +10,14 @@ import org.devocative.ares.cmd.CCUtil;
 import org.devocative.ares.cmd.CommandCenter;
 import org.devocative.ares.cmd.CommandCenterResource;
 import org.devocative.ares.cmd.ICommandResultCallBack;
+import org.devocative.ares.entity.OServer;
 import org.devocative.ares.entity.command.Command;
 import org.devocative.ares.entity.command.ConfigLob;
 import org.devocative.ares.entity.oservice.ERemoteMode;
 import org.devocative.ares.entity.oservice.OSIUser;
 import org.devocative.ares.entity.oservice.OService;
 import org.devocative.ares.entity.oservice.OServiceInstance;
+import org.devocative.ares.iservice.IOServerService;
 import org.devocative.ares.iservice.command.ICommandLogService;
 import org.devocative.ares.iservice.command.ICommandService;
 import org.devocative.ares.iservice.oservice.IOSIUserService;
@@ -24,6 +26,7 @@ import org.devocative.ares.vo.OServiceInstanceTargetVO;
 import org.devocative.ares.vo.filter.command.CommandFVO;
 import org.devocative.ares.vo.filter.oservice.OSIUserFVO;
 import org.devocative.ares.vo.xml.XCommand;
+import org.devocative.ares.vo.xml.XParam;
 import org.devocative.demeter.entity.User;
 import org.devocative.demeter.iservice.ICacheService;
 import org.devocative.demeter.iservice.ISecurityService;
@@ -70,6 +73,9 @@ public class CommandService implements ICommandService, IMissedHitHandler<Long, 
 
 	@Autowired
 	private ISecurityService securityService;
+
+	@Autowired
+	private IOServerService serverService;
 
 	private CCUtil singleInstOfUtil = new CCUtil();
 
@@ -237,16 +243,29 @@ public class CommandService implements ICommandService, IMissedHitHandler<Long, 
 	private Object executeCommand(Command command, OServiceInstance serviceInstance, Map<String, Object> params, CommandCenterResource resource) throws Exception {
 		logger.debug("CommandService.executeCommand: currentUser=[{}] cmd=[{}]", securityService.getCurrentUser(), command.getName());
 
+		XCommand xCommand = command.getXCommand();
+		for (XParam xParam : xCommand.getParams()) {
+			if (xParam.getDefaultValue() != null && !params.containsKey(xParam.getName())) {
+				params.put(xParam.getName(), xParam.getDefaultValueObject());
+			}
+
+			if (XParam.SERVER_TYPE.equals(xParam.getType())) {
+				Object paramValue = params.get(xParam.getName());
+				OServer oServer = serverService.load(Long.valueOf(paramValue.toString()));
+				params.put(xParam.getName(), oServer);
+			}
+		}
+
 		OServiceInstanceTargetVO targetVO = serviceInstanceService.getTargetVO(serviceInstance.getId());
 
 		Map<String, Object> cmdParams = new HashMap<>();
 		cmdParams.putAll(params);
 
-		cmdParams.put("$cmd", new CommandCenter(targetVO, resource, params));
 		cmdParams.put("target", targetVO);
 		cmdParams.put("$util", singleInstOfUtil);
+		cmdParams.put("$cmd", new CommandCenter(targetVO, resource, params));
 
-		CmdRunner runner = new CmdRunner(command.getId(), command.getXCommand().getBody(), cmdParams);
+		CmdRunner runner = new CmdRunner(command.getId(), xCommand.getBody(), cmdParams);
 		runner.run();
 
 		Object result = runner.getResult();

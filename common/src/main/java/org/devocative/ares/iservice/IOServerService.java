@@ -33,4 +33,6 @@ public interface IOServerService {
 	// ==============================
 
 	List<KeyValueVO<String, String>> findGuestsOf(Long hypervisorId);
+
+	List<KeyValueVO<Long, String>> findServersAsVM();
 }

@@ -10,6 +10,7 @@ public class XParam implements Serializable {
 	private static final long serialVersionUID = 2089896456604388719L;
 
 	public static final String GUEST_TYPE = "Guest";
+	public static final String SERVER_TYPE = "Server";
 	public static final String BOOLEAN_TYPE = "boolean";
 
 	// ------------------------------

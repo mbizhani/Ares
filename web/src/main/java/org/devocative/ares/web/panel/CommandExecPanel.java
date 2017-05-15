@@ -83,8 +83,9 @@ public class CommandExecPanel extends DPanel implements IAsyncResponseHandler {
 
 		CommandOutput line = (CommandOutput) result;
 		if (line.getType() != CommandOutput.Type.TABULAR) {
-			String str = Strings.escapeMarkup(line.getOutput().toString().trim(), true, true).toString();
+			String str = Strings.escapeMarkup(line.getOutput().toString().trim(), false, true).toString();
 			str = str.replaceAll("[\n]", "<br/>");
+			str = str.replaceAll("[\r]", "");
 
 			String script = String.format("$('#%s').append(\"<div class='ars-cmd-%s'>%s</div>\");",
 				log.getMarkupId(),
@@ -169,6 +170,8 @@ public class CommandExecPanel extends DPanel implements IAsyncResponseHandler {
 					if (xParam.getDefaultValue() != null) {
 						params.put(xParam.getName(), xParam.getDefaultValueObject());
 					}
+				} else if (XParam.SERVER_TYPE.equals(xParam.getType())) {
+					fieldFormItem = new WSelectionInput(xParam.getName(), serverService.findServersAsVM(), false);
 				} else {
 					fieldFormItem = new WTextInput(xParam.getName());
 					//TODO defaultValue
@@ -191,7 +194,7 @@ public class CommandExecPanel extends DPanel implements IAsyncResponseHandler {
 				for (Map.Entry<String, Object> entry : params.entrySet()) {
 					if (entry.getValue() instanceof KeyValueVO) {
 						KeyValueVO vo = (KeyValueVO) entry.getValue();
-						cmdParams.put(entry.getKey(), vo.getKey().toString());
+						cmdParams.put(entry.getKey(), vo.getKey());
 						//cmdParams.put(entry.getKey() + "$Title", vo.getValue().toString());
 					} else {
 						cmdParams.put(entry.getKey(), entry.getValue());

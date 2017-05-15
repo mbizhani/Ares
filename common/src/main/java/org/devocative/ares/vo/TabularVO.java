@@ -40,6 +40,14 @@ public class TabularVO<T> implements Serializable {
 		return data;
 	}
 
+	public Map<String, T> getObject() {
+		if (data.size() == 1) {
+			return data.get(0);
+		} else {
+			throw new RuntimeException("Invalid tabular single-result: size = " + data.size());
+		}
+	}
+
 	// ---------------
 
 	@Override

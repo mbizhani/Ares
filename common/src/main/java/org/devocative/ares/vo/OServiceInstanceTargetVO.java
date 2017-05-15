@@ -83,6 +83,10 @@ public class OServiceInstanceTargetVO implements Serializable {
 		return user;
 	}
 
+	public Long getServerId() {
+		return serviceInstance.getServerId();
+	}
+
 	// ---------------
 
 	@Override
