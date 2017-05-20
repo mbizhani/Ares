@@ -5,6 +5,7 @@ import org.devocative.ares.vo.OServiceInstanceTargetVO;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.List;
 import java.util.Map;
 
 public class CommandCenter {
@@ -66,16 +67,22 @@ public class CommandCenter {
 		OServiceInstanceTargetVO finalTargetVO = targetVO;
 		if (!ERemoteMode.SSH.equals(finalTargetVO.getUser().getRemoteMode())) {
 			finalTargetVO = resource
-				.getCommandService()
-				.findOf(finalTargetVO.getId(), ERemoteMode.SSH);
+				.getServiceInstanceService()
+				.getTargetVOByServer(finalTargetVO.getId(), ERemoteMode.SSH);
 		}
 
 		try {
-			ShellCommandExecutor executor = new ShellCommandExecutor(finalTargetVO, resource, prompt, cmd, stdin);
+			resource.getCommandService().assertCurrentUser(cmd);
 
-			Thread th = new Thread(executor);
+			ShellCommandExecutor executor = new ShellCommandExecutor(finalTargetVO, resource, prompt, cmd, stdin, force);
+
+			resource.getCommandService().assertCurrentUser(cmd);
+
+			Thread th = new Thread(Thread.currentThread().getThreadGroup(), executor);
 			th.start();
 			th.join();
+
+			resource.getCommandService().assertCurrentUser(cmd);
 
 			if (executor.hasException()) {
 				throw executor.getException();
@@ -86,13 +93,9 @@ public class CommandCenter {
 
 			logger.info("Executed SSH Command: exitStatus=[{}] cmd=[{}] si=[{}]", exitStatus, cmd, finalTargetVO);
 
-			if (exitStatus != 0) {
-				if (force) {
-					resource.onResult(new CommandOutput(CommandOutput.Type.LINE, "WARNING: exitStatus: " + exitStatus));
-				} else {
-					throw new RuntimeException("Invalid ssh command exitStatus: " + exitStatus);
-				}
-			}
+			// NOTE: calling resource.onResult() in this method causes ThreadLocal variables (e.g. current user) to become null!
+
+			resource.getCommandService().assertCurrentUser(cmd);
 		} catch (Exception e) {
 			logger.error("CommandCenter.ssh", e);
 			setException(e);
@@ -108,7 +111,7 @@ public class CommandCenter {
 
 		OServiceInstanceTargetVO finalTargetVO = targetVO;
 		if (!ERemoteMode.JDBC.equals(finalTargetVO.getUser().getRemoteMode())) {
-			finalTargetVO = resource.getCommandService().findOf(finalTargetVO.getId(), ERemoteMode.JDBC);
+			finalTargetVO = resource.getServiceInstanceService().getTargetVOByServer(finalTargetVO.getId(), ERemoteMode.JDBC);
 		}
 
 		try {
@@ -137,6 +140,15 @@ public class CommandCenter {
 		resource.getCommandService().userPasswordUpdated(targetVO, username, password);
 	}
 
+	public void checkVMServers(Long hypervisorId, List<Map<String, String>> servers) {
+		logger.info("CommandCenter: checkServers hypervisorId=[{}] servers={}", hypervisorId, servers);
+		resource.getServerService().checkVMServers(hypervisorId, servers);
+	}
+
+	public void updateServer(Long id, String vmId) {
+		resource.getServerService().updateVmid(id, vmId);
+	}
+
 	public void error(String message) {
 		//resultCallBack.onResult(new CommandOutput(CommandOutput.Type.ERROR, "Error: " + message));
 		throw new RuntimeException(message);
@@ -150,11 +162,7 @@ public class CommandCenter {
 		resource.onResult(new CommandOutput(CommandOutput.Type.LINE, "Info: " + message));
 	}
 
-	public boolean isParam(String name) {
-		return params.containsKey(name);
-	}
-
-	// ------------------------------
+	// ---------------
 
 	public Exception getException() {
 		return exception;

@@ -157,16 +157,29 @@ $cmd.ssh("netstat", "netstat -antp")
 				<command name="listVM">
 					<params>
 						<param name="Vmid" type="Guest"/>
-						<param name="ShowAdvanced" type="boolean" defaultValue="false"/>
+						<param name="Name"/>
+						<param name="ShowAdvanced" type="boolean" defaultValue="false" required="true"/>
+						<param name="UpdateServer" type="boolean" defaultValue="false" required="true"/>
 					</params>
 
 					<body><![CDATA[
+def filter = [:]
+if (binding.variables['Vmid']) {
+	filter['Vmid'] = Vmid
+}
+if (binding.variables['Name']) {
+	filter['Name'] = Name
+}
+
 def tab = $cmd.ssh('List of VMs', 'vim-cmd vmsvc/getallvms')
 	.toTabular('\\s{3,}')
-	.build($cmd.isParam('Vmid') ? [Vmid:Vmid] : null)
+	.build(filter)
+
+def listOfServers = []
 
 tab.rows.each {
 	$util.log("listVM: Before change ${it}")
+
 	it['DataStore'] = it.File.find('\\[(.+?)\\]', 1)
 	it.File = it.File.replaceAll('\\[.+?\\] ', '')
 	if(ShowAdvanced) {
@@ -187,8 +200,19 @@ tab.rows.each {
 			}
 		}
 		it['VMDK'] = vmdkMap
+	} else if(UpdateServer) {
+		it['IpAddress'] = $cmd.exec('getIP', [Vmid : it.Vmid])
 	}
+
 	$util.log("listVM: After change ${it}")
+
+	if (UpdateServer) {
+		listOfServers.add([name: it.Name, address: it.IpAddress, vmId: it.Vmid])
+	}
+}
+
+if (UpdateServer) {
+	$cmd.checkVMServers(target.serverId, listOfServers)
 }
 
 return tab
@@ -269,7 +293,7 @@ if(!$cmd.exec('powerStat')) {
 					<body><![CDATA[
 $cmd.ssh("Get IP: '${Vmid}'", """ vim-cmd vmsvc/get.guest ${Vmid} | grep -m 1 "ipAddress = \\"" """, true)
 .stdout
-.find('\"(.+?)\"', 1, '')
+.find('\"(.+?)\"', 1)
 ]]></body>
 				</command>
 
@@ -356,6 +380,8 @@ EOF2
 
 		$cmd.ssh("Register VM: ${destVM.name}", """vim-cmd solo/registervm "${newVmxDir}/${destVM.name}.vmx" """)
 
+		def newVmId = $cmd.exec('listVM', [Name: destVM.name]).object.Vmid
+		$cmd.updateServer(destVM.id, newVmId)
 	}
 } else { //different hypervisor, scp required
 }

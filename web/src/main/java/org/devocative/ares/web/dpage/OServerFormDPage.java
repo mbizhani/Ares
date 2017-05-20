@@ -64,7 +64,6 @@ public class OServerFormDPage extends DPage {
 			.setRequired(true)
 			.setLabel(new ResourceModel("OServer.name")));
 		floatTable.add(new WTextInput("address")
-			.setRequired(true)
 			.setLabel(new ResourceModel("OServer.address")));
 		floatTable.add(new WTextInput("vmId")
 			.setLabel(new ResourceModel("OServer.vmId")));

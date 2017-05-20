@@ -13,7 +13,6 @@ import org.devocative.ares.cmd.ICommandResultCallBack;
 import org.devocative.ares.entity.OServer;
 import org.devocative.ares.entity.command.Command;
 import org.devocative.ares.entity.command.ConfigLob;
-import org.devocative.ares.entity.oservice.ERemoteMode;
 import org.devocative.ares.entity.oservice.OSIUser;
 import org.devocative.ares.entity.oservice.OService;
 import org.devocative.ares.entity.oservice.OServiceInstance;
@@ -190,7 +189,7 @@ public class CommandService implements ICommandService, IMissedHitHandler<Long, 
 		Long start = System.currentTimeMillis();
 
 		Command command = load(commandId);
-		CommandCenterResource resource = new CommandCenterResource(this, callBack);
+		CommandCenterResource resource = new CommandCenterResource(this, serverService, serviceInstanceService, callBack);
 		Long logId = commandLogService.insertLog(command, serviceInstance, params);
 
 		logger.info("Start command execution: cmd=[{}] si=[{}] currentUser=[{}] logId=[{}]",
@@ -234,8 +233,10 @@ public class CommandService implements ICommandService, IMissedHitHandler<Long, 
 	}
 
 	@Override
-	public OServiceInstanceTargetVO findOf(Long serviceInstanceId, ERemoteMode remoteMode) {
-		return serviceInstanceService.getTargetVOByServer(serviceInstanceId, remoteMode);
+	public void assertCurrentUser(String log) {
+		if (securityService.getCurrentUser() == null) {
+			throw new RuntimeException("No Current User: log = " + log);
+		}
 	}
 
 	// ------------------------------

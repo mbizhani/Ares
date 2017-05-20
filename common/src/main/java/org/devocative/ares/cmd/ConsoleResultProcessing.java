@@ -71,7 +71,7 @@ public class ConsoleResultProcessing {
 		return build(null);
 	}
 
-	public TabularVO build(Map<String, String>[] filters) {
+	public TabularVO build(Map<String, String> filter) {
 		String[] split = text.split("[\n]");
 
 		List<String> lines = new ArrayList<>();
@@ -99,7 +99,7 @@ public class ConsoleResultProcessing {
 		logger.debug("Final Columns: {}", columns);
 		logger.debug("Rows: {}", rows);
 
-		return new TabularVO<>(columns, rows, filters);
+		return new TabularVO<>(columns, rows, filter);
 	}
 
 	// ------------------------------

@@ -13,6 +13,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 @Service("arsOServerService")
 public class OServerService implements IOServerService {
@@ -127,5 +128,56 @@ public class OServerService implements IOServerService {
 			result.add(new KeyValueVO<>(oServer.getId(), oServer.getName()));
 		}
 		return result;
+	}
+
+	@Override
+	public void updateVmid(Long id, String vmId) {
+		persistorService.createQueryBuilder()
+			.addSelect("update OServer ent set ent.vmId = :vmId where ent.id = :id")
+			.addParam("vmId", vmId)
+			.addParam("id", id)
+			.update();
+		persistorService.commitOrRollback();
+	}
+
+	@Override
+	public void checkVMServers(Long hypervisorId, List<Map<String, String>> servers) {
+		logger.info("checkVMServers: hypervisor=[{}] servers={}", hypervisorId, servers);
+
+		persistorService.createQueryBuilder()
+			.addSelect("update OServer ent set ent.vmId = null where ent.hypervisor.id = :hypervisorId")
+			.addParam("hypervisorId", hypervisorId)
+			.update();
+
+		for (Map<String, String> server : servers) {
+			String name = server.get("name");
+			String address = server.get("address");
+			String vmId = server.get("vmId");
+
+			OServer oServer = persistorService.createQueryBuilder()
+				.addFrom(OServer.class, "ent")
+				.addWhere("and ent.name = :name")
+				.addParam("name", name)
+				.addWhere("and ent.hypervisor.id = :hypervisorId")
+				.addParam("hypervisorId", hypervisorId)
+				.object();
+
+			if (oServer != null) {
+				logger.info("checkVMServers: update server id=[{}] name=[{}]", oServer.getId(), oServer.getName());
+				oServer.setVmId(vmId);
+				if (address != null) {
+					oServer.setAddress(address);
+				}
+			} else {
+				logger.info("checkVMServers: insert new server name=[{}] vmId=[{}]", name, vmId);
+				oServer = new OServer(name, address);
+				oServer.setVmId(vmId);
+				oServer.setHypervisor(new OServer(hypervisorId));
+			}
+
+			saveOrUpdate(oServer);
+		}
+
+		persistorService.commitOrRollback();
 	}
 }

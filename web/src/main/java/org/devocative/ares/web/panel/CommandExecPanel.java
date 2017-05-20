@@ -240,7 +240,7 @@ public class CommandExecPanel extends DPanel implements IAsyncResponseHandler {
 		for (Map<String, ?> row : tabularVO.getRows()) {
 			builder.append("<tr>");
 			for (Object cell : row.values()) {
-				builder.append("<td>").append(cell).append("</td>");
+				builder.append("<td>").append(cell != null ? cell : "").append("</td>");
 			}
 			builder.append("</tr>");
 		}

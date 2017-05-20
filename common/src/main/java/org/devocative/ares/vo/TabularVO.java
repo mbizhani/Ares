@@ -7,7 +7,8 @@ public class TabularVO<T> implements Serializable {
 	private static final long serialVersionUID = 5985989025821421183L;
 
 	private final List<String> columns;
-	private final List<Map<String, T>> data = new ArrayList<>();
+	private final List<Map<String, T>> listOfDataAsMap = new ArrayList<>();
+	private final Map<String, T> filter;
 
 	// ------------------------------
 
@@ -15,8 +16,9 @@ public class TabularVO<T> implements Serializable {
 		this(columns, rows, null);
 	}
 
-	public TabularVO(List<String> columns, List<List<T>> rows, Map<String, T>[] filters) {
+	public TabularVO(List<String> columns, List<List<T>> rows, Map<String, T> filter) {
 		this.columns = columns;
+		this.filter = filter;
 
 		for (List<T> row : rows) {
 			Map<String, T> map = new LinkedHashMap<>();
@@ -24,8 +26,8 @@ public class TabularVO<T> implements Serializable {
 				map.put(columns.get(i), row.get(i));
 			}
 
-			if (filters == null || filters.length == 0 || isPassed(map, filters)) {
-				data.add(map);
+			if (filter == null || filter.size() == 0 || isPassed(map, filter)) {
+				listOfDataAsMap.add(map);
 			}
 		}
 	}
@@ -33,18 +35,20 @@ public class TabularVO<T> implements Serializable {
 	// ------------------------------
 
 	public Collection<String> getColumns() {
-		return data.isEmpty() ? columns : data.get(0).keySet();
+		return listOfDataAsMap.isEmpty() ? columns : listOfDataAsMap.get(0).keySet();
 	}
 
 	public List<Map<String, T>> getRows() {
-		return data;
+		return listOfDataAsMap;
 	}
 
 	public Map<String, T> getObject() {
-		if (data.size() == 1) {
-			return data.get(0);
+		if (listOfDataAsMap.size() == 0) {
+			throw new RuntimeException("No result found, filters = " + filter);
+		} else if (listOfDataAsMap.size() == 1) {
+			return listOfDataAsMap.get(0);
 		} else {
-			throw new RuntimeException("Invalid tabular single-result: size = " + data.size());
+			throw new RuntimeException("More than one result found: size = " + listOfDataAsMap.size() + ", filters = " + filter);
 		}
 	}
 
@@ -52,26 +56,21 @@ public class TabularVO<T> implements Serializable {
 
 	@Override
 	public String toString() {
-		return String.format("COLS: %s\nROWS: %s\n", columns, data);
+		return String.format("COLS: %s\nROWS: %s\n", columns, listOfDataAsMap);
 	}
 
 	// ------------------------------
 
-	private boolean isPassed(Map<String, T> map, Map<String, T>[] filters) {
-		for (Map<String, T> filter : filters) {
-			boolean allOk = true;
+	private boolean isPassed(Map<String, T> map, Map<String, T> filter) {
+		boolean allOk = true;
 
-			for (Map.Entry<String, T> entry : filter.entrySet()) {
-				if (!entry.getValue().equals(map.get(entry.getKey()))) {
-					allOk = false;
-					break;
-				}
-			}
-
-			if (allOk) {
-				return true;
+		for (Map.Entry<String, T> entry : filter.entrySet()) {
+			if (entry.getValue() != null && !entry.getValue().equals(map.get(entry.getKey()))) {
+				allOk = false;
+				break;
 			}
 		}
-		return false;
+
+		return allOk;
 	}
 }

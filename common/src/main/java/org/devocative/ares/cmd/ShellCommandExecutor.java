@@ -13,7 +13,8 @@ import java.io.*;
  * are deleted. So by this class, ssh command execution is isolated!
  */
 public class ShellCommandExecutor extends AbstractCommandExecutor {
-	private String[] stdin;
+	private final String[] stdin;
+	private final boolean force;
 
 	// ---------------
 
@@ -21,9 +22,10 @@ public class ShellCommandExecutor extends AbstractCommandExecutor {
 
 	// ------------------------------
 
-	public ShellCommandExecutor(OServiceInstanceTargetVO targetVO, CommandCenterResource resource, String prompt, String command, String[] stdin) {
+	public ShellCommandExecutor(OServiceInstanceTargetVO targetVO, CommandCenterResource resource, String prompt, String command, String[] stdin, boolean force) {
 		super(targetVO, resource, prompt, command);
 		this.stdin = stdin;
+		this.force = force;
 	}
 
 	// ------------------------------
@@ -111,5 +113,13 @@ public class ShellCommandExecutor extends AbstractCommandExecutor {
 		channelExec.disconnect();
 
 		setResult(result.toString());
+
+		if (exitStatus != 0) {
+			if (force) {
+				resource.onResult(new CommandOutput(CommandOutput.Type.LINE, "WARNING: exitStatus: " + exitStatus));
+			} else {
+				throw new RuntimeException("Invalid ssh command exitStatus: " + exitStatus);
+			}
+		}
 	}
 }

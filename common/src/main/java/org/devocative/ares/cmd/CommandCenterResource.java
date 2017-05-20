@@ -3,7 +3,9 @@ package org.devocative.ares.cmd;
 import com.jcraft.jsch.JSch;
 import com.jcraft.jsch.JSchException;
 import com.jcraft.jsch.Session;
+import org.devocative.ares.iservice.IOServerService;
 import org.devocative.ares.iservice.command.ICommandService;
+import org.devocative.ares.iservice.oservice.IOServiceInstanceService;
 import org.devocative.ares.vo.OServiceInstanceTargetVO;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -24,12 +26,21 @@ public class CommandCenterResource {
 	// ---------------
 
 	private final ICommandService commandService;
+	private final IOServerService serverService;
+	private final IOServiceInstanceService serviceInstanceService;
 	private final ICommandResultCallBack resultCallBack;
 
 	// ------------------------------
 
-	public CommandCenterResource(ICommandService commandService, ICommandResultCallBack resultCallBack) {
+	public CommandCenterResource(
+		ICommandService commandService,
+		IOServerService serverService,
+		IOServiceInstanceService serviceInstanceService,
+		ICommandResultCallBack resultCallBack) {
+
 		this.commandService = commandService;
+		this.serverService = serverService;
+		this.serviceInstanceService = serviceInstanceService;
 		this.resultCallBack = resultCallBack;
 	}
 
@@ -38,6 +49,16 @@ public class CommandCenterResource {
 	public ICommandService getCommandService() {
 		return commandService;
 	}
+
+	public IOServerService getServerService() {
+		return serverService;
+	}
+
+	public IOServiceInstanceService getServiceInstanceService() {
+		return serviceInstanceService;
+	}
+
+	// ---------------
 
 	public void onResult(CommandOutput lineOfResult) {
 		resultCallBack.onResult(lineOfResult);

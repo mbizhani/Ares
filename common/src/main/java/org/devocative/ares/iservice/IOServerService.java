@@ -6,6 +6,7 @@ import org.devocative.ares.vo.filter.OServerFVO;
 import org.devocative.demeter.entity.User;
 
 import java.util.List;
+import java.util.Map;
 
 public interface IOServerService {
 	void saveOrUpdate(OServer entity);
@@ -35,4 +36,8 @@ public interface IOServerService {
 	List<KeyValueVO<String, String>> findGuestsOf(Long hypervisorId);
 
 	List<KeyValueVO<Long, String>> findServersAsVM();
+
+	void updateVmid(Long id, String vmId);
+
+	void checkVMServers(Long hypervisorId, List<Map<String, String>> servers);
 }

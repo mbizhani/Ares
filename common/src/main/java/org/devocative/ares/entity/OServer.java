@@ -10,8 +10,7 @@ import java.util.Date;
 @Audited
 @Entity
 @Table(name = "t_ars_server", uniqueConstraints = {
-	@UniqueConstraint(name = "uk_ars_serverName", columnNames = {"c_name"}),
-	@UniqueConstraint(name = "uk_ars_serverAddress", columnNames = {"c_address"})
+	@UniqueConstraint(name = "uk_ars_serverName", columnNames = {"c_name"})
 })
 public class OServer implements ICreationDate, ICreatorUser, IModificationDate, IModifierUser {
 	private static final long serialVersionUID = -6588853204422299159L;
@@ -30,7 +29,7 @@ public class OServer implements ICreationDate, ICreatorUser, IModificationDate, 
 	@Column(name = "c_name", nullable = false)
 	private String name;
 
-	@Column(name = "c_address", nullable = false)
+	@Column(name = "c_address")
 	private String address;
 
 	@Column(name = "c_vm_id")
@@ -85,6 +84,10 @@ public class OServer implements ICreationDate, ICreatorUser, IModificationDate, 
 	// ------------------------------
 
 	public OServer() {
+	}
+
+	public OServer(Long id) {
+		this.id = id;
 	}
 
 	public OServer(String name, String address) {

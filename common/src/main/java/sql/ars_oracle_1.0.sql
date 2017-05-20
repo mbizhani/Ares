@@ -146,7 +146,7 @@ CREATE TABLE t_ars_config_lob (
 
 CREATE TABLE t_ars_server (
 	id              NUMBER(19, 0)      NOT NULL,
-	c_address       VARCHAR2(255 CHAR) NOT NULL,
+	c_address VARCHAR2(255 CHAR),
 	d_creation      DATE               NOT NULL,
 	f_creator_user  NUMBER(19, 0),
 	d_modification  DATE,
@@ -253,8 +253,8 @@ ADD CONSTRAINT uk_ars_command UNIQUE (c_name, f_service);
 ALTER TABLE t_ars_server
 ADD CONSTRAINT uk_ars_serverName UNIQUE (c_name);
 
-ALTER TABLE t_ars_server
-ADD CONSTRAINT uk_ars_serverAddress UNIQUE (c_address);
+-- ALTER TABLE t_ars_server
+-- ADD CONSTRAINT uk_ars_serverAddress UNIQUE (c_address);
 
 ALTER TABLE t_ars_service
 ADD CONSTRAINT uk_ars_service UNIQUE (c_name);
