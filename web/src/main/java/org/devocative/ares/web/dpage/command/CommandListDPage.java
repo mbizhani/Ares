@@ -14,7 +14,7 @@ import org.devocative.ares.web.panel.CommandExecPanel;
 import org.devocative.demeter.web.DPage;
 import org.devocative.demeter.web.component.DAjaxButton;
 import org.devocative.demeter.web.component.grid.OEditAjaxColumn;
-import org.devocative.wickomp.WModel;
+import org.devocative.demeter.web.model.DEntityLazyLoadModel;
 import org.devocative.wickomp.form.WBooleanInput;
 import org.devocative.wickomp.form.WSelectionInput;
 import org.devocative.wickomp.form.WTextInput;
@@ -248,6 +248,6 @@ public class CommandListDPage extends DPage implements IGridDataSource<Command> 
 
 	@Override
 	public IModel<Command> model(Command object) {
-		return new WModel<>(object);
+		return new DEntityLazyLoadModel<>(object.getId(), commandService);
 	}
 }

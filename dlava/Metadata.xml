@@ -23,6 +23,9 @@
 				<field name="service">
 					<finfo/>
 				</field>
+				<field name="serviceId">
+					<finfo ignore="true"/>
+				</field>
 				<field name="config">
 					<finfo ignore="true"/>
 				</field>
@@ -52,9 +55,6 @@
 				</field>
 				<field name="xCommand">
 					<finfo ignore="true"/>
-				</field>
-				<field name="serviceId">
-					<finfo/>
 				</field>
 			</fields>
 		</class>
@@ -149,6 +149,9 @@
 				<field name="hypervisor">
 					<finfo/>
 				</field>
+				<field name="hypervisorId">
+					<finfo ignore="true"/>
+				</field>
 				<field name="owner">
 					<finfo/>
 				</field>
@@ -232,6 +235,9 @@
 				</field>
 				<field name="server">
 					<finfo/>
+				</field>
+				<field name="serverId">
+					<finfo ignore="true"/>
 				</field>
 				<field name="service">
 					<finfo/>

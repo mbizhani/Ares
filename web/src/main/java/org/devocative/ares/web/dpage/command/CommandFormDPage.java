@@ -1,4 +1,3 @@
-//overwrite
 package org.devocative.ares.web.dpage.command;
 
 import org.apache.wicket.ajax.AjaxRequestTarget;
@@ -14,6 +13,9 @@ import org.devocative.demeter.web.component.DAjaxButton;
 import org.devocative.wickomp.form.WBooleanInput;
 import org.devocative.wickomp.form.WSelectionInput;
 import org.devocative.wickomp.form.WTextInput;
+import org.devocative.wickomp.form.code.OCode;
+import org.devocative.wickomp.form.code.OCodeMode;
+import org.devocative.wickomp.form.code.WCodeInput;
 import org.devocative.wickomp.html.WFloatTable;
 import org.devocative.wickomp.html.window.WModalWindow;
 
@@ -61,17 +63,19 @@ public class CommandFormDPage extends DPage {
 
 		WFloatTable floatTable = new WFloatTable("floatTable");
 		floatTable.add(new WTextInput("name")
-			.setRequired(true)
-			.setLabel(new ResourceModel("Command.name")));
+			.setLabel(new ResourceModel("Command.name"))
+			.setEnabled(false));
 		floatTable.add(new WBooleanInput("listView")
-			.setRequired(true)
-			.setLabel(new ResourceModel("Command.listView")));
+			.setLabel(new ResourceModel("Command.listView"))
+			.setEnabled(false));
 		floatTable.add(new WSelectionInput("service", commandService.getServiceList(), false)
-			.setRequired(true)
-			.setLabel(new ResourceModel("Command.service")));
+			.setLabel(new ResourceModel("Command.service"))
+			.setEnabled(false));
 
 		Form<Command> form = new Form<>("form", new CompoundPropertyModel<>(entity));
 		form.add(floatTable);
+
+		form.add(new WCodeInput("xCommand.body", new OCode(OCodeMode.GROOVY)));
 
 		form.add(new DAjaxButton("save", new ResourceModel("label.save"), AresIcon.SAVE) {
 			private static final long serialVersionUID = -1231242837L;

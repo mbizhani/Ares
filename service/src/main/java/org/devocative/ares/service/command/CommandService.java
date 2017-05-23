@@ -82,8 +82,10 @@ public class CommandService implements ICommandService, IMissedHitHandler<Long, 
 
 	@Override
 	public void saveOrUpdate(Command entity) {
+		entity.getConfig().setValue(xstream.toXML(entity.getXCommand()));
+		persistorService.saveOrUpdate(entity.getConfig());
 		persistorService.saveOrUpdate(entity);
-		commandCache.remove(entity.getId());
+		commandCache.put(entity.getId(), entity);
 		stringTemplateService.clearCacheFor("CMD_" + entity.getId());
 	}
 

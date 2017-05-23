@@ -9,11 +9,12 @@ import org.devocative.ares.vo.OServiceInstanceTargetVO;
 import org.devocative.ares.vo.filter.command.CommandFVO;
 import org.devocative.ares.vo.xml.XCommand;
 import org.devocative.demeter.entity.User;
+import org.devocative.demeter.iservice.IEntityService;
 
 import java.util.List;
 import java.util.Map;
 
-public interface ICommandService {
+public interface ICommandService extends IEntityService<Command> {
 	void saveOrUpdate(Command entity);
 
 	Command load(Long id);
