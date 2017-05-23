@@ -10,6 +10,7 @@ import org.devocative.ares.entity.command.Command;
 import org.devocative.ares.iservice.command.ICommandService;
 import org.devocative.ares.vo.filter.command.CommandFVO;
 import org.devocative.ares.web.AresIcon;
+import org.devocative.ares.web.dpage.oservice.OServiceAndCommandBatchPanel;
 import org.devocative.ares.web.panel.CommandExecPanel;
 import org.devocative.demeter.web.DPage;
 import org.devocative.demeter.web.component.DAjaxButton;
@@ -95,7 +96,8 @@ public class CommandListDPage extends DPage implements IGridDataSource<Command> 
 
 			@Override
 			public void onClick(AjaxRequestTarget target) {
-				window.setContent(new CommandFormDPage(window.getContentId()));
+				//window.setContent(new CommandFormDPage(window.getContentId()));
+				window.setContent(new OServiceAndCommandBatchPanel(window.getContentId()));
 				window.show(target);
 			}
 		});

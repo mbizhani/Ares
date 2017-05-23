@@ -1,4 +1,3 @@
-//overwrite
 package org.devocative.ares.web.dpage.oservice;
 
 import org.apache.wicket.ajax.AjaxRequestTarget;
@@ -92,7 +91,8 @@ public class OServiceListDPage extends DPage implements IGridDataSource<OService
 
 			@Override
 			public void onClick(AjaxRequestTarget target) {
-				window.setContent(new OServiceFormDPage(window.getContentId()));
+				//window.setContent(new OServiceFormDPage(window.getContentId()));
+				window.setContent(new OServiceAndCommandBatchPanel(window.getContentId()));
 				window.show(target);
 			}
 		}.setVisible(hasPermission(AresPrivilegeKey.OServiceAdd)));

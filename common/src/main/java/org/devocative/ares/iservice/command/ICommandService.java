@@ -33,7 +33,7 @@ public interface ICommandService extends IEntityService<Command> {
 
 	// ==============================
 
-	void checkAndSave(OService oService, XCommand xCommand);
+	void checkAndSave(OService oService, XCommand xCommand, Command command);
 
 	Object executeCommand(Long commandId, OServiceInstance serviceInstance, Map<String, Object> params, ICommandResultCallBack callBack) throws Exception;
 
@@ -42,4 +42,6 @@ public interface ICommandService extends IEntityService<Command> {
 	void userPasswordUpdated(OServiceInstanceTargetVO targetVO, String username, String password);
 
 	void assertCurrentUser(String log);
+
+	void clearCache();
 }

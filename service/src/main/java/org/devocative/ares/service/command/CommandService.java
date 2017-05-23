@@ -48,6 +48,7 @@ import java.util.Map;
 @Service("arsCommandService")
 public class CommandService implements ICommandService, IMissedHitHandler<Long, Command> {
 	private static final Logger logger = LoggerFactory.getLogger(CommandService.class);
+	private static final String CMD_PREFIX_STR_TEMPLATE = "CMD_";
 
 	private XStream xstream;
 	private ICache<Long, Command> commandCache;
@@ -85,8 +86,9 @@ public class CommandService implements ICommandService, IMissedHitHandler<Long, 
 		entity.getConfig().setValue(xstream.toXML(entity.getXCommand()));
 		persistorService.saveOrUpdate(entity.getConfig());
 		persistorService.saveOrUpdate(entity);
-		commandCache.put(entity.getId(), entity);
-		stringTemplateService.clearCacheFor("CMD_" + entity.getId());
+
+		commandCache.remove(entity.getId());
+		stringTemplateService.clearCacheFor(CMD_PREFIX_STR_TEMPLATE + entity.getId());
 	}
 
 	@Override
@@ -162,8 +164,8 @@ public class CommandService implements ICommandService, IMissedHitHandler<Long, 
 	}
 
 	@Override
-	public void checkAndSave(OService oService, XCommand xCommand) {
-		Command command = loadByNameAndOService(oService.getId(), xCommand.getName());
+	public void checkAndSave(OService oService, XCommand xCommand, Command command) {
+		//Command command = loadByNameAndOService(oService.getId(), xCommand.getName());
 
 		if (command == null) {
 			ConfigLob lob = new ConfigLob();
@@ -239,6 +241,14 @@ public class CommandService implements ICommandService, IMissedHitHandler<Long, 
 		if (securityService.getCurrentUser() == null) {
 			throw new RuntimeException("No Current User: log = " + log);
 		}
+	}
+
+	@Override
+	public void clearCache() {
+		for (Long key : commandCache.getKeys()) {
+			stringTemplateService.clearCacheFor(CMD_PREFIX_STR_TEMPLATE + key);
+		}
+		commandCache.clear();
 	}
 
 	// ------------------------------
@@ -321,7 +331,7 @@ public class CommandService implements ICommandService, IMissedHitHandler<Long, 
 			try {
 				//TODO
 				String b4 = "String.metaClass.find = {String regEx, int group, String defVal = null -> return $util.find(delegate, regEx, group, defVal)}\n";
-				IStringTemplate template = stringTemplateService.create("CMD_" + cmdId, b4 + cmd, TemplateEngineType.GroovyShell);
+				IStringTemplate template = stringTemplateService.create(CMD_PREFIX_STR_TEMPLATE + cmdId, b4 + cmd, TemplateEngineType.GroovyShell);
 				result = template.process(params);
 
 				persistorService.endSession();

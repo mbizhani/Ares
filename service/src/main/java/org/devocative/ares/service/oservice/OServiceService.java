@@ -2,6 +2,7 @@ package org.devocative.ares.service.oservice;
 
 import com.thoughtworks.xstream.XStream;
 import org.devocative.adroit.xml.AdroitXStream;
+import org.devocative.ares.entity.command.Command;
 import org.devocative.ares.entity.oservice.OService;
 import org.devocative.ares.entity.oservice.OServiceProperty;
 import org.devocative.ares.iservice.command.ICommandService;
@@ -20,7 +21,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.io.InputStream;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Service("arsOServiceService")
 public class OServiceService implements IOServiceService {
@@ -103,6 +106,12 @@ public class OServiceService implements IOServiceService {
 	public void importFile(InputStream in) {
 		logger.info("OServiceService.importFile()");
 
+		Map<String, Command> commandMap = new HashMap<>();
+		List<Command> list = commandService.list();
+		for (Command command : list) {
+			commandMap.put(String.format("%s_%s", command.getServiceId(), command.getName()), command);
+		}
+
 		XStream xstream = new AdroitXStream();
 		xstream.processAnnotations(XOperation.class);
 
@@ -129,10 +138,12 @@ public class OServiceService implements IOServiceService {
 			}
 
 			for (XCommand xCommand : xService.getCommands()) {
-				commandService.checkAndSave(oService, xCommand);
+				String key = String.format("%s_%s", oService.getId(), xCommand.getName());
+				commandService.checkAndSave(oService, xCommand, commandMap.get(key));
 			}
 		}
 
 		persistorService.commitOrRollback();
+		commandService.clearCache();
 	}
 }
