@@ -1,4 +1,4 @@
-package org.devocative.ares.web.dpage.oservice;
+package org.devocative.ares.web.panel;
 
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.markup.html.WebMarkupContainer;

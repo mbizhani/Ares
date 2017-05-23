@@ -10,6 +10,7 @@ import org.devocative.ares.entity.oservice.OService;
 import org.devocative.ares.iservice.oservice.IOServiceService;
 import org.devocative.ares.vo.filter.oservice.OServiceFVO;
 import org.devocative.ares.web.AresIcon;
+import org.devocative.ares.web.panel.OServiceAndCommandBatchPanel;
 import org.devocative.demeter.web.DPage;
 import org.devocative.demeter.web.component.DAjaxButton;
 import org.devocative.demeter.web.component.grid.OEditAjaxColumn;
