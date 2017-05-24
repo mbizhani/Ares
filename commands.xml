@@ -33,7 +33,7 @@ $cmd.userPasswordUpdated(username, newPassword)
 
 				<command name="checkDBUser">
 					<params>
-						<param name="schema" type="string" required="true"/>
+						<param name="schema" required="true"/>
 					</params>
 					<body>
 						<![CDATA[
@@ -43,7 +43,7 @@ $cmd.sql("check user '${schema}'", "select count(1) from all_users where usernam
 
 				<command name="truncateDBUser">
 					<params>
-						<param name="schema" type="string" required="true"/>
+						<param name="schema" required="true"/>
 					</params>
 					<body>
 						<![CDATA[
@@ -75,8 +75,8 @@ end;
 
 				<command name="copySchema">
 					<params>
-						<param name="sourceSchema" type="string" required="true"/>
-						<param name="destSchema" type="string" required="true"/>
+						<param name="sourceSchema" required="true"/>
+						<param name="destSchema" required="true"/>
 					</params>
 					<body>
 						<![CDATA[
@@ -98,7 +98,7 @@ $cmd.ssh("remove generated dump file", "rm -f ${target.prop.pumpOsDir}/${sourceS
 
 				<command name="backupSchema">
 					<params>
-						<param name="schema" type="string" required="true"/>
+						<param name="schema" required="true"/>
 					</params>
 					<body>
 						<![CDATA[
@@ -148,6 +148,16 @@ $cmd.ssh("netstat", "netstat -antp")
 	.setPossibleColumns("Proto", "Recv-Q", "Send-Q", "Local Address", "Foreign Address", "State", "PID/Program name")
 ]]></body>
 				</command>
+
+				<command name="fileUpload">
+					<params>
+						<param name="file" type="File" required="true"/>
+					</params>
+
+					<body><![CDATA[
+$cmd.scpTo(file, '~')
+					]]></body>
+				</command>
 			</commands>
 		</service>
 
@@ -158,8 +168,8 @@ $cmd.ssh("netstat", "netstat -antp")
 					<params>
 						<param name="Vmid" type="Guest"/>
 						<param name="Name"/>
-						<param name="ShowAdvanced" type="boolean" defaultValue="false" required="true"/>
-						<param name="UpdateServer" type="boolean" defaultValue="false" required="true"/>
+						<param name="ShowAdvanced" type="Boolean" defaultValue="false" required="true"/>
+						<param name="UpdateServer" type="Boolean" defaultValue="false" required="true"/>
 					</params>
 
 					<body><![CDATA[

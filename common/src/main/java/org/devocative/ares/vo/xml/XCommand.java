@@ -47,7 +47,7 @@ public class XCommand implements Serializable {
 
 	public boolean checkHasGuest() {
 		for (XParam xParam : getParams()) {
-			if (XParam.GUEST_TYPE.equals(xParam.getType())) {
+			if (xParam.getType() == XParamType.Guest) {
 				return true;
 			}
 		}

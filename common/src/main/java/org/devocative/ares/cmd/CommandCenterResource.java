@@ -67,7 +67,7 @@ public class CommandCenterResource {
 	public Session createSession(OServiceInstanceTargetVO targetVO) throws JSchException {
 
 		if (!SSH.containsKey(targetVO.getId())) {
-			logger.info("Try to get SSH connection: {}", targetVO.getName());
+			logger.info("Try to get SSH connection: {} by user {}", targetVO.getName(), targetVO.getUsername());
 			resultCallBack.onResult(new CommandOutput(CommandOutput.Type.PROMPT, "connecting ..."));
 
 			Session session = J_SCH.getSession(targetVO.getUsername(), targetVO.getAddress(), targetVO.getPort());

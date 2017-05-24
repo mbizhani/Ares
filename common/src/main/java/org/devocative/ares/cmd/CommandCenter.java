@@ -2,6 +2,7 @@ package org.devocative.ares.cmd;
 
 import org.devocative.ares.entity.oservice.ERemoteMode;
 import org.devocative.ares.vo.OServiceInstanceTargetVO;
+import org.devocative.demeter.entity.FileStore;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -104,6 +105,31 @@ public class CommandCenter {
 		return new SshResult(result, exitStatus);
 	}
 
+	// ---------------
+
+	public void scpTo(FileStore fileStore, String destDir) {
+		OServiceInstanceTargetVO finalTargetVO = targetVO;
+		if (!ERemoteMode.SSH.equals(finalTargetVO.getUser().getRemoteMode())) {
+			finalTargetVO = resource
+				.getServiceInstanceService()
+				.getTargetVOByServer(finalTargetVO.getId(), ERemoteMode.SSH);
+		}
+
+		try {
+			ScpToExecutor executor = new ScpToExecutor(finalTargetVO, resource, fileStore, destDir);
+			Thread th = new Thread(Thread.currentThread().getThreadGroup(), executor);
+			th.start();
+			th.join();
+
+			if (executor.hasException()) {
+				throw executor.getException();
+			}
+
+		} catch (Exception e) {
+			logger.error("CommandCenter.scpTo", e);
+			setException(e);
+		}
+	}
 	// ---------------
 
 	public Object sql(String prompt, String sql) {

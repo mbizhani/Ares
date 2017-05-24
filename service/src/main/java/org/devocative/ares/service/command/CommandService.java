@@ -26,6 +26,7 @@ import org.devocative.ares.vo.filter.command.CommandFVO;
 import org.devocative.ares.vo.filter.oservice.OSIUserFVO;
 import org.devocative.ares.vo.xml.XCommand;
 import org.devocative.ares.vo.xml.XParam;
+import org.devocative.ares.vo.xml.XParamType;
 import org.devocative.demeter.entity.User;
 import org.devocative.demeter.iservice.ICacheService;
 import org.devocative.demeter.iservice.ISecurityService;
@@ -262,7 +263,7 @@ public class CommandService implements ICommandService, IMissedHitHandler<Long, 
 				params.put(xParam.getName(), xParam.getDefaultValueObject());
 			}
 
-			if (XParam.SERVER_TYPE.equals(xParam.getType())) {
+			if (xParam.getType() == XParamType.Server) {
 				Object paramValue = params.get(xParam.getName());
 				OServer oServer = serverService.load(Long.valueOf(paramValue.toString()));
 				params.put(xParam.getName(), oServer);
