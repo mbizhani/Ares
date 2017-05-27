@@ -15,12 +15,12 @@ import org.devocative.ares.entity.command.Command;
 import org.devocative.ares.entity.command.ConfigLob;
 import org.devocative.ares.entity.oservice.OSIUser;
 import org.devocative.ares.entity.oservice.OService;
-import org.devocative.ares.entity.oservice.OServiceInstance;
 import org.devocative.ares.iservice.IOServerService;
 import org.devocative.ares.iservice.command.ICommandLogService;
 import org.devocative.ares.iservice.command.ICommandService;
 import org.devocative.ares.iservice.oservice.IOSIUserService;
 import org.devocative.ares.iservice.oservice.IOServiceInstanceService;
+import org.devocative.ares.vo.CommandQVO;
 import org.devocative.ares.vo.OServiceInstanceTargetVO;
 import org.devocative.ares.vo.filter.command.CommandFVO;
 import org.devocative.ares.vo.filter.oservice.OSIUserFVO;
@@ -190,38 +190,38 @@ public class CommandService implements ICommandService, IMissedHitHandler<Long, 
 	}
 
 	@Override
-	public Object executeCommand(Long commandId, OServiceInstance serviceInstance, Map<String, Object> params, ICommandResultCallBack callBack) throws Exception {
+	public Object executeCommand(CommandQVO commandQVO, ICommandResultCallBack callBack) throws Exception {
 		Long start = System.currentTimeMillis();
 
-		Command command = load(commandId);
+		Command command = load(commandQVO.getCommandId());
 		CommandCenterResource resource = new CommandCenterResource(this, serverService, serviceInstanceService, callBack);
-		Long logId = commandLogService.insertLog(command, serviceInstance, params);
+		Long logId = commandLogService.insertLog(command, commandQVO.getServiceInstance(), commandQVO.getParams());
 
 		logger.info("Start command execution: cmd=[{}] si=[{}] currentUser=[{}] logId=[{}]",
-			command.getName(), serviceInstance, securityService.getCurrentUser(), logId);
+			command.getName(), commandQVO.getServiceInstance(), securityService.getCurrentUser(), logId);
 
 		Exception error = null;
 		try {
-			return executeCommand(command, serviceInstance, params, resource);
+			return executeCommand(command, commandQVO, resource);
 		} catch (Exception e) {
 			error = e;
 			throw e;
 		} finally {
 			Long dur = ((System.currentTimeMillis() - start) / 1000);
 			logger.info("Finish command execution: cmd=[{}] si=[{}] currentUser=[{}] dur=[{}] logId=[{}]",
-				command.getName(), serviceInstance, securityService.getCurrentUser(), dur, logId);
+				command.getName(), commandQVO.getServiceInstance(), securityService.getCurrentUser(), dur, logId);
 			commandLogService.updateLog(logId, dur, error);
 			resource.closeAll();
 		}
 	}
 
 	@Override
-	public Object callCommand(String command, OServiceInstance serviceInstance, Map<String, Object> params, CommandCenterResource resource) throws Exception {
-		Command cmd = loadByNameAndOService(serviceInstance.getService().getId(), command);
+	public Object callCommand(CommandQVO commandQVO, CommandCenterResource resource) throws Exception {
+		Command cmd = loadByNameAndOService(commandQVO.getCommandName(), commandQVO.getServiceInstance().getService().getId());
 		if (cmd == null) {
-			throw new AresException(AresErrorCode.CommandNotFound, command);
+			throw new AresException(AresErrorCode.CommandNotFound, commandQVO.getCommandName());
 		}
-		return executeCommand(cmd, serviceInstance, params, resource);
+		return executeCommand(cmd, commandQVO, resource);
 	}
 
 	@Override
@@ -252,11 +252,30 @@ public class CommandService implements ICommandService, IMissedHitHandler<Long, 
 		commandCache.clear();
 	}
 
+	@Override
+	public Command loadByNameAndOService(String name, Long serviceId) {
+		Long cmdId = persistorService.createQueryBuilder()
+			.addSelect("select ent.id")
+			.addFrom(Command.class, "ent")
+			.addWhere("and ent.name = :name")
+			.addParam("name", name)
+			.addWhere("and ent.service.id = :serviceId")
+			.addParam("serviceId", serviceId)
+			.object();
+
+		if (cmdId != null) {
+			return load(cmdId);
+		}
+
+		return null;
+	}
+
 	// ------------------------------
 
-	private Object executeCommand(Command command, OServiceInstance serviceInstance, Map<String, Object> params, CommandCenterResource resource) throws Exception {
+	private Object executeCommand(Command command, CommandQVO commandQVO, CommandCenterResource resource) throws Exception {
 		logger.debug("CommandService.executeCommand: currentUser=[{}] cmd=[{}]", securityService.getCurrentUser(), command.getName());
 
+		Map<String, Object> params = commandQVO.getParams();
 		XCommand xCommand = command.getXCommand();
 		for (XParam xParam : xCommand.getParams()) {
 			if (xParam.getDefaultValue() != null && !params.containsKey(xParam.getName())) {
@@ -270,7 +289,12 @@ public class CommandService implements ICommandService, IMissedHitHandler<Long, 
 			}
 		}
 
-		OServiceInstanceTargetVO targetVO = serviceInstanceService.getTargetVO(serviceInstance.getId());
+		OServiceInstanceTargetVO targetVO;
+		if (commandQVO.getOsiUserId() == null) {
+			targetVO = serviceInstanceService.getTargetVO(commandQVO.getServiceInstance().getId());
+		} else {
+			targetVO = serviceInstanceService.getTargetVOByUser(commandQVO.getOsiUserId());
+		}
 
 		Map<String, Object> cmdParams = new HashMap<>();
 		cmdParams.putAll(params);
@@ -289,23 +313,6 @@ public class CommandService implements ICommandService, IMissedHitHandler<Long, 
 		}
 
 		return result;
-	}
-
-	private Command loadByNameAndOService(Long serviceId, String name) {
-		Long cmdId = persistorService.createQueryBuilder()
-			.addSelect("select ent.id")
-			.addFrom(Command.class, "ent")
-			.addWhere("and ent.name = :name")
-			.addParam("name", name)
-			.addWhere("and ent.service.id = :serviceId")
-			.addParam("serviceId", serviceId)
-			.object();
-
-		if (cmdId != null) {
-			return load(cmdId);
-		}
-
-		return null;
 	}
 
 	private XCommand loadXCommand(Command command) {

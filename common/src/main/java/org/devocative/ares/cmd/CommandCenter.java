@@ -1,6 +1,7 @@
 package org.devocative.ares.cmd;
 
 import org.devocative.ares.entity.oservice.ERemoteMode;
+import org.devocative.ares.vo.CommandQVO;
 import org.devocative.ares.vo.OServiceInstanceTargetVO;
 import org.devocative.demeter.entity.FileStore;
 import org.slf4j.Logger;
@@ -35,7 +36,7 @@ public class CommandCenter {
 		try {
 			Object result = resource
 				.getCommandService()
-				.callCommand(commandName, targetVO.getServiceInstance(), params, resource);
+				.callCommand(new CommandQVO(commandName, targetVO.getServiceInstance(), params), resource);
 			logger.info("CommandCenter.exec: commandName=[{}}", commandName);
 			return result;
 		} catch (Exception e) {

@@ -15,9 +15,11 @@ import org.apache.wicket.util.string.Strings;
 import org.devocative.adroit.vo.KeyValueVO;
 import org.devocative.ares.cmd.CommandOutput;
 import org.devocative.ares.entity.command.Command;
+import org.devocative.ares.entity.oservice.OSIUser;
 import org.devocative.ares.entity.oservice.OServiceInstance;
 import org.devocative.ares.iservice.IOServerService;
 import org.devocative.ares.iservice.command.ICommandService;
+import org.devocative.ares.iservice.oservice.IOSIUserService;
 import org.devocative.ares.iservice.oservice.IOServiceInstanceService;
 import org.devocative.ares.vo.CommandQVO;
 import org.devocative.ares.vo.TabularVO;
@@ -55,6 +57,10 @@ public class CommandExecPanel extends DPanel implements IAsyncResponseHandler {
 
 	private Long commandId;
 	private Map<String, Object> params = new HashMap<>();
+	private List<OServiceInstance> targetServiceInstances = new ArrayList<>();
+
+	private String commandName;
+	private Long osiUserId;
 
 	private AsyncBehavior asyncBehavior;
 	private WebMarkupContainer tabs, log, tabular;
@@ -69,12 +75,22 @@ public class CommandExecPanel extends DPanel implements IAsyncResponseHandler {
 	@Inject
 	private IOServerService serverService;
 
+	@Inject
+	private IOSIUserService osiUserService;
+
 	// ------------------------------
 
 	public CommandExecPanel(String id, Long commandId) {
 		super(id);
 
 		this.commandId = commandId;
+	}
+
+	public CommandExecPanel(String id, String commandName, Long osiUserId) {
+		super(id);
+
+		this.commandName = commandName;
+		this.osiUserId = osiUserId;
 	}
 
 	// ------------------------------
@@ -117,9 +133,25 @@ public class CommandExecPanel extends DPanel implements IAsyncResponseHandler {
 		asyncBehavior = new AsyncBehavior(this);
 		add(asyncBehavior);
 
-		Command command = commandService.load(commandId);
+		Command command;
+		if (commandId != null) {
+			command = commandService.load(commandId);
+			targetServiceInstances.addAll(serviceInstanceService.findListForCommandExecution(command.getServiceId()));
+		} else {
+			OSIUser osiUser = osiUserService.load(osiUserId);
+			if (osiUser == null) {
+				throw new RuntimeException("OSIUser not found: " + osiUserId); //TODO
+			}
+			command = commandService.loadByNameAndOService(commandName, osiUser.getServiceId());
+			if (command == null) {
+				throw new RuntimeException(String.format("Command not found: name=%s serviceId=%s", commandName, osiUser.getServiceId()));
+			}
+			commandId = command.getId();
+			targetServiceInstances.add(osiUser.getServiceInstance());
+			params.put("target", osiUser.getServiceInstance());
+		}
+
 		XCommand xCommand = command.getXCommand();
-		final Long targetServiceId = command.getService().getId();
 		final boolean hasGuest = xCommand.checkHasGuest();
 
 		List<XParam> xParams = new ArrayList<>();
@@ -156,7 +188,9 @@ public class CommandExecPanel extends DPanel implements IAsyncResponseHandler {
 						break;
 
 					case Service:
-						WSelectionInput selectionInput = new WSelectionInput(xParam.getName(), serviceInstanceService.findListForCommandExecution(targetServiceId), false);
+						//WSelectionInput selectionInput = new WSelectionInput(xParam.getName(), serviceInstanceService.findListForCommandExecution(targetServiceId), false);
+						//TODO only work for target param
+						WSelectionInput selectionInput = new WSelectionInput(xParam.getName(), targetServiceInstances, false);
 
 						if (hasGuest) {
 							selectionInput.addToChoices(new WSelectionInputAjaxUpdatingBehavior() {
@@ -213,7 +247,9 @@ public class CommandExecPanel extends DPanel implements IAsyncResponseHandler {
 						cmdParams.put(entry.getKey(), entry.getValue());
 					}
 				}
-				asyncBehavior.sendAsyncRequest(AresDModule.EXEC_COMMAND, new CommandQVO(commandId, serviceInstance, cmdParams));
+				asyncBehavior.sendAsyncRequest(AresDModule.EXEC_COMMAND,
+					new CommandQVO(commandId, serviceInstance, cmdParams)
+						.setOsiUserId(osiUserId));
 			}
 		});
 		add(form);

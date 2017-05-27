@@ -38,7 +38,7 @@ public class CommandExecutionDTask extends DTask implements ICommandResultCallBa
 		try {
 			logger.info("CommandExecutionDTask: currentUser=[{}] cmd=[{}]", getCurrentUser(), commandQVO.getCommandId());
 
-			Object result = commandService.executeCommand(commandQVO.getCommandId(), commandQVO.getServiceInstance(), commandQVO.getParams(), this);
+			Object result = commandService.executeCommand(commandQVO, this);
 			if (result != null) {
 				if (result instanceof TabularVO) {
 					onResult(new CommandOutput(CommandOutput.Type.TABULAR, result));

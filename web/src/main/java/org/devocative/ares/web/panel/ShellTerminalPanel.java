@@ -1,11 +1,15 @@
 package org.devocative.ares.web.panel;
 
+import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.event.Broadcast;
 import org.devocative.ares.iservice.IAsyncTextResult;
 import org.devocative.ares.iservice.ITerminalConnectionService;
+import org.devocative.ares.web.AresIcon;
 import org.devocative.ares.web.TerminalTabInfo;
 import org.devocative.demeter.web.DPanel;
+import org.devocative.wickomp.html.WAjaxLink;
 import org.devocative.wickomp.html.WTerminal;
+import org.devocative.wickomp.html.window.WModalWindow;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -21,6 +25,7 @@ public class ShellTerminalPanel extends DPanel {
 
 	private Long connectionId;
 	private WTerminal wTerminal;
+	private WModalWindow window;
 
 	private AsyncTextResult asyncTextResult;
 
@@ -39,6 +44,9 @@ public class ShellTerminalPanel extends DPanel {
 	@Override
 	protected void onInitialize() {
 		super.onInitialize();
+
+		window = new WModalWindow("window");
+		add(window);
 
 		asyncTextResult = new AsyncTextResult();
 
@@ -75,8 +83,17 @@ public class ShellTerminalPanel extends DPanel {
 				terminalConnectionService.closeConnection(connectionId);
 			}
 		};
-
 		add(wTerminal);
+
+		add(new WAjaxLink("fileUpload", AresIcon.UPLOAD) {
+			private static final long serialVersionUID = 5443160474136357945L;
+
+			@Override
+			public void onClick(AjaxRequestTarget target) {
+				window.setContent(new CommandExecPanel(window.getContentId(), "fileUpload", osiUserId));
+				window.show(target);
+			}
+		});
 	}
 
 	private class AsyncTextResult implements IAsyncTextResult {

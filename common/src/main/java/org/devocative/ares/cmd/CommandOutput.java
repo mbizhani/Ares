@@ -26,7 +26,7 @@ public class CommandOutput implements Serializable {
 	}
 
 	public Object getOutput() {
-		return output;
+		return output != null ? output : "-";
 	}
 
 	@Override

@@ -59,6 +59,9 @@ public class OSIUser implements IRowMod, ICreationDate, ICreatorUser, IModificat
 	@JoinColumn(name = "f_service", nullable = false, foreignKey = @ForeignKey(name = "siUser2service"))
 	private OService service;
 
+	@Column(name = "f_service", insertable = false, updatable = false)
+	private Long serviceId;
+
 	@ManyToMany(fetch = FetchType.LAZY)
 	@JoinTable(name = "mt_ars_srvInstUser_user",
 		joinColumns = {@JoinColumn(name = "f_srv_inst_user", nullable = false)},
@@ -189,6 +192,10 @@ public class OSIUser implements IRowMod, ICreationDate, ICreatorUser, IModificat
 
 	public void setService(OService service) {
 		this.service = service;
+	}
+
+	public Long getServiceId() {
+		return serviceId;
 	}
 
 	public List<User> getAllowedUsers() {
