@@ -32,6 +32,29 @@ public class OServer implements ICreationDate, ICreatorUser, IModificationDate, 
 	@Column(name = "c_address")
 	private String address;
 
+	@ManyToOne(fetch = FetchType.EAGER)
+	@JoinColumn(name = "f_func",
+		foreignKey = @ForeignKey(name = "server_func2basic"))
+	private OBasicData function;
+
+	@Column(name = "n_counter")
+	private Integer counter;
+
+	@ManyToOne(fetch = FetchType.EAGER)
+	@JoinColumn(name = "f_env",
+		foreignKey = @ForeignKey(name = "server_env2basic"))
+	private OBasicData environment;
+
+	@ManyToOne(fetch = FetchType.EAGER)
+	@JoinColumn(name = "f_loc",
+		foreignKey = @ForeignKey(name = "server_loc2basic"))
+	private OBasicData location;
+
+	@ManyToOne(fetch = FetchType.EAGER)
+	@JoinColumn(name = "f_comp",
+		foreignKey = @ForeignKey(name = "server_comp2basic"))
+	private OBasicData company;
+
 	@Column(name = "c_vm_id")
 	private String vmId;
 
@@ -121,6 +144,46 @@ public class OServer implements ICreationDate, ICreatorUser, IModificationDate, 
 		this.address = address;
 	}
 
+	public OBasicData getFunction() {
+		return function;
+	}
+
+	public void setFunction(OBasicData function) {
+		this.function = function;
+	}
+
+	public Integer getCounter() {
+		return counter;
+	}
+
+	public void setCounter(Integer counter) {
+		this.counter = counter;
+	}
+
+	public OBasicData getEnvironment() {
+		return environment;
+	}
+
+	public void setEnvironment(OBasicData environment) {
+		this.environment = environment;
+	}
+
+	public OBasicData getLocation() {
+		return location;
+	}
+
+	public void setLocation(OBasicData location) {
+		this.location = location;
+	}
+
+	public OBasicData getCompany() {
+		return company;
+	}
+
+	public void setCompany(OBasicData company) {
+		this.company = company;
+	}
+
 	public String getVmId() {
 		return vmId;
 	}
@@ -173,10 +236,6 @@ public class OServer implements ICreationDate, ICreatorUser, IModificationDate, 
 		return creatorUser;
 	}
 
-	public void setCreatorUser(User creatorUser) {
-		this.creatorUser = creatorUser;
-	}
-
 	@Override
 	public Long getCreatorUserId() {
 		return creatorUserId;
@@ -199,10 +258,6 @@ public class OServer implements ICreationDate, ICreatorUser, IModificationDate, 
 
 	public User getModifierUser() {
 		return modifierUser;
-	}
-
-	public void setModifierUser(User modifierUser) {
-		this.modifierUser = modifierUser;
 	}
 
 	@Override

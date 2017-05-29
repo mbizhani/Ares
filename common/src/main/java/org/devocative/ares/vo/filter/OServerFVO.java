@@ -3,6 +3,7 @@ package org.devocative.ares.vo.filter;
 
 import org.devocative.adroit.vo.RangeVO;
 import org.devocative.ares.entity.EServerOS;
+import org.devocative.ares.entity.OBasicData;
 import org.devocative.ares.entity.OServer;
 import org.devocative.demeter.entity.User;
 import org.devocative.demeter.iservice.persistor.Filterer;
@@ -17,6 +18,11 @@ public class OServerFVO implements Serializable {
 
 	private String name;
 	private String address;
+	private List<OBasicData> function;
+	private RangeVO<Integer> counter;
+	private List<OBasicData> environment;
+	private List<OBasicData> location;
+	private List<OBasicData> company;
 	private String vmId;
 	private List<EServerOS> serverOS;
 	private List<OServer> hypervisor;
@@ -42,6 +48,46 @@ public class OServerFVO implements Serializable {
 
 	public void setAddress(String address) {
 		this.address = address;
+	}
+
+	public List<OBasicData> getFunction() {
+		return function;
+	}
+
+	public void setFunction(List<OBasicData> function) {
+		this.function = function;
+	}
+
+	public RangeVO<Integer> getCounter() {
+		return counter;
+	}
+
+	public void setCounter(RangeVO<Integer> counter) {
+		this.counter = counter;
+	}
+
+	public List<OBasicData> getEnvironment() {
+		return environment;
+	}
+
+	public void setEnvironment(List<OBasicData> environment) {
+		this.environment = environment;
+	}
+
+	public List<OBasicData> getLocation() {
+		return location;
+	}
+
+	public void setLocation(List<OBasicData> location) {
+		this.location = location;
+	}
+
+	public List<OBasicData> getCompany() {
+		return company;
+	}
+
+	public void setCompany(List<OBasicData> company) {
+		this.company = company;
 	}
 
 	public String getVmId() {

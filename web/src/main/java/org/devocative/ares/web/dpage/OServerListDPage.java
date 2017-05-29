@@ -19,6 +19,7 @@ import org.devocative.wickomp.WModel;
 import org.devocative.wickomp.form.WSelectionInput;
 import org.devocative.wickomp.form.WTextInput;
 import org.devocative.wickomp.form.range.WDateRangeInput;
+import org.devocative.wickomp.form.range.WNumberRangeInput;
 import org.devocative.wickomp.formatter.ODateFormatter;
 import org.devocative.wickomp.formatter.ONumberFormatter;
 import org.devocative.wickomp.grid.IGridDataSource;
@@ -102,6 +103,16 @@ public class OServerListDPage extends DPage implements IGridDataSource<OServer> 
 			.setLabel(new ResourceModel("OServer.name")));
 		floatTable.add(new WTextInput("address")
 			.setLabel(new ResourceModel("OServer.address")));
+		floatTable.add(new WSelectionInput("function", oServerService.getFunctionList(), true)
+			.setLabel(new ResourceModel("OServer.function")));
+		floatTable.add(new WNumberRangeInput("counter", Integer.class)
+			.setLabel(new ResourceModel("OServer.counter")));
+		floatTable.add(new WSelectionInput("environment", oServerService.getEnvironmentList(), true)
+			.setLabel(new ResourceModel("OServer.environment")));
+		floatTable.add(new WSelectionInput("location", oServerService.getLocationList(), true)
+			.setLabel(new ResourceModel("OServer.location")));
+		floatTable.add(new WSelectionInput("company", oServerService.getCompanyList(), true)
+			.setLabel(new ResourceModel("OServer.company")));
 		floatTable.add(new WTextInput("vmId")
 			.setLabel(new ResourceModel("OServer.vmId")));
 		floatTable.add(new WSelectionInput("serverOS", EServerOS.list(), true)
@@ -137,6 +148,13 @@ public class OServerListDPage extends DPage implements IGridDataSource<OServer> 
 		OColumnList<OServer> columnList = new OColumnList<>();
 		columnList.add(new OPropertyColumn<OServer>(new ResourceModel("OServer.name"), "name"));
 		columnList.add(new OPropertyColumn<OServer>(new ResourceModel("OServer.address"), "address"));
+		columnList.add(new OPropertyColumn<OServer>(new ResourceModel("OServer.function"), "function"));
+		columnList.add(new OPropertyColumn<OServer>(new ResourceModel("OServer.counter"), "counter")
+			.setFormatter(ONumberFormatter.integer())
+			.setStyle("direction:ltr"));
+		columnList.add(new OPropertyColumn<OServer>(new ResourceModel("OServer.environment"), "environment"));
+		columnList.add(new OPropertyColumn<OServer>(new ResourceModel("OServer.location"), "location"));
+		columnList.add(new OPropertyColumn<OServer>(new ResourceModel("OServer.company"), "company"));
 		columnList.add(new OPropertyColumn<OServer>(new ResourceModel("OServer.vmId"), "vmId"));
 		columnList.add(new OPropertyColumn<OServer>(new ResourceModel("OServer.serverOS"), "serverOS"));
 		columnList.add(new OPropertyColumn<OServer>(new ResourceModel("OServer.hypervisor"), "hypervisor"));

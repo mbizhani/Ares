@@ -1,6 +1,6 @@
-//overwrite
 package org.devocative.ares.iservice;
 
+import org.devocative.ares.entity.EBasicDiscriminator;
 import org.devocative.ares.entity.OBasicData;
 import org.devocative.ares.vo.filter.OBasicDataFVO;
 import org.devocative.demeter.entity.User;
@@ -23,4 +23,6 @@ public interface IOBasicDataService {
 	List<User> getModifierUserList();
 
 	// ==============================
+
+	List<OBasicData> listByDiscriminator(EBasicDiscriminator discriminator);
 }

@@ -12,6 +12,7 @@ import org.devocative.ares.web.AresIcon;
 import org.devocative.demeter.web.DPage;
 import org.devocative.demeter.web.UrlUtil;
 import org.devocative.demeter.web.component.DAjaxButton;
+import org.devocative.wickomp.form.WNumberInput;
 import org.devocative.wickomp.form.WSelectionInput;
 import org.devocative.wickomp.form.WTextInput;
 import org.devocative.wickomp.html.WFloatTable;
@@ -65,6 +66,16 @@ public class OServerFormDPage extends DPage {
 			.setLabel(new ResourceModel("OServer.name")));
 		floatTable.add(new WTextInput("address")
 			.setLabel(new ResourceModel("OServer.address")));
+		floatTable.add(new WSelectionInput("function", oServerService.getFunctionList(), false)
+			.setLabel(new ResourceModel("OServer.function")));
+		floatTable.add(new WNumberInput("counter", Integer.class)
+			.setLabel(new ResourceModel("OServer.counter")));
+		floatTable.add(new WSelectionInput("environment", oServerService.getEnvironmentList(), false)
+			.setLabel(new ResourceModel("OServer.environment")));
+		floatTable.add(new WSelectionInput("location", oServerService.getLocationList(), false)
+			.setLabel(new ResourceModel("OServer.location")));
+		floatTable.add(new WSelectionInput("company", oServerService.getCompanyList(), false)
+			.setLabel(new ResourceModel("OServer.company")));
 		floatTable.add(new WTextInput("vmId")
 			.setLabel(new ResourceModel("OServer.vmId")));
 		floatTable.add(new WSelectionInput("serverOS", EServerOS.list(), false)

@@ -1,7 +1,10 @@
 package org.devocative.ares.service;
 
 import org.devocative.adroit.vo.KeyValueVO;
+import org.devocative.ares.entity.EBasicDiscriminator;
+import org.devocative.ares.entity.OBasicData;
 import org.devocative.ares.entity.OServer;
+import org.devocative.ares.iservice.IOBasicDataService;
 import org.devocative.ares.iservice.IOServerService;
 import org.devocative.ares.vo.filter.OServerFVO;
 import org.devocative.demeter.entity.User;
@@ -21,6 +24,9 @@ public class OServerService implements IOServerService {
 
 	@Autowired
 	private IPersistorService persistorService;
+
+	@Autowired
+	private IOBasicDataService basicDataService;
 
 	// ------------------------------
 
@@ -80,8 +86,31 @@ public class OServerService implements IOServerService {
 	}
 
 	@Override
+	public List<OBasicData> getFunctionList() {
+		return basicDataService.listByDiscriminator(EBasicDiscriminator.FUNCTION);
+	}
+
+	@Override
+	public List<OBasicData> getEnvironmentList() {
+		return basicDataService.listByDiscriminator(EBasicDiscriminator.ENVIRONMENT);
+	}
+
+	@Override
+	public List<OBasicData> getLocationList() {
+		return basicDataService.listByDiscriminator(EBasicDiscriminator.LOCATION);
+	}
+
+	@Override
+	public List<OBasicData> getCompanyList() {
+		return basicDataService.listByDiscriminator(EBasicDiscriminator.COMPANY);
+	}
+
+	@Override
 	public List<OServer> getHypervisorList() {
-		return persistorService.list(OServer.class);
+		return persistorService.createQueryBuilder()
+			.addFrom(OServer.class, "ent")
+			.addWhere("and ent.hypervisor.id is null")
+			.list();
 	}
 
 	@Override

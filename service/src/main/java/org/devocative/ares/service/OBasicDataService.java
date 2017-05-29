@@ -1,6 +1,6 @@
-//overwrite
 package org.devocative.ares.service;
 
+import org.devocative.ares.entity.EBasicDiscriminator;
 import org.devocative.ares.entity.OBasicData;
 import org.devocative.ares.iservice.IOBasicDataService;
 import org.devocative.ares.vo.filter.OBasicDataFVO;
@@ -68,4 +68,13 @@ public class OBasicDataService implements IOBasicDataService {
 	}
 
 	// ==============================
+
+	@Override
+	public List<OBasicData> listByDiscriminator(EBasicDiscriminator discriminator) {
+		return persistorService.createQueryBuilder()
+			.addFrom(OBasicData.class, "ent")
+			.addWhere("and ent.discriminator = :discriminator")
+			.addParam("discriminator", discriminator)
+			.list();
+	}
 }
