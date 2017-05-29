@@ -140,6 +140,21 @@
 				<field name="address">
 					<finfo/>
 				</field>
+				<field name="function">
+					<finfo/>
+				</field>
+				<field name="counter">
+					<finfo/>
+				</field>
+				<field name="environment">
+					<finfo/>
+				</field>
+				<field name="location">
+					<finfo/>
+				</field>
+				<field name="company">
+					<finfo/>
+				</field>
 				<field name="vmId">
 					<finfo/>
 				</field>
@@ -386,6 +401,9 @@
 				<field name="service">
 					<finfo hasForm="false"/>
 				</field>
+				<field name="serviceId">
+					<finfo ignore="true"/>
+				</field>
 				<field name="allowedUsers">
 					<finfo/>
 				</field>
@@ -439,6 +457,42 @@
 				</field>
 				<field name="creatorUserId">
 					<finfo ignore="true"/>
+				</field>
+			</fields>
+		</class>
+		<class fqn="org.devocative.ares.entity.OBasicData">
+			<cinfo/>
+			<id ref="id"/>
+			<fields>
+				<field name="id">
+					<finfo/>
+				</field>
+				<field name="name">
+					<finfo/>
+				</field>
+				<field name="discriminator">
+					<finfo/>
+				</field>
+				<field name="creationDate">
+					<finfo hasForm="false" hasTimePart="true"/>
+				</field>
+				<field name="creatorUser">
+					<finfo hasForm="false"/>
+				</field>
+				<field name="creatorUserId">
+					<finfo ignore="true"/>
+				</field>
+				<field name="modificationDate">
+					<finfo hasForm="false" hasTimePart="true"/>
+				</field>
+				<field name="modifierUser">
+					<finfo hasForm="false"/>
+				</field>
+				<field name="modifierUserId">
+					<finfo ignore="true"/>
+				</field>
+				<field name="version">
+					<finfo hasForm="false" hasFVO="false"/>
 				</field>
 			</fields>
 		</class>

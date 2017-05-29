@@ -16,6 +16,7 @@
 		<entity type="org.devocative.ares.entity.command.CommandLog"/>
 		<entity type="org.devocative.ares.entity.command.ConfigLob"/>
 
+		<entity type="org.devocative.ares.entity.OBasicData"/>
 		<entity type="org.devocative.ares.entity.OServer"/>
 
 		<entity type="org.devocative.ares.entity.oservice.OService"/>
@@ -93,6 +94,13 @@
 		<dPage type="org.devocative.ares.web.dpage.TerminalConsoleDPage"
 			   title="KEY:dPage.ars.TerminalConsole"
 			   uri="/tconsole"
+			   inMenu="true"
+			   roles="User"
+				/>
+
+		<dPage type="org.devocative.ares.web.dpage.OBasicDataListDPage"
+			   title="KEY:dPage.ars.OBasicDataList"
+			   uri="/basic"
 			   inMenu="true"
 			   roles="User"
 				/>
