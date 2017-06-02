@@ -41,7 +41,7 @@ public class CCUtil {
 	}
 
 	public String substring(String str, String token, int count) {
-		if (count == 0) {
+		if (count == -1) {
 			int idx = str.lastIndexOf(token);
 			if (idx > 0) {
 				return str.substring(0, idx);

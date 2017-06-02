@@ -1,6 +1,5 @@
 package org.devocative.ares.cmd;
 
-import java.util.LinkedHashMap;
 import java.util.Map;
 
 public class SshResult {
@@ -39,7 +38,7 @@ public class SshResult {
 	}
 
 	public Map<String, String> toMap(String lineDelimiter, String keyValueDelimiter) {
-		Map<String, String> result = new LinkedHashMap<>();
+		Map<String, String> result = new AresMap<>();
 
 		String[] lines = stdout.split(lineDelimiter);
 		for (String line : lines) {

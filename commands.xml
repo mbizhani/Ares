@@ -281,6 +281,20 @@ if($cmd.exec('powerStat')) {
 ]]></body>
 				</command>
 
+				<command name="unregisterVM">
+					<params>
+						<param name="Vmid" required="true"/>
+					</params>
+
+					<body><![CDATA[
+if($cmd.exec('powerStat')) {
+	$cmd.error('Can not unregister a powered-on VM')
+} else {
+	$cmd.ssh("Unregister VM: '${Vmid}'", "vim-cmd vmsvc/unregister ${Vmid}")
+}
+]]></body>
+				</command>
+
 				<command name="deleteVM">
 					<params>
 						<param name="Vmid" type="Guest" required="true"/>
@@ -318,7 +332,7 @@ def srcVm = $cmd.exec('listVM', [Vmid: srcVmid, ShowAdvanced: true]).object
 
 if (destVM.hypervisorId == target.serverId) { //same hypervisor
 
-	if (destVM['vmId']) { // VM already existed
+	if (destVM['vmId']) { // VM already existed, just copy VMDK
 		def dstVm = $cmd.exec('listVM', [Vmid: destVM.vmId, ShowAdvanced: true]).object
 
 		if (srcVm.VMDK.size() == dstVm.VMDK.size()) {
@@ -337,41 +351,7 @@ if (destVM.hypervisorId == target.serverId) { //same hypervisor
 	} else { // new dest VM
 		def newVmxDir = "/vmfs/volumes/${srcVm.DataStore}/${destVM.name}"
 
-		def newVmx =
-""".encoding = "UTF-8"
-config.version = "8"
-virtualHW.version = "10"
-memSize = "${srcVm.INFO.memSize}"
-numvcpus = "${srcVm.INFO['numvcpus'] ? srcVm.INFO.numvcpus : 1}"
-cpuid.coresPerSocket = "${srcVm.INFO['cpuid.coresPerSocket'] ? srcVm.INFO.cpuid.coresPerSocket : 1}"
-displayName = "${destVM.name}"
-guestOS = "${srcVm.INFO.guestOS}"
-ide1:0.startConnected = "FALSE"
-ide1:0.deviceType = "cdrom-raw"
-ide1:0.clientDevice = "TRUE"
-ide1:0.fileName = "emptyBackingString"
-ide1:0.present = "TRUE"
-floppy0.present = "FALSE"
-ethernet0.virtualDev = "e1000"
-ethernet0.networkName = "VM Network"
-ethernet0.addressType = "generated"
-ethernet0.uptCompatibility = "TRUE"
-ethernet0.present = "TRUE"
-scsi0.present = "TRUE"
-scsi0.virtualDev = "${srcVm.INFO['scsi0.virtualDev']}" """
-
-		def newVmdkMap = [:]
-		srcVm.VMDK.each {k, v ->
-			def newVmdk = v.replaceAll(srcVm.Name, destVM.name)
-			newVmdkMap[k] = newVmdk
-			if (newVmdk.startsWith(newVmxDir)) {
-				newVmdk = newVmdk.substring(newVmxDir.length() + 1)
-			}
-
-			newVmx += "\n${k.replaceAll('fileName','deviceType')} = \"scsi-hardDisk\""
-			newVmx += "\n${k} = \"${newVmdk}\""
-			newVmx += "\n${k.replaceAll('fileName','present')} = \"TRUE\""
-		}
+		def newVmx = $cmd.exec('cloneVmx', [vm: srcVm, destName: destVM.name, clone: true])
 
 		$util.log("Create vmx for '${destVM.name}' in ${newVmxDir}\n${newVmx}")
 
@@ -383,8 +363,14 @@ cat > "${newVmxDir}/${destVM.name}.vmx" << "EOF2"
 ${newVmx}
 EOF2
 """)
+		def newVmdkMap = [:]
+		srcVm.VMDK.each { String k, String v ->
+			def newVmdk = v.replaceAll(srcVm.Name, destVM.name)
+			newVmdkMap[k] = newVmdk
+		}
+
 		srcVm.VMDK.each {k, v ->
-			def vmdkDir = $util.substring(newVmdkMap[k], '/', 0)
+			def vmdkDir = $util.substring(newVmdkMap[k], '/', -1)
 			$cmd.ssh("Copy VMDK: ${k}", """mkdir -p \"${vmdkDir}\"; vmkfstools -i "${v}" "${newVmdkMap[k]}" """)
 		}
 
@@ -394,7 +380,67 @@ EOF2
 		$cmd.updateServer(destVM.id, newVmId)
 	}
 } else { //different hypervisor, scp required
+	$cmd.error('Different hypervisor not implemented')
 }
+]]></body>
+				</command>
+
+				<command name="renameVM">
+					<params>
+						<param name="Vmid" required="true"/>
+						<param name="destName" required="true"/>
+					</params>
+
+					<body><![CDATA[
+def vm = $cmd.exec('listVM', [Vmid: Vmid, ShowAdvanced: true]).object
+
+if (vm.Name != destName) {
+	$cmd.exec('unregisterVM')
+
+	def newVmx = $cmd.exec('cloneVmx', [vmxMap: vm.INFO, vmName: vm.Name, destName: destName])
+}
+]]></body>
+				</command>
+
+				<command name="cloneVmx">
+					<params>
+						<param name="vm"/>
+						<param name="destName"/>
+						<param name="clone" type="Boolean"/>
+					</params>
+
+					<body><![CDATA[
+def newVmxMap = vm.INFO.clone()
+
+newVmxMap['displayName'] = destName
+newVmxMap['nvram'] = "${destName}.nvram"
+if (newVmxMap['extendedConfigFile']) {
+	newVmxMap['extendedConfigFile'] = "${destName}.vmxf"
+}
+
+newVmxMap.remove('migrate.hostlog')
+newVmxMap.remove('sched.swap.derivedName')
+
+if (clone) {
+	newVmxMap.remove('uuid.bios')
+	newVmxMap.remove('uuid.location')
+	newVmxMap.remove('vc.uuid')
+	newVmxMap.remove('vmci0.id')
+}
+
+vm.INFO.each { String k, String v ->
+	if (v.endsWith('.vmdk')) {
+		newVmxMap[k] = v.replaceAll(vm.Name, destName)
+	}
+
+	if (clone) {
+		if (k.matches('ethernet\\d+\\.generatedAddress.*')) {
+			newVmxMap.remove(k)
+		}
+	}
+}
+
+return newVmxMap.exportStr()
 ]]></body>
 				</command>
 

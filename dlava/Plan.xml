@@ -8,15 +8,16 @@
 	<pre>
 		<![CDATA[
 			def params = [
-				moduleShortName : "ARS".toLowerCase(),
-				ajaxEditColumn : true,
-				iconClass : org.devocative.ares.web.AresIcon
+				moduleShortName : "ars",
+				ajaxEditColumn  : true,
+				iconClass       : org.devocative.ares.web.AresIcon,
+				privilegeClass  : org.devocative.ares.AresPrivilegeKey
 			]
 		]]>
 	</pre>
 
 	<packageMap>
-		<from pkg="org.devocative.ares.entity" includeSubPackages="true">
+		<from pkg="org.devocative.ares.entity" includeSubPackages="true" includePattern=".*OServer">
 			<to pkgReplace="entity:vo.filter" generatorRef="FVO" genDir="common/src/main/java"/>
 
 			<to pkgReplace="entity:iservice" generatorRef="ServiceI" genDir="common/src/main/java"/>
