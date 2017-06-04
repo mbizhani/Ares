@@ -330,10 +330,18 @@ $cmd.ssh("Get IP: '${Vmid}'", """ vim-cmd vmsvc/get.guest ${Vmid} | grep -m 1 "i
 					<body><![CDATA[
 def srcVm = $cmd.exec('listVM', [Vmid: srcVmid, ShowAdvanced: true]).object
 
+if (srcVm.PowerStat) {
+	$cmd.error("Turn off '${srcVm.Name}' before cloning!")
+}
+
 if (destVM.hypervisorId == target.serverId) { //same hypervisor
 
 	if (destVM['vmId']) { // VM already existed, just copy VMDK
 		def dstVm = $cmd.exec('listVM', [Vmid: destVM.vmId, ShowAdvanced: true]).object
+
+		if (dstVm.PowerStat) {
+			$cmd.error("Turn off '${dstVm.Name}' before cloning!")
+		}
 
 		if (srcVm.VMDK.size() == dstVm.VMDK.size()) {
 			srcVm.VMDK.each {k, v ->
@@ -393,6 +401,10 @@ EOF2
 
 					<body><![CDATA[
 def vm = $cmd.exec('listVM', [Vmid: Vmid, ShowAdvanced: true]).object
+
+if (vm.PowerStat) {
+	$cmd.error("Turn off '${vm.Name}' before renaming!")
+}
 
 if (vm.Name != destName) {
 	$cmd.exec('unregisterVM')
