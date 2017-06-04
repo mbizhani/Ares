@@ -176,6 +176,10 @@ public class CommandCenter {
 		resource.getServerService().updateVmid(id, vmId);
 	}
 
+	public void updateServer(Long hypervisorId, String oldVmId, String newVmId, String newName) {
+		resource.getServerService().updateServer(hypervisorId, oldVmId, newVmId, newName);
+	}
+
 	public void error(String message) {
 		//resultCallBack.onResult(new CommandOutput(CommandOutput.Type.ERROR, "Error: " + message));
 		throw new RuntimeException(message);

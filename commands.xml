@@ -267,7 +267,7 @@ if($cmd.exec('powerStat')) {
 ]]></body>
 				</command>
 
-				<command name="reboot">
+				<command name="rebootVM">
 					<params>
 						<param name="Vmid" type="Guest" required="true"/>
 					</params>
@@ -387,7 +387,7 @@ EOF2
 
 				<command name="renameVM">
 					<params>
-						<param name="Vmid" required="true"/>
+						<param name="Vmid" type="Guest" required="true"/>
 						<param name="destName" required="true"/>
 					</params>
 
@@ -397,7 +397,50 @@ def vm = $cmd.exec('listVM', [Vmid: Vmid, ShowAdvanced: true]).object
 if (vm.Name != destName) {
 	$cmd.exec('unregisterVM')
 
-	def newVmx = $cmd.exec('cloneVmx', [vmxMap: vm.INFO, vmName: vm.Name, destName: destName])
+	vm.VMDK.each {k, v ->
+		def vmdkDir = $util.substring(v, '/', -1)
+		def oldVmdkFile = v.substring(vmdkDir.length() + 1)
+		def newVmdkFile = oldVmdkFile.replaceAll(vm.Name, destName)
+		$cmd.ssh("Rename VMDK: ${k}", """cd \"${vmdkDir}\"; vmkfstools -E "${oldVmdkFile}" "${newVmdkFile}" """)
+		$util.log("Rename VMDK: '${oldVmdkFile}' to '${newVmdkFile}'")
+	}
+
+	def vmxDir = "/vmfs/volumes/${vm.DataStore}/${vm.Name}"
+	vm.VMDK.each {k, v ->
+		def vmdkDir = $util.substring(v, '/', -1)
+		if (vmxDir != vmdkDir) {
+			def newVmdkDir = vmdkDir.replaceAll(vm.Name, destName)
+			$cmd.ssh("Rename external VMDK dir: ${k}", """mv "${vmdkDir}" "${newVmdkDir}" """)
+			$util.log("Rename external VMDK dir: '${vmdkDir}' to '${newVmdkDir}'")
+		}
+	}
+
+	def newVmx = $cmd.exec('cloneVmx', [vm: vm, destName: destName, clone: false])
+	def cmd = """
+cat > "${vmxDir}/${destName}.vmx" << "EOF2"
+${newVmx}
+EOF2
+
+rm -f "${vmxDir}/${vm.Name}.vmsd"
+"""
+
+	if (vm.INFO['nvram']) {
+		cmd += """mv "${vmxDir}/${vm.Name}.nvram" "${vmxDir}/${destName}.nvram" \n """
+	}
+
+	if (vm.INFO['extendedConfigFile']) {
+		cmd += """mv "${vmxDir}/${vm.Name}.vmxf" "${vmxDir}/${destName}.vmxf" \n """
+	}
+
+	def newVmxDir = vmxDir.replaceAll(vm.Name, destName)
+	cmd += """mv "${vmxDir}" "${newVmxDir}" """
+
+	$cmd.ssh('Rename vmx & other files', cmd)
+
+	$cmd.ssh("Register VM: ${destName}", """vim-cmd solo/registervm "${newVmxDir}/${destName}.vmx" """)
+
+	def newVmId = $cmd.exec('listVM', [Name: destName]).object.Vmid
+	$cmd.updateServer(target.serverId, Vmid, newVmId, destName)
 }
 ]]></body>
 				</command>

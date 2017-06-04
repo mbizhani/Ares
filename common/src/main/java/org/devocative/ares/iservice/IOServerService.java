@@ -49,4 +49,6 @@ public interface IOServerService {
 	void updateVmid(Long id, String vmId);
 
 	void checkVMServers(Long hypervisorId, List<Map<String, String>> servers);
+
+	void updateServer(Long hypervisorId, String oldVmId, String newVmId, String newName);
 }

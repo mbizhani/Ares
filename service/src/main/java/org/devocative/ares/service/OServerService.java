@@ -209,4 +209,24 @@ public class OServerService implements IOServerService {
 
 		persistorService.commitOrRollback();
 	}
+
+	@Override
+	public void updateServer(Long hypervisorId, String oldVmId, String newVmId, String newName) {
+		OServer oServer = persistorService.createQueryBuilder()
+			.addFrom(OServer.class, "ent")
+			.addWhere("and ent.hypervisor.id = :hypervisorId")
+			.addParam("hypervisorId", hypervisorId)
+			.addWhere("and ent.vmId = :vmId")
+			.addParam("vmId", oldVmId)
+			.object();
+
+		if (oServer != null) {
+			oServer.setName(newName);
+			oServer.setVmId(newVmId);
+			saveOrUpdate(oServer);
+			persistorService.commitOrRollback();
+		} else {
+			throw new RuntimeException(String.format("UpdateServer: VM not found hypervisorId=[%s] vmId=[%s]", hypervisorId, oldVmId));
+		}
+	}
 }
