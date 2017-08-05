@@ -134,6 +134,15 @@ public class CommandCenter {
 	// ---------------
 
 	public Object sql(String prompt, String sql) {
+		return sql(prompt, sql, null, null);
+	}
+
+	public Object sql(String prompt, String sql, Map<String, Object> params) {
+		return sql(prompt, sql, params, null);
+	}
+
+	// Main sql()
+	public Object sql(String prompt, String sql, Map<String, Object> params, Map<String, Object> filter) {
 		Object result = null;
 
 		OServiceInstanceTargetVO finalTargetVO = targetVO;
@@ -142,7 +151,7 @@ public class CommandCenter {
 		}
 
 		try {
-			SqlCommandExecutor executor = new SqlCommandExecutor(finalTargetVO, resource, prompt, sql);
+			SqlCommandExecutor executor = new SqlCommandExecutor(finalTargetVO, resource, prompt, sql, params, filter);
 			Thread th = new Thread(executor);
 			th.start();
 			th.join();

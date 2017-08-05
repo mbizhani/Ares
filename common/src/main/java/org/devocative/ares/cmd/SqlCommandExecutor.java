@@ -1,16 +1,27 @@
 package org.devocative.ares.cmd;
 
+import org.devocative.adroit.sql.NamedParameterStatement;
+import org.devocative.adroit.sql.plugin.FilterPlugin;
+import org.devocative.adroit.sql.result.EColumnNameCase;
+import org.devocative.adroit.sql.result.QueryVO;
+import org.devocative.adroit.sql.result.ResultSetProcessor;
 import org.devocative.ares.vo.OServiceInstanceTargetVO;
 import org.devocative.ares.vo.TabularVO;
 
-import java.sql.*;
-import java.util.ArrayList;
-import java.util.List;
+import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.Map;
 
 public class SqlCommandExecutor extends AbstractCommandExecutor {
+	private Map<String, Object> params, filter;
 
-	public SqlCommandExecutor(OServiceInstanceTargetVO targetVO, CommandCenterResource resource, String prompt, String command) {
+	public SqlCommandExecutor(OServiceInstanceTargetVO targetVO, CommandCenterResource resource, String prompt,
+							  String command, Map<String, Object> params, Map<String, Object> filter) {
 		super(targetVO, resource, prompt, command);
+
+		this.params = params;
+		this.filter = filter;
 	}
 
 	// ------------------------------
@@ -24,50 +35,28 @@ public class SqlCommandExecutor extends AbstractCommandExecutor {
 		String p = String.format("[ %s@%s ]$ %s", targetVO.getUsername(), targetVO.getName(), prompt);
 		resource.onResult(new CommandOutput(CommandOutput.Type.PROMPT, p));
 
-		Statement statement = connection.createStatement();
-		if (statement.execute(command)) {
-			ResultSet rs = statement.getResultSet();
-			ResultSetMetaData metaData = rs.getMetaData();
+		NamedParameterStatement nps =
+			new NamedParameterStatement(connection, command)
+				.setParameters(params);
 
-			List<String> columns = new ArrayList<>();
-			for (int i = 1; i <= metaData.getColumnCount(); i++) {
-				columns.add(metaData.getColumnName(i).toLowerCase());
-			}
+		if (filter != null) {
+			nps.addPlugin(new FilterPlugin().addAll(filter));
+		}
 
-			List<List<Object>> rows = new ArrayList<>();
-			while (rs.next()) {
-				List<Object> row = new ArrayList<>();
-				for (int i = 0; i < columns.size(); i++) {
-					String column = columns.get(i);
-					Object value;
-					switch (metaData.getColumnType(i + 1)) {
-						case Types.DATE:
-							value = rs.getDate(column);
-							break;
-						case Types.TIME:
-							value = rs.getTime(column);
-							break;
-						case Types.TIMESTAMP:
-							value = rs.getTimestamp(column);
-							break;
-						default:
-							value = rs.getObject(column);
-					}
-					row.add(value);
-				}
-				rows.add(row);
-			}
+		if (nps.execute()) {
+			ResultSet rs = nps.getResultSet();
+			QueryVO queryVO = ResultSetProcessor.process(rs, EColumnNameCase.LOWER);
 
-			if (columns.size() == 1 && rows.size() == 1) {
-				result = rows.get(0).get(0);
+			if (queryVO.getHeader().size() == 1 && queryVO.getRows().size() == 1) {
+				result = queryVO.getRows().get(0).get(0);
 			} else {
-				result = new TabularVO<>(columns, rows);
+				result = new TabularVO<>(queryVO.getHeader(), queryVO.getRows());
 			}
 		} else {
-			logger.info("Execute non-select query: update count=[{}]", statement.getUpdateCount());
-			result = statement.getUpdateCount();
+			logger.info("Execute non-select query: update count=[{}]", nps.getUpdateCount());
+			result = nps.getUpdateCount();
 		}
-		statement.close();
+		nps.close();
 
 		setResult(result);
 	}

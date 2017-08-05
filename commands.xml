@@ -13,9 +13,40 @@
 
 			<commands>
 				<command name="showUsers">
-					<params/>
+					<params>
+						<param name="username"/>
+						<param name="account_status"/>
+					</params>
 					<body><![CDATA[
-$cmd.sql("show all users", "select user_id, username, account_status, lock_date, default_tablespace, created from dba_users")
+def filter = [:]
+if (binding.variables['username']) {
+	filter['username'] = username
+}
+if (binding.variables['account_status']) {
+	filter['account_status'] = account_status
+}
+
+$cmd.sql("show all users", """
+select
+	us.user_id,
+	us.username,
+	us.account_status,
+	us.lock_date,
+	us.default_tablespace,
+	us.created,
+	tbl.table_count
+from
+	dba_users us
+	left join (
+		select
+			owner,
+			count(1) table_count
+		from dba_tables
+		group by owner) tbl on tbl.owner = us.username
+where
+	1=1
+	%FILTER%
+order by us.username""", null, filter)
 ]]></body>
 				</command>
 
@@ -31,7 +62,7 @@ $cmd.userPasswordUpdated(username, newPassword)
 ]]></body>
 				</command>
 
-				<command name="checkDBUser">
+				<command name="checkUser">
 					<params>
 						<param name="schema" required="true"/>
 					</params>
@@ -41,7 +72,7 @@ $cmd.sql("check user '${schema}'", "select count(1) from all_users where usernam
 ]]></body>
 				</command>
 
-				<command name="truncateDBUser">
+				<command name="truncateSchema">
 					<params>
 						<param name="schema" required="true"/>
 					</params>
@@ -77,16 +108,19 @@ end;
 					<params>
 						<param name="sourceSchema" required="true"/>
 						<param name="destSchema" required="true"/>
+						<param name="backUpDest" type="Boolean" defaultValue="true"/>
 					</params>
 					<body>
 						<![CDATA[
-if(!$cmd.exec("checkDBUser", [schema:sourceSchema])) {
+if(!$cmd.exec("checkUser", [schema:sourceSchema])) {
 	$cmd.error("Invalid user '${sourceSchema}' to create dump file")
 }
 
-$cmd.exec("backupSchema", [schema:destSchema])
+if(backUpDest) {
+	$cmd.exec("backupSchema", [schema:destSchema])
+}
 
-$cmd.exec("truncateDBUser", [schema:destSchema])
+$cmd.exec("truncateSchema", [schema:destSchema])
 
 $cmd.ssh("export dump from '${sourceSchema}'", "su - oracle -c 'expdp ${target.username}/${target.password} schemas=${sourceSchema} directory=${target.prop.pumpDbDir} dumpfile=${sourceSchema}.dmp logfile=${sourceSchema}.log'")
 
@@ -102,7 +136,7 @@ $cmd.ssh("remove generated dump file", "rm -f ${target.prop.pumpOsDir}/${sourceS
 					</params>
 					<body>
 						<![CDATA[
-if(!$cmd.exec('checkDBUser', [schema:schema])) {
+if(!$cmd.exec('checkUser', [schema:schema])) {
 	$cmd.error("Invalid user '${schema}' to create dump file")
 }
 

@@ -1,53 +1,10 @@
-cmd.exec
-cmd.ssh
-cmd.sql
-cmd.sqlBlock
-cmd.sleep
+Ares user on oracle privileges:
 
+grant CONNECT to ares
+grant CREATE TABLE to ares
+grant UNLIMITED TABLESPACE to ares
+grant SELECT ANY DICTIONARY to ares
 
-param: sourceSchema:String,dbService:Service("DB.Oracle"),destSchema:String
-
-if(!cmd.exec("checkDBUser", [dbService:dbService, username:sourceSchema])) {
-	error("No user ${sourceSchema} to export dump from")
-}
-
-if(!cmd.exec("checkDBUser", [dbService:dbService, username:destSchema.username])) {
-	error("No user ${destSchema.username} to import dump to")
-}
-
-cmd.exec("truncateDBUser", [dbService:dbService, username:destSchema])
-
-def osService = dbService.fromRelated("OS.Linux");
-
-cmd.ssh("su - oracle -c 'expdp ${dbService.username}/${dbService.password} schemas=${sourceSchema} directory=${dbService.prop.dbDir} dumpfile=${sourceSchema}.dmp logfile=${sourceSchema}.log'", osService)
-
-cmd.ssh("su - oracle -c 'impdp ${dbService.username}/${dbService.password} remap_schema=${sourceSchema}:${destSchema} directory=${dbService.prop.dbDir} dumpfile=${destSchema}.dmp logfile=${destSchema}.log'", osService)
-
-return true
-
-
-
-param: schema:String
-
-cmd.sqlBlock("""
-DECLARE
-	scname varchar2(20);
-BEGIN
-	scname := '${schema}.toUpperCase()';
-
-	--Bye Sequences!
-	for I in (select US.SEQUENCE_NAME from DBA_SEQUENCES US where us.sequence_owner = scname) LOOP
-		EXECUTE IMMEDIATE 'drop sequence '||scname||'.'|| i.sequence_name;
-	END LOOP;
-
-	--Bye Tables!
-	for I in (select UT.TABLE_NAME from DBA_TABLES UT where ut.owner = scname) LOOP
-		EXECUTE IMMEDIATE 'drop table '||scname||'.'|| i.table_name ||' cascade constraints purge';
-	END LOOP;
-
-	--Bye Synonyms!
-	for I in (select UT.SYNONYM_NAME from DBA_SYNONYMS UT where ut.owner = scname) LOOP
-		EXECUTE IMMEDIATE 'drop synonym '||scname||'.'|| i.SYNONYM_NAME;
-	end LOOP;
-end;
-""")
+grant READ, WRITE ON DIRECTORY my_data_export to ares
+grant EXP_FULL_DATABASE to ares
+grant IMP_FULL_DATABASE to ares

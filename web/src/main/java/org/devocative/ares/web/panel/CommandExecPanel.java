@@ -44,7 +44,6 @@ import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
 import java.io.PrintWriter;
-import java.io.Serializable;
 import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -96,7 +95,7 @@ public class CommandExecPanel extends DPanel implements IAsyncResponseHandler {
 	// ------------------------------
 
 	@Override
-	public void onAsyncResult(String handlerId, IPartialPageRequestHandler handler, Serializable result) {
+	public void onAsyncResult(String handlerId, IPartialPageRequestHandler handler, Object result) {
 		logger.debug("onAsyncResult: {}", result);
 
 		CommandOutput line = (CommandOutput) result;
