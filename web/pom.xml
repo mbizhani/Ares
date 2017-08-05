@@ -63,6 +63,13 @@
 			<scope>test</scope>
 		</dependency>
 
+		<dependency>
+			<groupId>net.logstash.log4j</groupId>
+			<artifactId>jsonevent-layout</artifactId>
+			<version>1.7</version>
+			<scope>test</scope>
+		</dependency>
+
 	</dependencies>
 
 	<build>
@@ -114,6 +121,9 @@
 					<httpConnector>
 						<port>${jetty.port}</port>
 					</httpConnector>
+
+					<stopKey>Ares</stopKey>
+					<stopPort>${jetty.port.stop}</stopPort>
 				</configuration>
 			</plugin>
 
@@ -125,7 +135,7 @@
 				<configuration>
 					<outputDirectory>src/test/webapp</outputDirectory>
 					<resourceBundles>
-						<resourceBundle>org.devocative:diadem:1.0-SNAPSHOT</resourceBundle>
+						<resourceBundle>org.devocative:diadem:${d.diadem.ver}</resourceBundle>
 					</resourceBundles>
 				</configuration>
 				<executions>

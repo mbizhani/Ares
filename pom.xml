@@ -48,13 +48,15 @@
 	</scm>
 
 	<properties>
-		<lang.level>1.7</lang.level>
+		<lang.level>1.8</lang.level>
 		<jetty.port>8080</jetty.port>
+		<jetty.port.stop>9090</jetty.port.stop>
 		<jetty.context>/ctx</jetty.context>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
 		<d.demeter.ver>1.0-SNAPSHOT</d.demeter.ver>
-		<d.spring.ver>4.3.3.RELEASE</d.spring.ver>
+		<d.diadem.ver>1.1</d.diadem.ver>
+		<d.spring.ver>4.3.9.RELEASE</d.spring.ver>
 		<d.servlet.ver>3.1.0</d.servlet.ver>
 
 		<p.jetty.ver>9.2.15.v20160210</p.jetty.ver>
