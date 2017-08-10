@@ -4,6 +4,7 @@ import org.devocative.ares.entity.TerminalConnection;
 import org.devocative.ares.entity.oservice.OSIUser;
 import org.devocative.ares.vo.filter.TerminalConnectionFVO;
 import org.devocative.demeter.entity.User;
+import org.devocative.demeter.iservice.task.ITaskResultCallback;
 
 import java.util.List;
 
@@ -24,9 +25,9 @@ public interface ITerminalConnectionService {
 
 	// ==============================
 
-	Long createTerminal(Long osiUserId, IAsyncTextResult textResult);
+	Long createTerminal(Long osiUserId, ITaskResultCallback callback);
 
-	void sendMessage(Long connId, String key, Integer specialKey);
+	void sendMessage(Long connId, Object message);
 
 	void closeConnection(Long connId);
 

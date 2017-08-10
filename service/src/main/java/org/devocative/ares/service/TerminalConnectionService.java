@@ -5,17 +5,17 @@ import org.devocative.ares.AresException;
 import org.devocative.ares.entity.TerminalConnection;
 import org.devocative.ares.entity.oservice.ERemoteMode;
 import org.devocative.ares.entity.oservice.OSIUser;
-import org.devocative.ares.iservice.IAsyncTextResult;
 import org.devocative.ares.iservice.ITerminalConnectionService;
 import org.devocative.ares.iservice.oservice.IOSIUserService;
 import org.devocative.ares.iservice.oservice.IOServiceInstanceService;
 import org.devocative.ares.service.terminal.ITerminalProcess;
 import org.devocative.ares.vo.OServiceInstanceTargetVO;
-import org.devocative.ares.vo.ShellConnectionVO;
+import org.devocative.ares.vo.TerminalConnectionVO;
 import org.devocative.ares.vo.filter.TerminalConnectionFVO;
 import org.devocative.demeter.entity.User;
 import org.devocative.demeter.iservice.persistor.IPersistorService;
 import org.devocative.demeter.iservice.task.DTaskResult;
+import org.devocative.demeter.iservice.task.ITaskResultCallback;
 import org.devocative.demeter.iservice.task.ITaskService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -99,7 +99,7 @@ public class TerminalConnectionService implements ITerminalConnectionService {
 	// ==============================
 
 	@Override
-	public Long createTerminal(Long osiUserId, IAsyncTextResult textResult) {
+	public Long createTerminal(Long osiUserId, ITaskResultCallback callback) {
 		if (!osiUserService.isOSIUserAllowed(osiUserId)) {
 			throw new AresException(AresErrorCode.TerminalConnectionAccessViolation);
 		}
@@ -115,8 +115,8 @@ public class TerminalConnectionService implements ITerminalConnectionService {
 
 		ITerminalProcess process = null;
 		if (ERemoteMode.SSH.equals(targetVOByUser.getUser().getRemoteMode())) {
-			ShellConnectionVO vo = new ShellConnectionVO(connection.getId(), targetVOByUser, textResult);
-			DTaskResult result = taskService.start("arsShellConnectionDTask", connection.getId(), vo, null);
+			TerminalConnectionVO vo = new TerminalConnectionVO(connection.getId(), targetVOByUser);
+			DTaskResult result = taskService.start("arsShellConnectionDTask", connection.getId(), vo, callback);
 			process = (ITerminalProcess) result.getTaskInstance();
 		}
 
@@ -128,12 +128,12 @@ public class TerminalConnectionService implements ITerminalConnectionService {
 	}
 
 	@Override
-	public void sendMessage(Long connId, String key, Integer specialKey) {
+	public void sendMessage(Long connId, Object message) {
 		//logger.debug("sendMessage: connId={}", connId);
 
 		if (connId != null && CONNECTIONS.containsKey(connId)) {
 			ITerminalProcess process = CONNECTIONS.get(connId);
-			process.send(key, specialKey);
+			process.send(message);
 		} else {
 			logger.warn("Sending message to invalid connection: connId=[{}]", connId);
 		}

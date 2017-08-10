@@ -57,6 +57,6 @@ public class CommandExecutionDTask extends DTask implements ICommandResultCallBa
 
 	@Override
 	public void onResult(CommandOutput lineOfResult) {
-		setResult(lineOfResult);
+		sendResult(lineOfResult);
 	}
 }

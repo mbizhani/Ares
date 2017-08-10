@@ -2,10 +2,11 @@ package org.devocative.ares.web.panel;
 
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.event.Broadcast;
-import org.devocative.ares.iservice.IAsyncTextResult;
 import org.devocative.ares.iservice.ITerminalConnectionService;
+import org.devocative.ares.vo.SshMessageVO;
 import org.devocative.ares.web.AresIcon;
 import org.devocative.ares.web.TerminalTabInfo;
+import org.devocative.demeter.iservice.task.ITaskResultCallback;
 import org.devocative.demeter.web.DPanel;
 import org.devocative.wickomp.html.WAjaxLink;
 import org.devocative.wickomp.html.WTerminal;
@@ -15,7 +16,7 @@ import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
 
-public class ShellTerminalPanel extends DPanel {
+public class ShellTerminalPanel extends DPanel implements ITaskResultCallback {
 	private static final long serialVersionUID = 6542154194145516263L;
 
 	private static final Logger logger = LoggerFactory.getLogger(ShellTerminalPanel.class);
@@ -26,8 +27,6 @@ public class ShellTerminalPanel extends DPanel {
 	private Long connectionId;
 	private WTerminal wTerminal;
 	private WModalWindow window;
-
-	private AsyncTextResult asyncTextResult;
 
 	@Inject
 	private ITerminalConnectionService terminalConnectionService;
@@ -48,15 +47,13 @@ public class ShellTerminalPanel extends DPanel {
 		window = new WModalWindow("window");
 		add(window);
 
-		asyncTextResult = new AsyncTextResult();
-
 		wTerminal = new WTerminal("wTerminal") {
 			private static final long serialVersionUID = -4033298732740362278L;
 
 			@Override
 			protected void onConnect() {
 				try {
-					connectionId = terminalConnectionService.createTerminal(osiUserId, asyncTextResult);
+					connectionId = terminalConnectionService.createTerminal(osiUserId, ShellTerminalPanel.this);
 					logger.info("ShellTerminalPanel Created: OSIUserId=[{}] ConnectionId=[{}]", osiUserId, connectionId);
 
 					if (tabId != null) {
@@ -64,14 +61,14 @@ public class ShellTerminalPanel extends DPanel {
 					}
 				} catch (Exception e) {
 					logger.error("ShellTerminalPanel.onConnect: ", e);
-					asyncTextResult.onMessage("\n\nERR: " + e.getMessage());
+					ShellTerminalPanel.this.onTaskError(null, e);
 				}
 			}
 
 			@Override
 			protected void onMessage(String key, Integer specialKey) {
 				try {
-					terminalConnectionService.sendMessage(connectionId, key, specialKey);
+					terminalConnectionService.sendMessage(connectionId, new SshMessageVO(key, specialKey));
 				} catch (Exception e) {
 					logger.error("ShellTerminalPanel.onMessage: key=[{}] specialKey=[{}] connId=[{}]",
 						key, specialKey, connectionId, e);
@@ -96,13 +93,13 @@ public class ShellTerminalPanel extends DPanel {
 		});
 	}
 
-	private class AsyncTextResult implements IAsyncTextResult {
-		private static final long serialVersionUID = -727437925474317808L;
+	@Override
+	public void onTaskResult(Object id, Object result) {
+		wTerminal.push(result.toString());
+	}
 
-		@Override
-		public void onMessage(String text) {
-			//logger.debug("AsyncTextResult.text: {}", text);
-			wTerminal.push(text);
-		}
+	@Override
+	public void onTaskError(Object id, Exception e) {
+		wTerminal.push("ERR: " + e.getMessage());
 	}
 }

@@ -3,10 +3,10 @@ package org.devocative.ares.service.terminal;
 import com.jcraft.jsch.ChannelShell;
 import com.jcraft.jsch.JSch;
 import com.jcraft.jsch.Session;
-import org.devocative.ares.iservice.IAsyncTextResult;
 import org.devocative.ares.iservice.ITerminalConnectionService;
 import org.devocative.ares.vo.OServiceInstanceTargetVO;
-import org.devocative.ares.vo.ShellConnectionVO;
+import org.devocative.ares.vo.SshMessageVO;
+import org.devocative.ares.vo.TerminalConnectionVO;
 import org.devocative.demeter.iservice.ISecurityService;
 import org.devocative.demeter.iservice.task.DTask;
 import org.slf4j.Logger;
@@ -30,7 +30,6 @@ public class ShellConnectionDTask extends DTask implements ITerminalProcess {
 
 	private long connId;
 	private OServiceInstanceTargetVO targetVO;
-	private IAsyncTextResult asyncTextResult;
 
 	private JSch jsch;
 	private Session session;
@@ -44,10 +43,9 @@ public class ShellConnectionDTask extends DTask implements ITerminalProcess {
 	@Override
 	public void init() {
 		jsch = new JSch();
-		ShellConnectionVO shellConnectionVO = (ShellConnectionVO) getInputData();
-		connId = shellConnectionVO.getConnectionId();
-		targetVO = shellConnectionVO.getTargetVO();
-		asyncTextResult = shellConnectionVO.getTextResult();
+		TerminalConnectionVO terminalConnectionVO = (TerminalConnectionVO) getInputData();
+		connId = terminalConnectionVO.getConnectionId();
+		targetVO = terminalConnectionVO.getTargetVO();
 		lastActivityTime = System.currentTimeMillis();
 	}
 
@@ -57,7 +55,7 @@ public class ShellConnectionDTask extends DTask implements ITerminalProcess {
 	}
 
 	@Override
-	public void execute() {
+	public void execute() throws Exception {
 		logger.info("ShellConnectionDTask: starting SSH currentUser=[{}] connId=[{}} osiUser=[{}]",
 			securityService.getCurrentUser(), connId, targetVO.getUser().getUsername());
 
@@ -80,8 +78,7 @@ public class ShellConnectionDTask extends DTask implements ITerminalProcess {
 			commander = new PrintStream(out, true);
 
 			new SshServerReader(in).run();
-		} catch (Exception e) {
-			asyncTextResult.onMessage("\n\nERR: " + e.getMessage());
+		} finally {
 			terminalConnectionService.closeConnection(connId);
 		}
 	}
@@ -94,16 +91,17 @@ public class ShellConnectionDTask extends DTask implements ITerminalProcess {
 	}
 
 	@Override
-	public void send(String txt, Integer specialKey) {
+	public void send(Object message) {
+		SshMessageVO sshMsg = (SshMessageVO) message;
 		lastActivityTime = System.currentTimeMillis();
 		//logger.debug("ShellConnectionDTask.send: txt={} webSpecialKey={}", txt, specialKey);
 		try {
-			if (txt != null) {
-				processor.onClientText(txt);
-				commander.print(txt);
+			if (sshMsg.getText() != null) {
+				processor.onClientText(sshMsg.getText());
+				commander.print(sshMsg.getText());
 			} else {
-				processor.onClientSpecialKey(specialKey);
-				byte[] shellCode = EShellSpecialKey.findShellCode(specialKey);
+				processor.onClientSpecialKey(sshMsg.getSpecialKey());
+				byte[] shellCode = EShellSpecialKey.findShellCode(sshMsg.getSpecialKey());
 				if (shellCode != null) {
 					commander.write(shellCode);
 				}
@@ -126,7 +124,7 @@ public class ShellConnectionDTask extends DTask implements ITerminalProcess {
 		if (session != null && session.isConnected()) {
 			session.disconnect();
 		}
-		asyncTextResult.onMessage("\n\nTerminal Closed!");
+		sendResult("\n\nTerminal Closed!");
 	}
 
 	@Override
@@ -155,7 +153,7 @@ public class ShellConnectionDTask extends DTask implements ITerminalProcess {
 						String line = new String(buff, 0, read);
 						//logger.debug("Ssh Server Res: {}", line);
 						processor.onServerText(line);
-						asyncTextResult.onMessage(line);
+						sendResult(line);
 
 						/*if (line.startsWith(SUDO_PROMPT) && isSudoPasswordMode) {
 							System.out.println("SUDO");
@@ -172,7 +170,7 @@ public class ShellConnectionDTask extends DTask implements ITerminalProcess {
 					}
 				}
 			} catch (IOException e) {
-				asyncTextResult.onMessage("ERR: " + e.getMessage());
+				sendError(e);
 
 				if (channel.isClosed()) {
 					logger.warn("Channel closed: connId=[{}]", connId);
