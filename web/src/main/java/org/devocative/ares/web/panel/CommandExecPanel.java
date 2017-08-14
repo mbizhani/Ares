@@ -26,14 +26,13 @@ import org.devocative.ares.vo.TabularVO;
 import org.devocative.ares.vo.xml.XCommand;
 import org.devocative.ares.vo.xml.XParam;
 import org.devocative.ares.vo.xml.XParamType;
-import org.devocative.ares.web.AresDModule;
 import org.devocative.ares.web.AresIcon;
 import org.devocative.demeter.web.DPanel;
+import org.devocative.demeter.web.DTaskBehavior;
 import org.devocative.demeter.web.component.DAjaxButton;
 import org.devocative.demeter.web.panel.FileStoreUploadPanel;
 import org.devocative.wickomp.WebUtil;
-import org.devocative.wickomp.async.AsyncBehavior;
-import org.devocative.wickomp.async.IAsyncResponseHandler;
+import org.devocative.wickomp.async.IAsyncResponse;
 import org.devocative.wickomp.form.WBooleanInput;
 import org.devocative.wickomp.form.WSelectionInput;
 import org.devocative.wickomp.form.WSelectionInputAjaxUpdatingBehavior;
@@ -50,7 +49,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class CommandExecPanel extends DPanel implements IAsyncResponseHandler {
+public class CommandExecPanel extends DPanel implements IAsyncResponse {
 	private static final long serialVersionUID = 6094381569285095361L;
 	private static final Logger logger = LoggerFactory.getLogger(CommandExecPanel.class);
 
@@ -61,7 +60,7 @@ public class CommandExecPanel extends DPanel implements IAsyncResponseHandler {
 	private String commandName;
 	private Long osiUserId;
 
-	private AsyncBehavior asyncBehavior;
+	private DTaskBehavior taskBehavior;
 	private WebMarkupContainer tabs, log, tabular;
 	private List<WSelectionInput> guestInputList = new ArrayList<>();
 
@@ -95,7 +94,7 @@ public class CommandExecPanel extends DPanel implements IAsyncResponseHandler {
 	// ------------------------------
 
 	@Override
-	public void onAsyncResult(String handlerId, IPartialPageRequestHandler handler, Object result) {
+	public void onAsyncResult(IPartialPageRequestHandler handler, Object result) {
 		logger.debug("onAsyncResult: {}", result);
 
 		CommandOutput line = (CommandOutput) result;
@@ -116,7 +115,7 @@ public class CommandExecPanel extends DPanel implements IAsyncResponseHandler {
 	}
 
 	@Override
-	public void onAsyncError(String handlerId, IPartialPageRequestHandler handler, Exception error) {
+	public void onAsyncError(IPartialPageRequestHandler handler, Exception error) {
 		StringWriter out = new StringWriter();
 		error.printStackTrace(new PrintWriter(out));
 		String script = String.format("$('#%s').append('<div>%s</div>');", log.getMarkupId(), out.toString());
@@ -129,8 +128,8 @@ public class CommandExecPanel extends DPanel implements IAsyncResponseHandler {
 	protected void onInitialize() {
 		super.onInitialize();
 
-		asyncBehavior = new AsyncBehavior(this);
-		add(asyncBehavior);
+		taskBehavior = new DTaskBehavior(this);
+		add(taskBehavior);
 
 		Command command;
 		if (commandId != null) {
@@ -246,9 +245,10 @@ public class CommandExecPanel extends DPanel implements IAsyncResponseHandler {
 						cmdParams.put(entry.getKey(), entry.getValue());
 					}
 				}
-				asyncBehavior.sendAsyncRequest(AresDModule.EXEC_COMMAND,
-					new CommandQVO(commandId, serviceInstance, cmdParams)
-						.setOsiUserId(osiUserId));
+
+				commandService.executeCommandTask(
+					new CommandQVO(commandId, serviceInstance, cmdParams).setOsiUserId(osiUserId),
+					taskBehavior);
 			}
 		});
 		add(form);

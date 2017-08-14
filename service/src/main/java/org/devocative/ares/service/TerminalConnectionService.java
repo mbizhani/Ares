@@ -9,6 +9,8 @@ import org.devocative.ares.iservice.ITerminalConnectionService;
 import org.devocative.ares.iservice.oservice.IOSIUserService;
 import org.devocative.ares.iservice.oservice.IOServiceInstanceService;
 import org.devocative.ares.service.terminal.ITerminalProcess;
+import org.devocative.ares.service.terminal.ShellConnectionDTask;
+import org.devocative.ares.service.terminal.SqlConnectionDTask;
 import org.devocative.ares.vo.OServiceInstanceTargetVO;
 import org.devocative.ares.vo.TerminalConnectionVO;
 import org.devocative.ares.vo.filter.TerminalConnectionFVO;
@@ -113,15 +115,16 @@ public class TerminalConnectionService implements ITerminalConnectionService {
 		saveOrUpdate(connection);
 		persistorService.commitOrRollback();
 
-		ITerminalProcess process = null;
+		DTaskResult result = null;
+		TerminalConnectionVO vo = new TerminalConnectionVO(connection.getId(), targetVOByUser);
 		if (ERemoteMode.SSH.equals(targetVOByUser.getUser().getRemoteMode())) {
-			TerminalConnectionVO vo = new TerminalConnectionVO(connection.getId(), targetVOByUser);
-			DTaskResult result = taskService.start("arsShellConnectionDTask", connection.getId(), vo, callback);
-			process = (ITerminalProcess) result.getTaskInstance();
+			result = taskService.start(ShellConnectionDTask.class, connection.getId(), vo, callback);
+		} else if (ERemoteMode.JDBC.equals(targetVOByUser.getUser().getRemoteMode())) {
+			result = taskService.start(SqlConnectionDTask.class, connection.getId(), vo, callback);
 		}
 
-		if (process != null) {
-			CONNECTIONS.put(connection.getId(), process);
+		if (result != null) {
+			CONNECTIONS.put(connection.getId(), (ITerminalProcess) result.getTaskInstance());
 		}
 
 		return connection.getId();

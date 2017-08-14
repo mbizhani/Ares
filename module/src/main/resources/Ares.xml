@@ -31,6 +31,7 @@
 	<tasks>
 		<task type="org.devocative.ares.service.command.CommandExecutionDTask"/>
 		<task type="org.devocative.ares.service.terminal.ShellConnectionDTask"/>
+		<task type="org.devocative.ares.service.terminal.SqlConnectionDTask"/>
 		<task type="org.devocative.ares.service.terminal.CloseIdleConnectionsDTask" cronExpression="0 0/7 * * * ?"/>
 	</tasks>
 

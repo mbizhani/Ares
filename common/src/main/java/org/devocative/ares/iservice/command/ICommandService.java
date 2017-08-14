@@ -10,6 +10,7 @@ import org.devocative.ares.vo.filter.command.CommandFVO;
 import org.devocative.ares.vo.xml.XCommand;
 import org.devocative.demeter.entity.User;
 import org.devocative.demeter.iservice.IEntityService;
+import org.devocative.demeter.iservice.task.ITaskResultCallback;
 
 import java.util.List;
 
@@ -33,6 +34,8 @@ public interface ICommandService extends IEntityService<Command> {
 	// ==============================
 
 	void checkAndSave(OService oService, XCommand xCommand, Command command);
+
+	void executeCommandTask(CommandQVO commandQVO, ITaskResultCallback callback);
 
 	Object executeCommand(CommandQVO commandQVO, ICommandResultCallBack callBack) throws Exception;
 

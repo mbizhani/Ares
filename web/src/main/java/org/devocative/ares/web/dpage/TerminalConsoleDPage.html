@@ -2,18 +2,24 @@
 
 <wicket:panel xmlns:wicket="http://wicket.apache.org">
 
-	<div class="easyui-layout" style="width:100%;height:800px;">
-		<div data-options="region:'west',title:'Connections',split:true" style="width:200px;">
-			<div wicket:id="message"></div>
-			<table>
-				<tr wicket:id="connections">
-					<td><button wicket:id="osiUser"></button></td>
-				</tr>
-			</table>
+	<div class="easyui-layout" data-options="fit:true">
+		<div data-options="region:'west',title:'Connections',split:true" style="width:250px;">
+
+			<div class="easyui-panel" title="SSH" data-options="collapsible:true" style="border: 0; padding: 10px">
+				<wicket:container wicket:id="sshConnections">
+					<button style="margin-bottom: 5px;" wicket:id="osiUser"></button>
+				</wicket:container>
+			</div>
+
+			<div class="easyui-panel" title="SQL" data-options="collapsible:true" style="border: 0; padding: 10px">
+				<wicket:container wicket:id="jdbcConnections">
+					<button style="margin-bottom: 5px;" wicket:id="osiUser"></button>
+				</wicket:container>
+			</div>
 		</div>
 
 		<div data-options="region:'center',title:'Terminals'">
-			<div wicket:id="tabPanel" style="width:100%;"></div>
+			<div wicket:id="tabPanel" style="width:100%;height:100%"></div>
 		</div>
 	</div>
 

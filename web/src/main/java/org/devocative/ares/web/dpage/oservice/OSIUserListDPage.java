@@ -18,6 +18,7 @@ import org.devocative.demeter.web.component.DAjaxButton;
 import org.devocative.demeter.web.component.grid.OEditAjaxColumn;
 import org.devocative.demeter.web.component.grid.ORowModAjaxColumn;
 import org.devocative.wickomp.WModel;
+import org.devocative.wickomp.WebUtil;
 import org.devocative.wickomp.form.WBooleanInput;
 import org.devocative.wickomp.form.WSelectionInput;
 import org.devocative.wickomp.form.WTextInput;
@@ -33,7 +34,6 @@ import org.devocative.wickomp.grid.column.OColumnList;
 import org.devocative.wickomp.grid.column.OPropertyColumn;
 import org.devocative.wickomp.html.WAjaxLink;
 import org.devocative.wickomp.html.WFloatTable;
-import org.devocative.wickomp.html.WMessager;
 import org.devocative.wickomp.html.window.WModalWindow;
 import org.devocative.wickomp.opt.OSize;
 
@@ -147,27 +147,27 @@ public class OSIUserListDPage extends DPage implements IGridDataSource<OSIUser> 
 		add(form);
 
 		OColumnList<OSIUser> columnList = new OColumnList<>();
-		columnList.add(new OPropertyColumn<OSIUser>(new ResourceModel("OSIUser.username"), "username"));
+		columnList.add(new OPropertyColumn<>(new ResourceModel("OSIUser.username"), "username"));
 		columnList.add(new OPropertyColumn<OSIUser>(new ResourceModel("OSIUser.executor"), "executor")
 			.setFormatter(OBooleanFormatter.bool()));
 		columnList.add(new OPropertyColumn<OSIUser>(new ResourceModel("OSIUser.enabled"), "enabled")
 			.setFormatter(OBooleanFormatter.bool()));
-		columnList.add(new OPropertyColumn<OSIUser>(new ResourceModel("OSIUser.remoteMode"), "remoteMode"));
-		columnList.add(new OPropertyColumn<OSIUser>(new ResourceModel("OSIUser.serviceInstance"), "serviceInstance"));
-		columnList.add(new OPropertyColumn<OSIUser>(new ResourceModel("OSIUser.server"), "server"));
-		columnList.add(new OPropertyColumn<OSIUser>(new ResourceModel("OSIUser.service"), "service"));
-		columnList.add(new OPropertyColumn<OSIUser>(new ResourceModel("OSIUser.allowedUsers"), "allowedUsers"));
+		columnList.add(new OPropertyColumn<>(new ResourceModel("OSIUser.remoteMode"), "remoteMode"));
+		columnList.add(new OPropertyColumn<>(new ResourceModel("OSIUser.serviceInstance"), "serviceInstance"));
+		columnList.add(new OPropertyColumn<>(new ResourceModel("OSIUser.server"), "server"));
+		columnList.add(new OPropertyColumn<>(new ResourceModel("OSIUser.service"), "service"));
+		columnList.add(new OPropertyColumn<>(new ResourceModel("OSIUser.allowedUsers"), "allowedUsers"));
 		if (getCurrentUser().isRoot()) {
-			columnList.add(new OPropertyColumn<OSIUser>(new ResourceModel("entity.rowMod"), "rowMod"));
+			columnList.add(new OPropertyColumn<>(new ResourceModel("entity.rowMod"), "rowMod"));
 		}
 		columnList.add(new OPropertyColumn<OSIUser>(new ResourceModel("entity.creationDate"), "creationDate")
 			.setFormatter(ODateFormatter.getDateTimeByUserPreference())
 			.setStyle("direction:ltr"));
-		columnList.add(new OPropertyColumn<OSIUser>(new ResourceModel("entity.creatorUser"), "creatorUser"));
+		columnList.add(new OPropertyColumn<>(new ResourceModel("entity.creatorUser"), "creatorUser"));
 		columnList.add(new OPropertyColumn<OSIUser>(new ResourceModel("entity.modificationDate"), "modificationDate")
 			.setFormatter(ODateFormatter.getDateTimeByUserPreference())
 			.setStyle("direction:ltr"));
-		columnList.add(new OPropertyColumn<OSIUser>(new ResourceModel("entity.modifierUser"), "modifierUser"));
+		columnList.add(new OPropertyColumn<>(new ResourceModel("entity.modifierUser"), "modifierUser"));
 		columnList.add(new OPropertyColumn<OSIUser>(new ResourceModel("entity.version"), "version")
 			.setFormatter(ONumberFormatter.integer())
 			.setStyle("direction:ltr"));
@@ -185,13 +185,13 @@ public class OSIUserListDPage extends DPage implements IGridDataSource<OSIUser> 
 		}
 
 		if (hasPermission(AresPrivilegeKey.OSIUserShowPassword)) {
-			columnList.add(new ORowModAjaxColumn<OSIUser>(new Model<String>(), AresIcon.SHOW.setTooltip(new ResourceModel("OSIUser.showPassword", "Show Password"))) {
+			columnList.add(new ORowModAjaxColumn<OSIUser>(new Model<>(), AresIcon.SHOW.setTooltip(new ResourceModel("OSIUser.showPassword", "Show Password"))) {
 				private static final long serialVersionUID = 635615474L;
 
 				@Override
 				public void onClick(AjaxRequestTarget target, IModel<OSIUser> rowData) {
 					String password = oSIUserService.getPassword(rowData.getObject().getId());
-					WMessager.copyToClipboard(password, target);
+					WebUtil.copyToClipboard(password, target);
 				}
 			}.setField("VIEW_PASS"));
 		}

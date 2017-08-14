@@ -1,0 +1,28 @@
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:wicket="http://wicket.apache.org">
+
+<wicket:head>
+	<style>
+		div.sql > div {
+			height: 100%;
+		}
+	</style>
+</wicket:head>
+
+<wicket:panel xmlns:wicket="http://wicket.apache.org">
+
+	<div wicket:id="layout" data-options="fit:true">
+		<div data-options="region:'north',split:true" style="height: 250px;overflow-y:hidden">
+			<form wicket:id="form" style="height: 100%">
+				<button type="submit" wicket:id="exec">Exec</button>
+				<div class="sql" wicket:id="sql" style="height: calc(100% - 30px)"></div>
+			</form>
+		</div>
+
+		<div data-options="region:'center'">
+			<div wicket:id="grid"></div>
+		</div>
+	</div>
+
+</wicket:panel>
+
+</html>
