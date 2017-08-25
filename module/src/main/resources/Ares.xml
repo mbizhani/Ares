@@ -103,7 +103,7 @@
 			   title="KEY:dPage.ars.OBasicDataList"
 			   uri="/basic"
 			   inMenu="true"
-			   roles="User"
+			   roles="Admin"
 				/>
 
 		<!--<dPage type=""

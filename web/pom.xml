@@ -153,6 +153,9 @@
 				<groupId>org.devocative</groupId>
 				<artifactId>demeter-maven-plugin</artifactId>
 				<version>1.0-SNAPSHOT</version>
+				<configuration>
+					<filters>dmt,ars</filters>
+				</configuration>
 			</plugin>
 
 		</plugins>
