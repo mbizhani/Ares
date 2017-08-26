@@ -74,10 +74,12 @@ public class ShellCommandExecutor extends AbstractCommandExecutor {
 			out.flush();
 		}
 
-		for (String s : stdin) {
-			if (s != null) {
-				out.write((s + "\n").getBytes());
-				out.flush();
+		if (stdin != null) {
+			for (String s : stdin) {
+				if (s != null) {
+					out.write((s + "\n").getBytes());
+					out.flush();
+				}
 			}
 		}
 

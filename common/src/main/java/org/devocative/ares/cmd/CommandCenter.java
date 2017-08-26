@@ -7,6 +7,7 @@ import org.devocative.demeter.entity.FileStore;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -53,7 +54,7 @@ public class CommandCenter {
 		return ssh(prompt, cmd, false, (String) null);
 	}
 
-	public SshResult ssh(String prompt, String cmd, boolean force) {
+	public SshResult ssh(String prompt, String cmd, Boolean force) {
 		return ssh(prompt, cmd, force, (String) null);
 	}
 
@@ -62,7 +63,7 @@ public class CommandCenter {
 	}
 
 	// Main ssh()
-	public SshResult ssh(String prompt, String cmd, boolean force, String... stdin) {
+	public SshResult ssh(String prompt, String cmd, Boolean force, String... stdin) {
 		int exitStatus = -1;
 		String result = null;
 
@@ -76,7 +77,7 @@ public class CommandCenter {
 		try {
 			resource.getCommandService().assertCurrentUser(cmd);
 
-			ShellCommandExecutor executor = new ShellCommandExecutor(finalTargetVO, resource, prompt, cmd, stdin, force);
+			ShellCommandExecutor executor = new ShellCommandExecutor(finalTargetVO, resource, prompt, cmd, stdin, force != null ? force : false);
 
 			resource.getCommandService().assertCurrentUser(cmd);
 
@@ -211,5 +212,12 @@ public class CommandCenter {
 	public void setException(Exception exception) {
 		this.exception = exception;
 		throw new RuntimeException(exception);
+	}
+
+	public Map<String, Object> getParams() {
+		Map<String, Object> result = new HashMap<>();
+		result.putAll(params);
+		result.put("target", targetVO);
+		return result;
 	}
 }

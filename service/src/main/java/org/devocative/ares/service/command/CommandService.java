@@ -20,6 +20,8 @@ import org.devocative.ares.iservice.command.ICommandLogService;
 import org.devocative.ares.iservice.command.ICommandService;
 import org.devocative.ares.iservice.oservice.IOSIUserService;
 import org.devocative.ares.iservice.oservice.IOServiceInstanceService;
+import org.devocative.ares.service.command.dsl.MainCommandDSL;
+import org.devocative.ares.service.command.dsl.OtherCommandsWrapper;
 import org.devocative.ares.vo.CommandQVO;
 import org.devocative.ares.vo.OServiceInstanceTargetVO;
 import org.devocative.ares.vo.filter.command.CommandFVO;
@@ -55,6 +57,9 @@ public class CommandService implements ICommandService, IMissedHitHandler<Long, 
 
 	private XStream xstream;
 	private ICache<Long, Command> commandCache;
+	private CCUtil singleInstOfUtil = new CCUtil();
+
+	// ---------------
 
 	@Autowired
 	private IPersistorService persistorService;
@@ -82,8 +87,6 @@ public class CommandService implements ICommandService, IMissedHitHandler<Long, 
 
 	@Autowired
 	private IOServerService serverService;
-
-	private CCUtil singleInstOfUtil = new CCUtil();
 
 	// ------------------------------
 
@@ -168,6 +171,8 @@ public class CommandService implements ICommandService, IMissedHitHandler<Long, 
 
 		return command;
 	}
+
+	// ---------------
 
 	@Override
 	public void checkAndSave(OService oService, XCommand xCommand, Command command) {
@@ -309,9 +314,11 @@ public class CommandService implements ICommandService, IMissedHitHandler<Long, 
 		Map<String, Object> cmdParams = new HashMap<>();
 		cmdParams.putAll(params);
 
+		CommandCenter commandCenter = new CommandCenter(targetVO, resource, params);
 		cmdParams.put("target", targetVO);
 		cmdParams.put("$util", singleInstOfUtil);
-		cmdParams.put("$cmd", new CommandCenter(targetVO, resource, params));
+		cmdParams.put("$cmd", commandCenter);
+		cmdParams.put("DELEGATE", new OtherCommandsWrapper(new MainCommandDSL(commandCenter)));
 
 		CmdRunner runner = new CmdRunner(command.getId(), xCommand.getBody(), cmdParams);
 		runner.run();
@@ -349,7 +356,7 @@ public class CommandService implements ICommandService, IMissedHitHandler<Long, 
 			try {
 				//TODO
 				String b4 = "String.metaClass.find = {String regEx, int group, String defVal = null -> return $util.find(delegate, regEx, group, defVal)}\n";
-				IStringTemplate template = stringTemplateService.create(CMD_PREFIX_STR_TEMPLATE + cmdId, b4 + cmd, TemplateEngineType.GroovyShell);
+				IStringTemplate template = stringTemplateService.create(CMD_PREFIX_STR_TEMPLATE + cmdId, b4 + cmd, TemplateEngineType.GroovyDelegatingScript);
 				result = template.process(params);
 
 				persistorService.endSession();

@@ -218,7 +218,7 @@ public class OServiceInstanceService implements IOServiceInstanceService, IMisse
 		if (serviceInstance.getService().getConnectionPattern() != null) {
 			Map<String, Object> params = new HashMap<>();
 			params.put("target", targetVO);
-			IStringTemplate template = stringTemplateService.create(serviceInstance.getService().getConnectionPattern(), TemplateEngineType.Groovy);
+			IStringTemplate template = stringTemplateService.create(serviceInstance.getService().getConnectionPattern(), TemplateEngineType.GroovyTemplate);
 			String connection = (String) template.process(params);
 			targetVO.setConnection(connection);
 		}
