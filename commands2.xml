@@ -1,0 +1,564 @@
+<operation>
+	<services>
+		<service name="OracleDB"
+				 connectionPattern="jdbc:oracle:thin:@${target.address}:${target.port}:${target.prop.sid}"
+				 adminPort="1521">
+
+			<properties>
+				<property name="driver" value="oracle.jdbc.driver.OracleDriver"/>
+				<property name="sid" required="true"/>
+				<property name="pumpDbDir" required="true"/>
+				<property name="pumpOsDir" required="true"/>
+			</properties>
+
+			<commands>
+				<command name="showUsers">
+					<params>
+						<param name="username"/>
+						<param name="account_status"/>
+					</params>
+					<body><![CDATA[
+def map = inputs('username', 'account_status')
+db {
+	prompt 'show all users'
+	query """
+		select
+			us.user_id,
+			us.username,
+			us.account_status,
+			us.lock_date,
+			us.default_tablespace,
+			us.created,
+			tbl.table_count
+		from
+			dba_users us
+			left join (
+				select
+					owner,
+					count(1) table_count
+				from dba_tables
+				group by owner) tbl on tbl.owner = us.username
+		where
+			1=1
+			%FILTER%
+		order by us.username"""
+	filters map
+}
+
+]]></body>
+				</command>
+
+				<command name="changePassword">
+					<params>
+						<param name="username" required="true"/>
+						<param name="newPassword" required="true"/>
+					</params>
+
+					<body><![CDATA[
+db {
+	prompt "change password for '${username}'"
+	query "alter user ${username} identified by \"${newPassword}\" account unlock"
+}
+userPasswordUpdated(username, newPassword)
+]]></body>
+				</command>
+
+				<command name="checkUser">
+					<params>
+						<param name="schema" required="true"/>
+					</params>
+					<body>
+						<![CDATA[
+db {
+	prompt "check user '${schema}'"
+	query "select count(1) from all_users where username=upper('${schema}')"
+	result {
+		it > 0
+	}
+}
+]]></body>
+				</command>
+
+				<command name="truncateSchema">
+					<params>
+						<param name="schema" required="true"/>
+					</params>
+					<body>
+						<![CDATA[
+db {
+	prompt "truncate all sequences, tables, and synonyms for '${schema}'"
+	query """
+		DECLARE
+			scname varchar2(20);
+		BEGIN
+			scname := '${schema.toUpperCase()}';
+
+			--Bye Sequences!
+			for i in (select us.sequence_name from all_sequences us where us.sequence_owner = scname) loop
+				execute immediate 'drop sequence '||scname||'.'|| i.sequence_name;
+			end loop;
+
+			--Bye Tables!
+			for i in (select ut.table_name from all_tables ut where ut.owner = scname) loop
+				execute immediate 'drop table '||scname||'.'|| i.table_name ||' cascade constraints purge';
+			end loop;
+
+			--Bye Synonyms!
+			for i in (select us.synonym_name from all_synonyms us where us.owner = scname) loop
+				execute immediate 'drop synonym '||scname||'.'|| i.synonym_name;
+			end loop;
+		end;"""
+}
+]]></body>
+				</command>
+
+				<command name="copySchema">
+					<params>
+						<param name="sourceSchema" required="true"/>
+						<param name="destSchema" required="true"/>
+						<param name="backUpDest" type="Boolean" defaultValue="true"/>
+					</params>
+					<body>
+						<![CDATA[
+if(!checkUser([schema:sourceSchema])) {
+	error("Invalid user '${sourceSchema}' to create dump file")
+}
+
+if(backUpDest) {
+	backupSchema([schema:destSchema])
+}
+
+truncateSchema([schema:destSchema])
+
+ssh {
+	prompt "remove old dump if any: '${sourceSchema}'"
+	cmd "rm ${target.prop.pumpOsDir}/${sourceSchema}.dmp ${target.prop.pumpOsDir}/${sourceSchema}.log"
+	force true
+}
+
+ssh {
+	prompt "export dump from '${sourceSchema}'"
+	cmd "su - oracle -c 'expdp ${target.username}/${target.password} schemas=${sourceSchema} directory=${target.prop.pumpDbDir} dumpfile=${sourceSchema}.dmp logfile=${sourceSchema}.log'"
+}
+
+ssh {
+	prompt "import dump to '${destSchema}'"
+	cmd "su - oracle -c 'impdp ${target.username}/${target.password} remap_schema=${sourceSchema}:${destSchema} directory=${target.prop.pumpDbDir} dumpfile=${sourceSchema}.dmp logfile=${destSchema}.log'"
+	force true
+}
+
+ssh {
+	prompt "remove generated dump file"
+	cmd "rm -f ${target.prop.pumpOsDir}/${sourceSchema}.dmp"
+}
+]]></body>
+				</command>
+
+				<command name="backupSchema">
+					<params>
+						<param name="schema" required="true"/>
+					</params>
+					<body>
+						<![CDATA[
+if(!$cmd.exec('checkUser', [schema:schema])) {
+	$cmd.error("Invalid user '${schema}' to create dump file")
+}
+
+def file = "${schema}_bkup_${$util.now()}.dmp"
+$cmd.ssh("create backup from '${schema}' as '${file}'", "su - oracle -c 'expdp ${target.username}/${target.password} schemas=${schema} directory=${target.prop.pumpDbDir} dumpfile=${file} logfile=${schema}.log'")
+]]></body>
+				</command>
+			</commands>
+		</service>
+
+		<service name="Linux" adminPort="22">
+			<commands>
+				<command name="changePassword">
+					<params>
+						<param name="username" required="true"/>
+						<param name="newPassword" required="true"/>
+					</params>
+
+					<body><![CDATA[
+$cmd.ssh("change password for '${username}'", "passwd ${username} --stdin", newPassword)
+$cmd.userPasswordUpdated(username, newPassword)
+]]></body>
+				</command>
+
+				<command name="ll">
+					<params>
+						<param name="dir" required="true"/>
+					</params>
+
+					<body><![CDATA[
+$cmd.ssh("echo", "echo dir=${dir}")
+$cmd.ssh("ls", "ls -l ${dir}")
+]]></body>
+				</command>
+
+				<command name="netstat">
+					<params/>
+
+					<body><![CDATA[
+$cmd.ssh("netstat", "netstat -antp")
+	.toTabular()
+	.setIgnoreStartingLines(1)
+	.setPossibleColumns("Proto", "Recv-Q", "Send-Q", "Local Address", "Foreign Address", "State", "PID/Program name")
+]]></body>
+				</command>
+
+				<command name="fileUpload">
+					<params>
+						<param name="file" type="File" required="true"/>
+					</params>
+
+					<body><![CDATA[
+$cmd.scpTo(file, '~')
+					]]></body>
+				</command>
+			</commands>
+		</service>
+
+		<service name="ESXi" adminPort="22">
+
+			<commands>
+				<command name="listVM">
+					<params>
+						<param name="Vmid" type="Guest"/>
+						<param name="Name"/>
+						<param name="ShowAdvanced" type="Boolean" defaultValue="false" required="true"/>
+						<param name="UpdateServer" type="Boolean" defaultValue="false" required="true"/>
+					</params>
+
+					<body><![CDATA[
+def filter = [:]
+if (binding.variables['Vmid']) {
+	filter['Vmid'] = Vmid
+}
+if (binding.variables['Name']) {
+	filter['Name'] = Name
+}
+
+def tab = $cmd.ssh('List of VMs', 'vim-cmd vmsvc/getallvms')
+	.toTabular('\\s{3,}')
+	.build(filter)
+
+def listOfServers = []
+
+tab.rows.each {
+	$util.log("listVM: Before change ${it}")
+
+	it['DataStore'] = it.File.find('\\[(.+?)\\]', 1)
+	it.File = it.File.replaceAll('\\[.+?\\] ', '')
+	if(ShowAdvanced) {
+		it['PowerStat'] = $cmd.exec('powerStat', [Vmid : it.Vmid])
+		it['IpAddress'] = $cmd.exec('getIP', [Vmid : it.Vmid])
+
+		def vmVMX = $cmd.ssh("Get VMX: ${it.Vmid}", """cat "/vmfs/volumes/${it.DataStore}/${it.File}" """).toMap()
+		it['INFO'] = vmVMX
+
+		def vmdkMap = [:]
+		vmVMX.each { String k, String v ->
+			if (v.endsWith('.vmdk')) {
+				if(v.startsWith('/')) {
+					vmdkMap[k] = v
+				} else {
+					vmdkMap[k] = "/vmfs/volumes/${it.DataStore}/${it.Name}/${v}"
+				}
+			}
+		}
+		it['VMDK'] = vmdkMap
+	} else if(UpdateServer) {
+		it['IpAddress'] = $cmd.exec('getIP', [Vmid : it.Vmid])
+	}
+
+	$util.log("listVM: After change ${it}")
+
+	if (UpdateServer) {
+		listOfServers.add([name: it.Name, address: it.IpAddress, vmId: it.Vmid])
+	}
+}
+
+if (UpdateServer) {
+	$cmd.checkVMServers(target.serverId, listOfServers)
+}
+
+return tab
+]]></body>
+				</command>
+
+				<command name="powerStat">
+					<params>
+						<param name="Vmid" type="Guest" required="true"/>
+					</params>
+
+					<body><![CDATA[
+$cmd.ssh("Check power status: '${Vmid}'", "vim-cmd vmsvc/power.getstate ${Vmid}").stdout.contains('Powered on')
+]]></body>
+				</command>
+
+				<command name="powerOn">
+					<params>
+						<param name="Vmid" type="Guest" required="true"/>
+					</params>
+
+					<body><![CDATA[
+if(!$cmd.exec('powerStat')) {
+	$cmd.ssh("Power On: '${Vmid}'", "vim-cmd vmsvc/power.on ${Vmid}")
+} else {
+	$cmd.error("Already on")
+}
+]]></body>
+				</command>
+
+				<command name="powerOff">
+					<params>
+						<param name="Vmid" type="Guest" required="true"/>
+					</params>
+
+					<body><![CDATA[
+if($cmd.exec('powerStat')) {
+	$cmd.ssh("Power Off: '${Vmid}'", "vim-cmd vmsvc/power.off ${Vmid}")
+} else {
+	$cmd.error("Already off")
+}
+]]></body>
+				</command>
+
+				<command name="rebootVM">
+					<params>
+						<param name="Vmid" type="Guest" required="true"/>
+					</params>
+
+					<body><![CDATA[
+if($cmd.exec('powerStat')) {
+	$cmd.ssh("Reboot: '${Vmid}'", "vim-cmd vmsvc/power.reboot ${Vmid}")
+} else {
+	$cmd.error('Already off')
+}
+]]></body>
+				</command>
+
+				<command name="unregisterVM">
+					<params>
+						<param name="Vmid" required="true"/>
+					</params>
+
+					<body><![CDATA[
+if($cmd.exec('powerStat')) {
+	$cmd.error('Can not unregister a powered-on VM')
+} else {
+	$cmd.ssh("Unregister VM: '${Vmid}'", "vim-cmd vmsvc/unregister ${Vmid}")
+}
+]]></body>
+				</command>
+
+				<command name="deleteVM">
+					<params>
+						<param name="Vmid" type="Guest" required="true"/>
+					</params>
+
+					<body><![CDATA[
+if(!$cmd.exec('powerStat')) {
+	$cmd.ssh("Delete: '${Vmid}'", "vim-cmd vmsvc/destroy ${Vmid}")
+} else {
+	$cmd.error('Power off before delete')
+}
+]]></body>
+				</command>
+
+				<command name="getIP">
+					<params>
+						<param name="Vmid" type="Guest" required="true"/>
+					</params>
+
+					<body><![CDATA[
+$cmd.ssh("Get IP: '${Vmid}'", """ vim-cmd vmsvc/get.guest ${Vmid} | grep -m 1 "ipAddress = \\"" """, true)
+.stdout
+.find('\"(.+?)\"', 1)
+]]></body>
+				</command>
+
+				<command name="cloneVM">
+					<params>
+						<param name="srcVmid" type="Guest" required="true"/>
+						<param name="destVM" type="Server" required="true"/>
+					</params>
+
+					<body><![CDATA[
+def srcVm = $cmd.exec('listVM', [Vmid: srcVmid, ShowAdvanced: true]).object
+
+if (srcVm.PowerStat) {
+	$cmd.error("Turn off '${srcVm.Name}' before cloning!")
+}
+
+if (destVM.hypervisorId == target.serverId) { //same hypervisor
+
+	if (destVM['vmId']) { // VM already existed, just copy VMDK
+		def dstVm = $cmd.exec('listVM', [Vmid: destVM.vmId, ShowAdvanced: true]).object
+
+		if (dstVm.PowerStat) {
+			$cmd.error("Turn off '${dstVm.Name}' before cloning!")
+		}
+
+		if (srcVm.VMDK.size() == dstVm.VMDK.size()) {
+			srcVm.VMDK.each {k, v ->
+				if (!dstVm.VMDK[k]) {
+					$cmd.error("Invalid dest vm ${destVM}: '${k}' not found for vmdk")
+				}
+			}
+
+			srcVm.VMDK.each {k, v ->
+				$cmd.ssh("Copy VMDK: ${k}", """vmkfstools -U "${dstVm.VMDK[k]}"; vmkfstools -i "${v}" "${dstVm.VMDK[k]}" """)
+			}
+		} else {
+			$cmd.error('Invalid number of vmdks')
+		}
+	} else { // new dest VM
+		def newVmxDir = "/vmfs/volumes/${srcVm.DataStore}/${destVM.name}"
+
+		def newVmx = $cmd.exec('cloneVmx', [vm: srcVm, destName: destVM.name, clone: true])
+
+		$util.log("Create vmx for '${destVM.name}' in ${newVmxDir}\n${newVmx}")
+
+		$cmd.ssh("Create VMX for new VM",
+"""
+mkdir -p "${newVmxDir}"
+
+cat > "${newVmxDir}/${destVM.name}.vmx" << "EOF2"
+${newVmx}
+EOF2
+""")
+		def newVmdkMap = [:]
+		srcVm.VMDK.each { String k, String v ->
+			def newVmdk = v.replaceAll(srcVm.Name, destVM.name)
+			newVmdkMap[k] = newVmdk
+		}
+
+		srcVm.VMDK.each {k, v ->
+			def vmdkDir = $util.substring(newVmdkMap[k], '/', -1)
+			$cmd.ssh("Copy VMDK: ${k}", """mkdir -p \"${vmdkDir}\"; vmkfstools -i "${v}" "${newVmdkMap[k]}" """)
+		}
+
+		$cmd.ssh("Register VM: ${destVM.name}", """vim-cmd solo/registervm "${newVmxDir}/${destVM.name}.vmx" """)
+
+		def newVmId = $cmd.exec('listVM', [Name: destVM.name]).object.Vmid
+		$cmd.updateServer(destVM.id, newVmId)
+	}
+} else { //different hypervisor, scp required
+	$cmd.error('Different hypervisor not implemented')
+}
+]]></body>
+				</command>
+
+				<command name="renameVM">
+					<params>
+						<param name="Vmid" type="Guest" required="true"/>
+						<param name="destName" required="true"/>
+					</params>
+
+					<body><![CDATA[
+def vm = $cmd.exec('listVM', [Vmid: Vmid, ShowAdvanced: true]).object
+
+if (vm.PowerStat) {
+	$cmd.error("Turn off '${vm.Name}' before renaming!")
+}
+
+if (vm.Name != destName) {
+	$cmd.exec('unregisterVM')
+
+	vm.VMDK.each {k, v ->
+		def vmdkDir = $util.substring(v, '/', -1)
+		def oldVmdkFile = v.substring(vmdkDir.length() + 1)
+		def newVmdkFile = oldVmdkFile.replaceAll(vm.Name, destName)
+		$cmd.ssh("Rename VMDK: ${k}", """cd \"${vmdkDir}\"; vmkfstools -E "${oldVmdkFile}" "${newVmdkFile}" """)
+		$util.log("Rename VMDK: '${oldVmdkFile}' to '${newVmdkFile}'")
+	}
+
+	def vmxDir = "/vmfs/volumes/${vm.DataStore}/${vm.Name}"
+	vm.VMDK.each {k, v ->
+		def vmdkDir = $util.substring(v, '/', -1)
+		if (vmxDir != vmdkDir) {
+			def newVmdkDir = vmdkDir.replaceAll(vm.Name, destName)
+			$cmd.ssh("Rename external VMDK dir: ${k}", """mv "${vmdkDir}" "${newVmdkDir}" """)
+			$util.log("Rename external VMDK dir: '${vmdkDir}' to '${newVmdkDir}'")
+		}
+	}
+
+	def newVmx = $cmd.exec('cloneVmx', [vm: vm, destName: destName, clone: false])
+	def cmd = """
+cat > "${vmxDir}/${destName}.vmx" << "EOF2"
+${newVmx}
+EOF2
+
+rm -f "${vmxDir}/${vm.Name}.vmsd"
+"""
+
+	if (vm.INFO['nvram']) {
+		cmd += """mv "${vmxDir}/${vm.Name}.nvram" "${vmxDir}/${destName}.nvram" \n """
+	}
+
+	if (vm.INFO['extendedConfigFile']) {
+		cmd += """mv "${vmxDir}/${vm.Name}.vmxf" "${vmxDir}/${destName}.vmxf" \n """
+	}
+
+	def newVmxDir = vmxDir.replaceAll(vm.Name, destName)
+	cmd += """mv "${vmxDir}" "${newVmxDir}" """
+
+	$cmd.ssh('Rename vmx & other files', cmd)
+
+	$cmd.ssh("Register VM: ${destName}", """vim-cmd solo/registervm "${newVmxDir}/${destName}.vmx" """)
+
+	def newVmId = $cmd.exec('listVM', [Name: destName]).object.Vmid
+	$cmd.updateServer(target.serverId, Vmid, newVmId, destName)
+}
+]]></body>
+				</command>
+
+				<command name="cloneVmx">
+					<params>
+						<param name="vm"/>
+						<param name="destName"/>
+						<param name="clone" type="Boolean"/>
+					</params>
+
+					<body><![CDATA[
+def newVmxMap = vm.INFO.clone()
+
+newVmxMap['displayName'] = destName
+newVmxMap['nvram'] = "${destName}.nvram"
+if (newVmxMap['extendedConfigFile']) {
+	newVmxMap['extendedConfigFile'] = "${destName}.vmxf"
+}
+
+newVmxMap.remove('migrate.hostlog')
+newVmxMap.remove('sched.swap.derivedName')
+
+if (clone) {
+	newVmxMap.remove('uuid.bios')
+	newVmxMap.remove('uuid.location')
+	newVmxMap.remove('vc.uuid')
+	newVmxMap.remove('vmci0.id')
+}
+
+vm.INFO.each { String k, String v ->
+	if (v.endsWith('.vmdk')) {
+		newVmxMap[k] = v.replaceAll(vm.Name, destName)
+	}
+
+	if (clone) {
+		if (k.matches('ethernet\\d+\\.generatedAddress.*')) {
+			newVmxMap.remove(k)
+		}
+	}
+}
+
+return newVmxMap.exportStr()
+]]></body>
+				</command>
+
+			</commands>
+		</service>
+
+	</services>
+</operation>
