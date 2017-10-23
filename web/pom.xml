@@ -57,6 +57,14 @@
 		</dependency>
 
 		<dependency>
+			<groupId>org.devocative</groupId>
+			<artifactId>demeter-web</artifactId>
+			<version>${d.demeter.ver}</version>
+			<type>test-jar</type>
+			<scope>test</scope>
+		</dependency>
+
+		<dependency>
 			<groupId>com.oracle</groupId>
 			<artifactId>ojdbc6</artifactId>
 			<version>11.2.0.4.0</version>
@@ -64,22 +72,21 @@
 		</dependency>
 
 		<dependency>
-			<groupId>net.logstash.log4j</groupId>
-			<artifactId>jsonevent-layout</artifactId>
-			<version>1.7</version>
+			<groupId>org.hsqldb</groupId>
+			<artifactId>hsqldb</artifactId>
+			<version>2.4.0</version>
 			<scope>test</scope>
 		</dependency>
-
 	</dependencies>
 
 	<build>
+
 		<resources>
 			<resource>
-				<filtering>false</filtering>
 				<directory>src/main/resources</directory>
 			</resource>
+
 			<resource>
-				<filtering>false</filtering>
 				<directory>src/main/java</directory>
 				<includes>
 					<include>**</include>
@@ -89,13 +96,13 @@
 				</excludes>
 			</resource>
 		</resources>
+
 		<testResources>
 			<testResource>
-				<filtering>false</filtering>
 				<directory>src/test/resources</directory>
 			</testResource>
+
 			<testResource>
-				<filtering>false</filtering>
 				<directory>src/test/java</directory>
 				<includes>
 					<include>**</include>
@@ -103,6 +110,10 @@
 				<excludes>
 					<exclude>**/*.java</exclude>
 				</excludes>
+			</testResource>
+
+			<testResource>
+				<directory>../common/src/main/resources</directory>
 			</testResource>
 		</testResources>
 
@@ -153,9 +164,6 @@
 				<groupId>org.devocative</groupId>
 				<artifactId>demeter-maven-plugin</artifactId>
 				<version>1.0-SNAPSHOT</version>
-				<configuration>
-					<filters>dmt,ars</filters>
-				</configuration>
 			</plugin>
 
 		</plugins>

@@ -26,35 +26,13 @@
 			<artifactId>jsch</artifactId>
 			<version>0.1.54</version>
 		</dependency>
-
-		<!-- TEST SCOPE -->
-
-		<dependency>
-			<groupId>junit</groupId>
-			<artifactId>junit</artifactId>
-			<version>4.12</version>
-			<scope>test</scope>
-		</dependency>
-
-		<dependency>
-			<groupId>com.oracle</groupId>
-			<artifactId>ojdbc6</artifactId>
-			<version>11.2.0.4.0</version>
-			<scope>test</scope>
-		</dependency>
-
 	</dependencies>
 
 
 	<build>
 		<resources>
 			<resource>
-				<filtering>false</filtering>
-				<directory>src/main/java</directory>
-				<includes>
-					<include>sql/*.sql</include>
-					<include>sql/*_versions.txt</include>
-				</includes>
+				<directory>src/main/resources</directory>
 			</resource>
 		</resources>
 	</build>
