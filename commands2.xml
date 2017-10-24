@@ -171,11 +171,51 @@ ssh {
 }
 ]]></body>
 				</command>
+
+				<command name="restoreSchema">
+					<params>
+						<param name="schema" required="true"/>
+						<param name="file" required="true"/>
+					</params>
+					<body>
+						<![CDATA[
+if(!checkUser([schema:schema])) {
+	error("Invalid user '${schema}' to restore dump file")
+}
+
+if(!checkFile([file:"${target.prop.pumpOsDir}/${file}"])) {
+	error("Invalid dump file: '${target.prop.pumpOsDir}/${file}'")
+}
+
+truncateSchema([schema:schema])
+
+ssh {
+	prompt "Restoring '${schema} from '${file}'"
+	cmd "su - oracle -c 'impdp ${target.username}/${target.password} schemas=${schema} directory=${target.prop.pumpDbDir} dumpfile=${file} logfile=${schema}.log'"
+}
+]]></body>
+				</command>
 			</commands>
 		</service>
 
 		<service name="Linux" adminPort="22">
 			<commands>
+				<command name="checkFile">
+					<params>
+						<param name="file" required="true"/>
+					</params>
+					<body>
+						<![CDATA[
+ssh {
+	prompt "Check file: ${file}"
+	cmd "[ -e '${file}' ] && echo 'true' || echo 'false'"
+	result {
+		it.stdout == 'true'
+	}
+}
+]]></body>
+				</command>
+
 				<command name="changePassword">
 					<params>
 						<param name="username" required="true"/>

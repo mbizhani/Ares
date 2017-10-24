@@ -3,12 +3,15 @@ package org.devocative.ares.service.command.dsl;
 import groovy.lang.Closure;
 import org.devocative.adroit.CalendarUtil;
 import org.devocative.ares.cmd.CommandCenter;
+import org.devocative.ares.cmd.CommandException;
+import org.devocative.ares.cmd.SshResult;
 
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 public class MainCommandDSL {
+	private static final List<String> VALID_SSH_PROPERTIES = Arrays.asList("prompt", "cmd", "force", "stdin", "result");
+	private static final List<String> VALID_DB_PROPERTIES = Arrays.asList("prompt", "query", "params", "filters", "result");
+
 	private CommandCenter commandCenter;
 
 	public MainCommandDSL(CommandCenter commandCenter) {
@@ -36,11 +39,23 @@ public class MainCommandDSL {
 		rehydrate.call();
 		Map<String, Object> clsAsMap = delegate.getClosureAsMap();
 
+		for (String key : clsAsMap.keySet()) {
+			if (!VALID_SSH_PROPERTIES.contains(key)) {
+				throw new CommandException("Invalid property for ssh{}: " + key);
+			}
+		}
+
 		String prompt = clsAsMap.containsKey("prompt") ? clsAsMap.get("prompt").toString() : null;
 		String cmd = clsAsMap.containsKey("cmd") ? clsAsMap.get("cmd").toString() : null;
 		Boolean force = clsAsMap.containsKey("force") ? (Boolean) clsAsMap.get("force") : null;
 		String[] stdin = clsAsMap.containsKey("stdin") ? (String[]) clsAsMap.get("stdin") : null;
-		return commandCenter.ssh(prompt, cmd, force, stdin);
+		SshResult sshResult = commandCenter.ssh(prompt, cmd, force, stdin);
+		if (clsAsMap.containsKey("result")) {
+			Closure result = (Closure) clsAsMap.get("result");
+			return result.call(sshResult);
+		} else {
+			return sshResult;
+		}
 	}
 
 	public Object db(Closure closure) {
@@ -49,6 +64,12 @@ public class MainCommandDSL {
 		rehydrate.setResolveStrategy(Closure.DELEGATE_FIRST);
 		rehydrate.call();
 		Map<String, Object> clsAsMap = delegate.getClosureAsMap();
+
+		for (String key : clsAsMap.keySet()) {
+			if (!VALID_DB_PROPERTIES.contains(key)) {
+				throw new CommandException("Invalid property for db{}: " + key);
+			}
+		}
 
 		String prompt = clsAsMap.containsKey("prompt") ? clsAsMap.get("prompt").toString() : null;
 		String query = clsAsMap.containsKey("query") ? clsAsMap.get("query").toString() : null;

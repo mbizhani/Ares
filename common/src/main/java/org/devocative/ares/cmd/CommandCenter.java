@@ -92,7 +92,7 @@ public class CommandCenter {
 			}
 
 			exitStatus = executor.getExitStatus();
-			result = executor.getResult().toString();
+			result = executor.getResult().toString().trim();
 
 			logger.info("Executed SSH Command: exitStatus=[{}] cmd=[{}] si=[{}]", exitStatus, cmd, finalTargetVO);
 

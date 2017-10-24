@@ -45,11 +45,14 @@ public class OtherCommandsWrapper extends Proxy {
 			throw new RuntimeException(e);
 		}
 
+		Object result;
 		if (argsArr.length == 1) {
-			return dsl.getCommandCenter().exec(name, (Map<String, Object>) argsArr[0]);
+			result = dsl.getCommandCenter().exec(name, (Map<String, Object>) argsArr[0]);
 		} else {
-			return dsl.getCommandCenter().exec(name);
+			result = dsl.getCommandCenter().exec(name);
 		}
+		logger.debug("OtherCommandsWrapper: called command: cmd=[{}] result=[{}]", name, result);
+		return result;
 	}
 
 	// ------------------------------

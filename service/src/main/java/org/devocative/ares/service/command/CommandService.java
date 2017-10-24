@@ -233,6 +233,11 @@ public class CommandService implements ICommandService, IMissedHitHandler<Long, 
 	@Override
 	public Object callCommand(CommandQVO commandQVO, CommandCenterResource resource) throws Exception {
 		Command cmd = loadByNameAndOService(commandQVO.getCommandName(), commandQVO.getServiceInstance().getService().getId());
+
+		if (cmd == null) {
+			cmd = loadByName(commandQVO.getCommandName());
+		}
+
 		if (cmd == null) {
 			throw new AresException(AresErrorCode.CommandNotFound, commandQVO.getCommandName());
 		}
@@ -334,6 +339,21 @@ public class CommandService implements ICommandService, IMissedHitHandler<Long, 
 
 	private XCommand loadXCommand(Command command) {
 		return (XCommand) xstream.fromXML(command.getConfig().getValue());
+	}
+
+	private Command loadByName(String name) {
+		Long cmdId = persistorService.createQueryBuilder()
+			.addSelect("select ent.id")
+			.addFrom(Command.class, "ent")
+			.addWhere("and ent.name = :name")
+			.addParam("name", name)
+			.object();
+
+		if (cmdId != null) {
+			return load(cmdId);
+		}
+
+		return null;
 	}
 
 // ------------------------------
