@@ -1,18 +1,28 @@
 package org.devocative.ares.service.command.dsl;
 
 import groovy.util.Proxy;
+import org.devocative.ares.cmd.CommandException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.lang.reflect.Array;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
 import java.util.Map;
 
 public class OtherCommandsWrapper extends Proxy {
+	private static final Logger logger = LoggerFactory.getLogger(OtherCommandsWrapper.class);
+
 	private MainCommandDSL dsl;
+
+	// ------------------------------
 
 	public OtherCommandsWrapper(MainCommandDSL dsl) {
 		this.dsl = dsl;
 	}
+
+	// ------------------------------
 
 	@Override
 	public Object invokeMethod(String name, Object args) {
@@ -23,15 +33,26 @@ public class OtherCommandsWrapper extends Proxy {
 			if (foundMethod != null) {
 				return foundMethod.method.invoke(dsl, foundMethod.finalArgs);
 			}
+		} catch (InvocationTargetException e) {
+			if (e.getCause() instanceof CommandException) {
+				throw (CommandException) e.getCause();
+			} else {
+				logger.error("OtherCommandsWrapper: name=[{}]", name, e);
+				throw new RuntimeException(e.getCause());
+			}
 		} catch (Exception e) {
+			logger.error("OtherCommandsWrapper: name=[{}]", name, e);
 			throw new RuntimeException(e);
 		}
+
 		if (argsArr.length == 1) {
 			return dsl.getCommandCenter().exec(name, (Map<String, Object>) argsArr[0]);
 		} else {
 			return dsl.getCommandCenter().exec(name);
 		}
 	}
+
+	// ------------------------------
 
 	private FoundMethod callMethodOfDSL(String name, Object[] args) {
 		Method result = null;
@@ -87,6 +108,8 @@ public class OtherCommandsWrapper extends Proxy {
 		}
 		return null;
 	}
+
+	// ------------------------------
 
 	private static class FoundMethod {
 		private Method method;

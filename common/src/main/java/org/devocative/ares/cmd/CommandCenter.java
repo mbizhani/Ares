@@ -191,8 +191,7 @@ public class CommandCenter {
 	}
 
 	public void error(String message) {
-		//resultCallBack.onResult(new CommandOutput(CommandOutput.Type.ERROR, "Error: " + message));
-		throw new RuntimeException(message);
+		throw new CommandException(message);
 	}
 
 	public void warn(String message) {
