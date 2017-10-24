@@ -160,12 +160,15 @@ ssh {
 					</params>
 					<body>
 						<![CDATA[
-if(!$cmd.exec('checkUser', [schema:schema])) {
-	$cmd.error("Invalid user '${schema}' to create dump file")
+if(!checkUser([schema:schema])) {
+	error("Invalid user '${schema}' to create dump file")
 }
 
-def file = "${schema}_bkup_${$util.now()}.dmp"
-$cmd.ssh("create backup from '${schema}' as '${file}'", "su - oracle -c 'expdp ${target.username}/${target.password} schemas=${schema} directory=${target.prop.pumpDbDir} dumpfile=${file} logfile=${schema}.log'")
+def file = "${schema}_bkUp_${now()}.dmp"
+ssh {
+	prompt "create backup from '${schema}' as '${file}'"
+	cmd "su - oracle -c 'expdp ${target.username}/${target.password} schemas=${schema} directory=${target.prop.pumpDbDir} dumpfile=${file} logfile=${schema}.log'"
+}
 ]]></body>
 				</command>
 			</commands>

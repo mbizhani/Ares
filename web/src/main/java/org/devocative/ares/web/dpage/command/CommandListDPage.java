@@ -160,13 +160,15 @@ public class CommandListDPage extends DPage implements IGridDataSource<Command> 
 			}
 		});
 
-		columnList.add(new OAjaxLinkColumn<Command>(new Model<String>(), AresIcon.EXECUTE) {
+		columnList.add(new OAjaxLinkColumn<Command>(new Model<>(), AresIcon.EXECUTE) {
 			private static final long serialVersionUID = 1205302042L;
 
 			@Override
 			public void onClick(AjaxRequestTarget target, IModel<Command> rowData) {
 				window.setContent(new CommandExecPanel(window.getContentId(), rowData.getObject().getId()));
-				window.show(target);
+
+				//TODO remove first null
+				window.show(null, new Model<>(rowData.getObject().getName()), target);
 			}
 		}.setField("EXECUTE"));
 

@@ -1,8 +1,10 @@
 package org.devocative.ares.service.command.dsl;
 
 import groovy.lang.Closure;
+import org.devocative.adroit.CalendarUtil;
 import org.devocative.ares.cmd.CommandCenter;
 
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -67,6 +69,14 @@ public class MainCommandDSL {
 
 	public void error(CharSequence message) {
 		commandCenter.error(message.toString());
+	}
+
+	public String now() {
+		return now("yyyyMMdd_HHmmss");
+	}
+
+	public String now(String format) {
+		return CalendarUtil.formatDate(new Date(), format);
 	}
 
 	// other
