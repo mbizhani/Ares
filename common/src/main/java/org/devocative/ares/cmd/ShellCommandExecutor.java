@@ -89,7 +89,7 @@ public class ShellCommandExecutor extends AbstractCommandExecutor {
 			int read;
 			while ((read = br.read(buff)) != -1) {
 				String cmdTxtResult = new String(buff, 0, read);
-				resource.onResult(new CommandOutput(cmdTxtResult));
+				resource.onResult(new CommandOutput(CommandOutput.Type.LINE, cmdTxtResult));
 				logger.debug("\tResult = {}", cmdTxtResult);
 				result.append(cmdTxtResult);
 			}

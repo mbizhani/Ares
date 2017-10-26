@@ -10,10 +10,6 @@ public class CommandOutput implements Serializable {
 
 	// ------------------------------
 
-	public CommandOutput(Object output) {
-		this(Type.LINE, output);
-	}
-
 	public CommandOutput(Type type, Object output) {
 		this.type = type;
 		this.output = output;

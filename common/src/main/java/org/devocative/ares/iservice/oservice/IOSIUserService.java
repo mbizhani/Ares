@@ -6,6 +6,7 @@ import org.devocative.ares.entity.oservice.OSIUser;
 import org.devocative.ares.entity.oservice.OService;
 import org.devocative.ares.entity.oservice.OServiceInstance;
 import org.devocative.ares.vo.filter.oservice.OSIUserFVO;
+import org.devocative.demeter.entity.Role;
 import org.devocative.demeter.entity.User;
 
 import java.util.List;
@@ -28,6 +29,8 @@ public interface IOSIUserService {
 	List<OService> getServiceList();
 
 	List<User> getAllowedUsersList();
+
+	List<Role> getAllowedRolesList();
 
 	List<User> getCreatorUserList();
 

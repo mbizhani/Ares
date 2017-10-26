@@ -63,13 +63,22 @@ public class OSIUser implements IRowMod, ICreationDate, ICreatorUser, IModificat
 	private Long serviceId;
 
 	@ManyToMany(fetch = FetchType.LAZY)
-	@JoinTable(name = "mt_ars_srvInstUser_user",
-		joinColumns = {@JoinColumn(name = "f_srv_inst_user", nullable = false)},
+	@JoinTable(name = "mt_ars_siUser_user",
+		joinColumns = {@JoinColumn(name = "f_siUser", nullable = false)},
 		inverseJoinColumns = {@JoinColumn(name = "f_user", nullable = false)},
-		foreignKey = @ForeignKey(name = "srvInstUserUser2siUser"),
-		inverseForeignKey = @ForeignKey(name = "srvInstUserUser2user")
+		foreignKey = @ForeignKey(name = "siUserUser2siUser"),
+		inverseForeignKey = @ForeignKey(name = "siUserUser2user")
 	)
 	private List<User> allowedUsers;
+
+	@ManyToMany(fetch = FetchType.LAZY)
+	@JoinTable(name = "mt_ars_siUser_role",
+		joinColumns = {@JoinColumn(name = "f_siUser", nullable = false)},
+		inverseJoinColumns = {@JoinColumn(name = "f_role", nullable = false)},
+		foreignKey = @ForeignKey(name = "siUserRole2siUser"),
+		inverseForeignKey = @ForeignKey(name = "siUserRole2role")
+	)
+	private List<Role> allowedRoles;
 
 	// ---------------
 
@@ -204,6 +213,14 @@ public class OSIUser implements IRowMod, ICreationDate, ICreatorUser, IModificat
 
 	public void setAllowedUsers(List<User> allowedUsers) {
 		this.allowedUsers = allowedUsers;
+	}
+
+	public List<Role> getAllowedRoles() {
+		return allowedRoles;
+	}
+
+	public void setAllowedRoles(List<Role> allowedRoles) {
+		this.allowedRoles = allowedRoles;
 	}
 
 	// ---------------

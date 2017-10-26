@@ -407,6 +407,9 @@
 				<field name="allowedUsers">
 					<finfo/>
 				</field>
+				<field name="allowedRoles">
+					<finfo/>
+				</field>
 				<field name="rowMod">
 					<finfo hasForm="false"/>
 				</field>

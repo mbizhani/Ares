@@ -119,6 +119,8 @@ public class OSIUserListDPage extends DPage implements IGridDataSource<OSIUser> 
 			.setLabel(new ResourceModel("OSIUser.service")));
 		floatTable.add(new WSelectionInput("allowedUsers", oSIUserService.getAllowedUsersList(), true)
 			.setLabel(new ResourceModel("OSIUser.allowedUsers")));
+		floatTable.add(new WSelectionInput("allowedRoles", oSIUserService.getAllowedRolesList(), true)
+			.setLabel(new ResourceModel("OSIUser.allowedRoles")));
 		floatTable.add(new WSelectionInput("rowMod", ERowMod.list(), true)
 			.setLabel(new ResourceModel("entity.rowMod"))
 			.setVisible(getCurrentUser().isRoot()));
@@ -157,6 +159,7 @@ public class OSIUserListDPage extends DPage implements IGridDataSource<OSIUser> 
 		columnList.add(new OPropertyColumn<>(new ResourceModel("OSIUser.server"), "server"));
 		columnList.add(new OPropertyColumn<>(new ResourceModel("OSIUser.service"), "service"));
 		columnList.add(new OPropertyColumn<>(new ResourceModel("OSIUser.allowedUsers"), "allowedUsers"));
+		columnList.add(new OPropertyColumn<>(new ResourceModel("OSIUser.allowedRoles"), "allowedRoles"));
 		if (getCurrentUser().isRoot()) {
 			columnList.add(new OPropertyColumn<>(new ResourceModel("entity.rowMod"), "rowMod"));
 		}

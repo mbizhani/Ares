@@ -2,12 +2,20 @@
 -- CREATE AUDIT TABLES
 -----------------------
 
-CREATE TABLE a_mt_ars_srvInstUser_user (
-	r_num           NUMBER(10, 0) NOT NULL,
-	f_srv_inst_user NUMBER(19, 0) NOT NULL,
-	f_user          NUMBER(19, 0) NOT NULL,
-	r_type          NUMBER(3, 0),
-	PRIMARY KEY (r_num, f_srv_inst_user, f_user)
+CREATE TABLE a_mt_ars_siUser_role (
+	r_num    NUMBER(10, 0) NOT NULL,
+	f_siUser NUMBER(19, 0) NOT NULL,
+	f_role   NUMBER(19, 0) NOT NULL,
+	r_type   NUMBER(3, 0),
+	PRIMARY KEY (r_num, f_siUser, f_role)
+);
+
+CREATE TABLE a_mt_ars_siUser_user (
+	r_num    NUMBER(10, 0) NOT NULL,
+	f_siUser NUMBER(19, 0) NOT NULL,
+	f_user   NUMBER(19, 0) NOT NULL,
+	r_type   NUMBER(3, 0),
+	PRIMARY KEY (r_num, f_siUser, f_user)
 );
 
 CREATE TABLE a_t_ars_basic_data (
@@ -113,9 +121,14 @@ CREATE TABLE a_t_ars_service_prop (
 -- CREATE MIDDLE TABLES
 ------------------------
 
-CREATE TABLE mt_ars_srvInstUser_user (
-	f_srv_inst_user NUMBER(19, 0) NOT NULL,
-	f_user          NUMBER(19, 0) NOT NULL
+CREATE TABLE mt_ars_siUser_role (
+	f_siUser NUMBER(19, 0) NOT NULL,
+	f_role   NUMBER(19, 0) NOT NULL
+);
+
+CREATE TABLE mt_ars_siUser_user (
+	f_siUser NUMBER(19, 0) NOT NULL,
+	f_user   NUMBER(19, 0) NOT NULL
 );
 
 CREATE TABLE t_ars_basic_data (
@@ -170,7 +183,7 @@ CREATE TABLE t_ars_config_lob (
 
 CREATE TABLE t_ars_server (
 	id              NUMBER(19, 0)      NOT NULL,
-	c_address VARCHAR2(255 CHAR),
+	c_address    VARCHAR2(255 CHAR),
 	n_counter    NUMBER(10, 0),
 	d_creation      DATE               NOT NULL,
 	f_creator_user  NUMBER(19, 0),
@@ -284,9 +297,6 @@ ADD CONSTRAINT uk_ars_command UNIQUE (c_name, f_service);
 ALTER TABLE t_ars_server
 ADD CONSTRAINT uk_ars_serverName UNIQUE (c_name);
 
--- ALTER TABLE t_ars_server
--- ADD CONSTRAINT uk_ars_serverAddress UNIQUE (c_address);
-
 ALTER TABLE t_ars_service
 ADD CONSTRAINT uk_ars_service UNIQUE (c_name);
 
@@ -306,8 +316,13 @@ ADD CONSTRAINT uk_ars_serviceProp UNIQUE (c_name, f_service);
 -- CREATE REFERENTIAL CONSTRAINTS
 ----------------------------------
 
-ALTER TABLE a_mt_ars_srvInstUser_user
-ADD CONSTRAINT FK_arej63drygswbxt3cor69bmt5
+ALTER TABLE a_mt_ars_siUser_role
+ADD CONSTRAINT FK_5ivgm2bpb7p78jmp3pikd69ns
+FOREIGN KEY (r_num)
+REFERENCES REVINFO;
+
+ALTER TABLE a_mt_ars_siUser_user
+ADD CONSTRAINT FK_b1pb99uns0y1kcxn9sfmqpydv
 FOREIGN KEY (r_num)
 REFERENCES REVINFO;
 
@@ -348,14 +363,24 @@ REFERENCES REVINFO;
 
 ------------------------------
 
-ALTER TABLE mt_ars_srvInstUser_user
-ADD CONSTRAINT srvInstUserUser2user
+ALTER TABLE mt_ars_siUser_role
+ADD CONSTRAINT siUserRole2role
+FOREIGN KEY (f_role)
+REFERENCES t_dmt_role;
+
+ALTER TABLE mt_ars_siUser_role
+ADD CONSTRAINT siUserRole2siUser
+FOREIGN KEY (f_siUser)
+REFERENCES t_ars_service_inst_user;
+
+ALTER TABLE mt_ars_siUser_user
+ADD CONSTRAINT siUserUser2user
 FOREIGN KEY (f_user)
 REFERENCES t_dmt_user;
 
-ALTER TABLE mt_ars_srvInstUser_user
-ADD CONSTRAINT srvInstUserUser2siUser
-FOREIGN KEY (f_srv_inst_user)
+ALTER TABLE mt_ars_siUser_user
+ADD CONSTRAINT siUserUser2siUser
+FOREIGN KEY (f_siUser)
 REFERENCES t_ars_service_inst_user;
 
 ALTER TABLE t_ars_basic_data

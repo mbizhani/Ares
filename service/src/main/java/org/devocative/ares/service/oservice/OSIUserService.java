@@ -11,6 +11,7 @@ import org.devocative.ares.entity.oservice.OServiceInstance;
 import org.devocative.ares.iservice.oservice.IOSIUserService;
 import org.devocative.ares.vo.filter.oservice.OSIUserFVO;
 import org.devocative.demeter.entity.ERowMod;
+import org.devocative.demeter.entity.Role;
 import org.devocative.demeter.entity.User;
 import org.devocative.demeter.iservice.ISecurityService;
 import org.devocative.demeter.iservice.persistor.EJoinMode;
@@ -111,6 +112,11 @@ public class OSIUserService implements IOSIUserService {
 	}
 
 	@Override
+	public List<Role> getAllowedRolesList() {
+		return persistorService.list(Role.class);
+	}
+
+	@Override
 	public List<User> getCreatorUserList() {
 		return persistorService.list(User.class);
 	}
@@ -186,46 +192,51 @@ public class OSIUserService implements IOSIUserService {
 
 	@Override
 	public List<OSIUser> findAllowedOnes(ERemoteMode remoteMode) {
-		UserVO currentUser = securityService.getCurrentUser();
-
 		IQueryBuilder queryBuilder = persistorService.createQueryBuilder()
 			.addSelect("select ent")
-			.addFrom(OSIUser.class, "ent")
-			.addWhere("and ent.enabled = true")
 			.addWhere("and ent.remoteMode = :rm")
 			.addParam("rm", remoteMode);
 
-		if (!currentUser.isAdmin()) {
-			queryBuilder
-				.addJoin("usr", "ent.allowedUsers", EJoinMode.Left)
-				.addWhere("and (usr.id=:userId or (ent.rowMod=:creator and ent.creatorUserId=:userId))")
-				.addParam("userId", currentUser.getUserId())
-				.addParam("creator", ERowMod.CREATOR);
-		}
+		applyAllowedWhere(queryBuilder);
 
 		return queryBuilder.list();
 	}
 
 	@Override
 	public boolean isOSIUserAllowed(Long osiUserId) {
-		UserVO currentUser = securityService.getCurrentUser();
-
 		IQueryBuilder queryBuilder = persistorService.createQueryBuilder()
 			.addSelect("select count(ent.id)")
-			.addFrom(OSIUser.class, "ent")
-			.addWhere("and ent.enabled = true")
 			.addWhere("and ent.id=:osiUserId")
 			.addParam("osiUserId", osiUserId);
+
+		applyAllowedWhere(queryBuilder);
+
+		Long count = queryBuilder.object();
+		return count == 1;
+	}
+
+	// ------------------------------
+
+	private void applyAllowedWhere(IQueryBuilder queryBuilder) {
+		UserVO currentUser = securityService.getCurrentUser();
+
+		queryBuilder
+			.addFrom(OSIUser.class, "ent")
+			.addWhere("and ent.enabled = true")
+		;
 
 		if (!currentUser.isAdmin()) {
 			queryBuilder
 				.addJoin("usr", "ent.allowedUsers", EJoinMode.Left)
-				.addWhere("and (usr.id=:userId or (ent.rowMod=:creator and ent.creatorUserId=:userId))")
-				.addParam("userId", currentUser.getUserId())
-				.addParam("creator", ERowMod.CREATOR);
-		}
+				.addJoin("role", "ent.allowedRoles", EJoinMode.Left)
 
-		Long count = queryBuilder.object();
-		return count == 1;
+				.addWhere("and ( usr.id=:userId or (ent.rowMod=:creator and ent.creatorUserId=:userId) ")
+				.addWhere("or role in (:roles) )")
+
+				.addParam("userId", currentUser.getUserId())
+				.addParam("creator", ERowMod.CREATOR)
+				.addParam("roles", currentUser.getRoles())
+			;
+		}
 	}
 }
