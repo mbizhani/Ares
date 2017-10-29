@@ -86,7 +86,7 @@ public class CommandLogService implements ICommandLogService {
 				.append(entry.getKey())
 				.append("=")
 				.append(entry.getValue())
-				.append(";");
+				.append(";;");
 		}
 
 		CommandLog log = new CommandLog();

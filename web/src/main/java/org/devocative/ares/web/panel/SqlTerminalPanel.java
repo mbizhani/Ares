@@ -60,6 +60,7 @@ public class SqlTerminalPanel extends DPanel implements IGridAsyncDataSource<Row
 		add(layout);
 
 		OCode oCode = new OCode(OCodeMode.SQL)
+			.setSubmitSelection(true)
 			.setHeight(OSize.percent(100))
 			.setResizable(false);
 		sql = new WCodeInput("sql", new Model<>(), oCode);
