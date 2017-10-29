@@ -192,24 +192,20 @@ public class OSIUserService implements IOSIUserService {
 
 	@Override
 	public List<OSIUser> findAllowedOnes(ERemoteMode remoteMode) {
-		IQueryBuilder queryBuilder = persistorService.createQueryBuilder()
+		IQueryBuilder queryBuilder = createBaseAllowedUsers()
 			.addSelect("select ent")
 			.addWhere("and ent.remoteMode = :rm")
 			.addParam("rm", remoteMode);
-
-		applyAllowedWhere(queryBuilder);
 
 		return queryBuilder.list();
 	}
 
 	@Override
 	public boolean isOSIUserAllowed(Long osiUserId) {
-		IQueryBuilder queryBuilder = persistorService.createQueryBuilder()
+		IQueryBuilder queryBuilder = createBaseAllowedUsers()
 			.addSelect("select count(ent.id)")
 			.addWhere("and ent.id=:osiUserId")
 			.addParam("osiUserId", osiUserId);
-
-		applyAllowedWhere(queryBuilder);
 
 		Long count = queryBuilder.object();
 		return count == 1;
@@ -217,10 +213,10 @@ public class OSIUserService implements IOSIUserService {
 
 	// ------------------------------
 
-	private void applyAllowedWhere(IQueryBuilder queryBuilder) {
+	private IQueryBuilder createBaseAllowedUsers() {
 		UserVO currentUser = securityService.getCurrentUser();
 
-		queryBuilder
+		IQueryBuilder queryBuilder = persistorService.createQueryBuilder()
 			.addFrom(OSIUser.class, "ent")
 			.addWhere("and ent.enabled = true")
 		;
@@ -238,5 +234,7 @@ public class OSIUserService implements IOSIUserService {
 				.addParam("roles", currentUser.getRoles())
 			;
 		}
+
+		return queryBuilder;
 	}
 }
