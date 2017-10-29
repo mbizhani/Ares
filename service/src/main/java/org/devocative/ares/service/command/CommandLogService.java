@@ -15,6 +15,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Map;
+import java.util.TreeMap;
 
 @Service("arsCommandLogService")
 public class CommandLogService implements ICommandLogService {
@@ -81,7 +82,8 @@ public class CommandLogService implements ICommandLogService {
 	@Override
 	public Long insertLog(Command command, OServiceInstance serviceInstance, Map<String, ?> params) {
 		StringBuilder builder = new StringBuilder();
-		for (Map.Entry<String, ?> entry : params.entrySet()) {
+		Map<String, ?> sortedParams = new TreeMap<>(params);
+		for (Map.Entry<String, ?> entry : sortedParams.entrySet()) {
 			builder
 				.append(entry.getKey())
 				.append("=")

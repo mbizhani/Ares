@@ -67,6 +67,16 @@ public class ConsoleResultProcessing {
 
 	// ---------------
 
+	public ConsoleResultProcessing prepend(String txt) {
+		text = txt + text;
+		return this;
+	}
+
+	public ConsoleResultProcessing append(String txt) {
+		text = text + txt;
+		return this;
+	}
+
 	public TabularVO build() {
 		return build(null);
 	}

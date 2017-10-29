@@ -164,7 +164,7 @@ if(!checkUser([schema:schema])) {
 	error("Invalid user '${schema}' to create dump file")
 }
 
-def file = "${schema}_bkUp_${now()}.dmp"
+def file = "${schema}_bkUp_${now()}.dmp".toLowerCase()
 ssh {
 	prompt "create backup from '${schema}' as '${file}'"
 	cmd "su - oracle -c 'expdp ${target.username}/${target.password} schemas=${schema} directory=${target.prop.pumpDbDir} dumpfile=${file} logfile=${schema}.log'"
@@ -192,6 +192,22 @@ truncateSchema([schema:schema])
 ssh {
 	prompt "Restoring '${schema} from '${file}'"
 	cmd "su - oracle -c 'impdp ${target.username}/${target.password} schemas=${schema} directory=${target.prop.pumpDbDir} dumpfile=${file} logfile=${schema}.log'"
+}
+]]></body>
+				</command>
+
+				<command name="listDump">
+					<params/>
+					<body>
+						<![CDATA[
+ssh {
+	prompt 'List Dump Files'
+	cmd """ find ${target.prop.pumpOsDir} -maxdepth 1 -name "*.dmp" -printf "%f\n" """
+	result {
+		it.toTabular("\\n")
+			.prepend("Files\n")
+			.build()
+	}
 }
 ]]></body>
 				</command>
