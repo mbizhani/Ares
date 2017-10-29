@@ -1,0 +1,37 @@
+//overwrite
+package org.devocative.ares.iservice.command;
+
+import org.devocative.ares.entity.command.Command;
+import org.devocative.ares.entity.command.PrepCommand;
+import org.devocative.ares.entity.oservice.OServiceInstance;
+import org.devocative.ares.vo.filter.command.PrepCommandFVO;
+import org.devocative.demeter.entity.Role;
+import org.devocative.demeter.entity.User;
+
+import java.util.List;
+
+public interface IPrepCommandService {
+	void saveOrUpdate(PrepCommand entity);
+
+	PrepCommand load(Long id);
+
+	List<PrepCommand> list();
+
+	List<PrepCommand> search(PrepCommandFVO filter, long pageIndex, long pageSize);
+
+	long count(PrepCommandFVO filter);
+
+	List<Command> getCommandList();
+
+	List<OServiceInstance> getServiceInstanceList();
+
+	List<User> getAllowedUsersList();
+
+	List<Role> getAllowedRolesList();
+
+	List<User> getCreatorUserList();
+
+	List<User> getModifierUserList();
+
+	// ==============================
+}

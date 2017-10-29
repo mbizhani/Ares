@@ -15,6 +15,7 @@
 		<entity type="org.devocative.ares.entity.command.Command"/>
 		<entity type="org.devocative.ares.entity.command.CommandLog"/>
 		<entity type="org.devocative.ares.entity.command.ConfigLob"/>
+		<entity type="org.devocative.ares.entity.command.PrepCommand"/>
 
 		<entity type="org.devocative.ares.entity.OBasicData"/>
 		<entity type="org.devocative.ares.entity.OServer"/>
@@ -67,6 +68,13 @@
 		<dPage type="org.devocative.ares.web.dpage.command.CommandLogListDPage"
 			   title="KEY:dPage.ars.CommandLogList"
 			   uri="/cmdlogs"
+			   inMenu="true"
+			   roles="Admin"
+				/>
+
+		<dPage type="org.devocative.ares.web.dpage.command.PrepCommandListDPage"
+			   title="KEY:dPage.ars.PrepCommandList"
+			   uri="/prpcmds"
 			   inMenu="true"
 			   roles="Admin"
 				/>
