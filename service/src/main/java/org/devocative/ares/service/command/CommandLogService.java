@@ -3,6 +3,7 @@ package org.devocative.ares.service.command;
 import org.devocative.ares.entity.command.Command;
 import org.devocative.ares.entity.command.CommandLog;
 import org.devocative.ares.entity.command.ECommandResult;
+import org.devocative.ares.entity.command.PrepCommand;
 import org.devocative.ares.entity.oservice.OServiceInstance;
 import org.devocative.ares.iservice.command.ICommandLogService;
 import org.devocative.ares.iservice.command.IPrepCommandService;
@@ -76,6 +77,11 @@ public class CommandLogService implements ICommandLogService {
 	}
 
 	@Override
+	public List<PrepCommand> getPrepCommandList() {
+		return persistorService.list(PrepCommand.class);
+	}
+
+	@Override
 	public List<User> getCreatorUserList() {
 		return persistorService.list(User.class);
 	}
@@ -83,12 +89,13 @@ public class CommandLogService implements ICommandLogService {
 	// ==============================
 
 	@Override
-	public Long insertLog(Command command, OServiceInstance serviceInstance, Map<String, ?> params) {
+	public Long insertLog(Command command, OServiceInstance serviceInstance, Map<String, ?> params, Long prepCommandId) {
 		CommandLog log = new CommandLog();
 		log.setCommand(command);
 		log.setServiceInstance(serviceInstance);
 		log.setParams(prepCommandService.convertParamsToString(params));
 		log.setResult(ECommandResult.RUNNING);
+		log.setPrepCommandId(prepCommandId);
 
 		saveOrUpdate(log);
 		persistorService.commitOrRollback();

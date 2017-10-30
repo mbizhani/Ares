@@ -45,6 +45,13 @@ public class CommandLog implements ICreationDate, ICreatorUser {
 	@JoinColumn(name = "f_service_instance", nullable = false, foreignKey = @ForeignKey(name = "commandLog2serviceInstance"))
 	private OServiceInstance serviceInstance;
 
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "f_prep_command", insertable = false, updatable = false, foreignKey = @ForeignKey(name = "commandLog2prepCommand"))
+	private PrepCommand prepCommand;
+
+	@Column(name = "f_prep_command")
+	private Long prepCommandId;
+
 	// --------------- CREATE / MODIFY
 
 	//@NotAudited
@@ -117,6 +124,19 @@ public class CommandLog implements ICreationDate, ICreatorUser {
 
 	public void setServiceInstance(OServiceInstance serviceInstance) {
 		this.serviceInstance = serviceInstance;
+	}
+
+	public PrepCommand getPrepCommand() {
+		return prepCommand;
+	}
+
+	public Long getPrepCommandId() {
+		return prepCommandId;
+	}
+
+	public CommandLog setPrepCommandId(Long prepCommandId) {
+		this.prepCommandId = prepCommandId;
+		return this;
 	}
 
 	// --------------- CREATE / MODIFY

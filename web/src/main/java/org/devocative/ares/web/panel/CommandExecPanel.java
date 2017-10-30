@@ -16,9 +16,11 @@ import org.devocative.adroit.vo.KeyValueVO;
 import org.devocative.ares.AresPrivilegeKey;
 import org.devocative.ares.cmd.CommandOutput;
 import org.devocative.ares.entity.command.Command;
+import org.devocative.ares.entity.command.PrepCommand;
 import org.devocative.ares.entity.oservice.OServiceInstance;
 import org.devocative.ares.iservice.IOServerService;
 import org.devocative.ares.iservice.command.ICommandService;
+import org.devocative.ares.iservice.command.IPrepCommandService;
 import org.devocative.ares.iservice.oservice.IOServiceInstanceService;
 import org.devocative.ares.vo.CommandQVO;
 import org.devocative.ares.vo.TabularVO;
@@ -55,7 +57,9 @@ public class CommandExecPanel extends DPanel implements IAsyncResponse {
 	private static final Logger logger = LoggerFactory.getLogger(CommandExecPanel.class);
 
 	private Long commandId;
+	private Long prepCommandId;
 	private Map<String, Object> params = new HashMap<>();
+	private Map<String, String> paramsAsStr = new HashMap<>();
 	private List<OServiceInstance> targetServiceInstances = new ArrayList<>();
 
 	private Long targetServiceInstanceId;
@@ -74,12 +78,24 @@ public class CommandExecPanel extends DPanel implements IAsyncResponse {
 	@Inject
 	private IOServerService serverService;
 
+	@Inject
+	private IPrepCommandService prepCommandService;
+
 	// ------------------------------
 
 	public CommandExecPanel(String id, Long commandId) {
 		super(id);
 
 		this.commandId = commandId;
+	}
+
+	public CommandExecPanel(String id, PrepCommand prepCommand) {
+		super(id);
+
+		this.prepCommandId = prepCommand.getId();
+		this.commandId = prepCommand.getCommandId();
+		this.targetServiceInstanceId = prepCommand.getServiceInstanceId();
+		this.paramsAsStr.putAll(prepCommandService.convertParamsFromString(prepCommand.getParams()));
 	}
 
 	// ------------------------------
@@ -168,25 +184,34 @@ public class CommandExecPanel extends DPanel implements IAsyncResponse {
 				RepeatingView view = new RepeatingView("field");
 
 				XParam xParam = item.getModelObject();
+				String xParamName = xParam.getName();
 
 				FormComponent fieldFormItem;
 
 				switch (xParam.getType()) {
 					case Guest:
-						WSelectionInput guestSelectionInput = new WSelectionInput(xParam.getName(), new ArrayList(), false);
+						WSelectionInput guestSelectionInput = new WSelectionInput(xParamName, new ArrayList(), false);
 						guestInputList.add(guestSelectionInput);
 						fieldFormItem = guestSelectionInput;
 						//TODO defaultValue
+						/*TODO if(paramsAsStr.containsKey(xParamName)) {
+							params.put(xParamName, ?);
+							fieldFormItem.setEnabled(false);
+						}*/
 						break;
 
 					case Server:
-						fieldFormItem = new WSelectionInput(xParam.getName(), serverService.findServersAsVM(), false);
+						fieldFormItem = new WSelectionInput(xParamName, serverService.findServersAsVM(), false);
+						/*TODO if(paramsAsStr.containsKey(xParamName)) {
+							params.put(xParamName, ?);
+							fieldFormItem.setEnabled(false);
+						}*/
 						break;
 
 					case Service:
 						//WSelectionInput selectionInput = new WSelectionInput(xParam.getName(), serviceInstanceService.findListForCommandExecution(targetServiceId), false);
 						//TODO only work for target param
-						WSelectionInput selectionInput = new WSelectionInput(xParam.getName(), targetServiceInstances, false);
+						WSelectionInput selectionInput = new WSelectionInput(xParamName, targetServiceInstances, false);
 
 						if (hasGuest) {
 							selectionInput.addToChoices(new WSelectionInputAjaxUpdatingBehavior() {
@@ -204,23 +229,38 @@ public class CommandExecPanel extends DPanel implements IAsyncResponse {
 						}
 						fieldFormItem = selectionInput;
 						//TODO defaultValue
+						/*TODO if(paramsAsStr.containsKey(xParamName)) {
+							params.put(xParamName, ?);
+							fieldFormItem.setEnabled(false);
+						}*/
 						break;
 
 					case File:
-						fieldFormItem = new FileStoreUploadPanel(xParam.getName(), false);
+						fieldFormItem = new FileStoreUploadPanel(xParamName, false);
+						/*TODO if(paramsAsStr.containsKey(xParamName)) {
+							params.put(xParamName, ?);
+							fieldFormItem.setEnabled(false);
+						}*/
 						break;
 
 					case Boolean:
-						fieldFormItem = new WBooleanInput(xParam.getName());
-						if (xParam.getDefaultValue() != null) {
-							params.put(xParam.getName(), xParam.getDefaultValueObject());
+						fieldFormItem = new WBooleanInput(xParamName);
+						if (paramsAsStr.containsKey(xParamName)) {
+							params.put(xParamName, Boolean.valueOf(paramsAsStr.get(xParamName)));
+							fieldFormItem.setEnabled(false);
+						} else if (xParam.getDefaultValue() != null) {
+							params.put(xParamName, xParam.getDefaultValueObject());
 						}
 						break;
 
 					default:
-						fieldFormItem = new WTextInput(xParam.getName());
+						fieldFormItem = new WTextInput(xParamName);
+						if (paramsAsStr.containsKey(xParamName)) {
+							params.put(xParamName, paramsAsStr.get(xParamName));
+							fieldFormItem.setEnabled(false);
+						}
 				}
-				view.add(fieldFormItem.setRequired(xParam.getRequired()).setLabel(new Model<>(xParam.getName())));
+				view.add(fieldFormItem.setRequired(xParam.getRequired()).setLabel(new Model<>(xParamName)));
 				item.add(view);
 			}
 		});
@@ -248,7 +288,7 @@ public class CommandExecPanel extends DPanel implements IAsyncResponse {
 				}
 
 				commandService.executeCommandTask(
-					new CommandQVO(commandId, serviceInstance, cmdParams).setOsiUserId(osiUserId),
+					new CommandQVO(commandId, serviceInstance, cmdParams, prepCommandId).setOsiUserId(osiUserId),
 					taskBehavior);
 			}
 		});
@@ -272,7 +312,7 @@ public class CommandExecPanel extends DPanel implements IAsyncResponse {
 				window.setContent(new PrepCommandFormDPage(window.getContentId(), commandId, serviceInstance.getId(), cmdParams));
 				window.show(target);
 			}
-		}.setVisible(hasPermission(AresPrivilegeKey.PrepCommandAdd)));
+		}.setVisible(hasPermission(AresPrivilegeKey.PrepCommandAdd) && prepCommandId == null));
 
 		add(form);
 

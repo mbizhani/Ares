@@ -1,4 +1,3 @@
-//overwrite
 package org.devocative.ares.web.dpage.command;
 
 import org.apache.wicket.ajax.AjaxRequestTarget;
@@ -94,6 +93,8 @@ public class CommandLogListDPage extends DPage implements IGridDataSource<Comman
 			.setLabel(new ResourceModel("CommandLog.command")));
 		floatTable.add(new WSelectionInput("serviceInstance", commandLogService.getServiceInstanceList(), true)
 			.setLabel(new ResourceModel("CommandLog.serviceInstance")));
+		floatTable.add(new WSelectionInput("prepCommand", commandLogService.getPrepCommandList(), true)
+			.setLabel(new ResourceModel("CommandLog.prepCommand")));
 		floatTable.add(new WDateRangeInput("creationDate")
 			.setTimePartVisible(true)
 			.setLabel(new ResourceModel("entity.creationDate")));
@@ -114,18 +115,20 @@ public class CommandLogListDPage extends DPage implements IGridDataSource<Comman
 		add(form);
 
 		OColumnList<CommandLog> columnList = new OColumnList<>();
-		columnList.add(new OPropertyColumn<CommandLog>(new ResourceModel("CommandLog.params"), "params"));
-		columnList.add(new OPropertyColumn<CommandLog>(new ResourceModel("CommandLog.result"), "result"));
+		columnList.add(new OPropertyColumn<>(new ResourceModel("CommandLog.params"), "params"));
+		columnList.add(new OPropertyColumn<>(new ResourceModel("CommandLog.result"), "result"));
 		columnList.add(new OPropertyColumn<CommandLog>(new ResourceModel("CommandLog.duration"), "duration")
 			.setFormatter(ONumberFormatter.integer())
 			.setStyle("direction:ltr"));
-		columnList.add(new OPropertyColumn<CommandLog>(new ResourceModel("CommandLog.error"), "error"));
-		columnList.add(new OPropertyColumn<CommandLog>(new ResourceModel("CommandLog.command"), "command"));
-		columnList.add(new OPropertyColumn<CommandLog>(new ResourceModel("CommandLog.serviceInstance"), "serviceInstance"));
+		columnList.add(new OPropertyColumn<CommandLog>(new ResourceModel("CommandLog.error"), "error")
+			.setWidth(OSize.fixed(200)));
+		columnList.add(new OPropertyColumn<>(new ResourceModel("CommandLog.command"), "command"));
+		columnList.add(new OPropertyColumn<>(new ResourceModel("CommandLog.serviceInstance"), "serviceInstance"));
+		columnList.add(new OPropertyColumn<>(new ResourceModel("CommandLog.prepCommand"), "prepCommand"));
 		columnList.add(new OPropertyColumn<CommandLog>(new ResourceModel("entity.creationDate"), "creationDate")
 			.setFormatter(ODateFormatter.getDateTimeByUserPreference())
 			.setStyle("direction:ltr"));
-		columnList.add(new OPropertyColumn<CommandLog>(new ResourceModel("entity.creatorUser"), "creatorUser"));
+		columnList.add(new OPropertyColumn<>(new ResourceModel("entity.creatorUser"), "creatorUser"));
 
 		OGrid<CommandLog> oGrid = new OGrid<>();
 		oGrid

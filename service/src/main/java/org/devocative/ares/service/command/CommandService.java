@@ -210,7 +210,7 @@ public class CommandService implements ICommandService, IMissedHitHandler<Long, 
 
 		Command command = load(commandQVO.getCommandId());
 		CommandCenterResource resource = new CommandCenterResource(this, serverService, serviceInstanceService, callBack);
-		Long logId = commandLogService.insertLog(command, commandQVO.getServiceInstance(), commandQVO.getParams());
+		Long logId = commandLogService.insertLog(command, commandQVO.getServiceInstance(), commandQVO.getParams(), commandQVO.getPrepCommandId());
 
 		logger.info("Start command execution: cmd=[{}] si=[{}] currentUser=[{}] logId=[{}]",
 			command.getName(), commandQVO.getServiceInstance(), securityService.getCurrentUser(), logId);

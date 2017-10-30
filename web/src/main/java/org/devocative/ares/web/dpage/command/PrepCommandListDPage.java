@@ -170,8 +170,9 @@ public class PrepCommandListDPage extends DPage implements IGridDataSource<PrepC
 
 			@Override
 			public void onClick(AjaxRequestTarget target, IModel<PrepCommand> rowData) {
-				window.setContent(new CommandExecPanel(window.getContentId(), rowData.getObject().getId()));
-				window.show(new Model<>("PrepCommand Exec: " + rowData.getObject().getName()), target);
+				PrepCommand prepCommand = rowData.getObject();
+				window.setContent(new CommandExecPanel(window.getContentId(), prepCommand));
+				window.show(new Model<>("PrepCommand Exec - " + prepCommand.getName()), target);
 			}
 		}.setField("EXECUTE"));
 

@@ -2,6 +2,7 @@ package org.devocative.ares.iservice.command;
 
 import org.devocative.ares.entity.command.Command;
 import org.devocative.ares.entity.command.CommandLog;
+import org.devocative.ares.entity.command.PrepCommand;
 import org.devocative.ares.entity.oservice.OServiceInstance;
 import org.devocative.ares.vo.filter.command.CommandLogFVO;
 import org.devocative.demeter.entity.User;
@@ -24,11 +25,13 @@ public interface ICommandLogService {
 
 	List<OServiceInstance> getServiceInstanceList();
 
+	List<PrepCommand> getPrepCommandList();
+
 	List<User> getCreatorUserList();
 
 	// ==============================
 
-	Long insertLog(Command command, OServiceInstance serviceInstance, Map<String, ?> params);
+	Long insertLog(Command command, OServiceInstance serviceInstance, Map<String, ?> params, Long prepCommandId);
 
 	void updateLog(Long logId, Long duration, Exception error);
 }

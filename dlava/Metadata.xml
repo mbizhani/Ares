@@ -83,6 +83,12 @@
 				<field name="serviceInstance">
 					<finfo/>
 				</field>
+				<field name="prepCommand">
+					<finfo/>
+				</field>
+				<field name="prepCommandId">
+					<finfo ignore="true"/>
+				</field>
 				<field name="creationDate">
 					<finfo hasForm="false" hasTimePart="true"/>
 				</field>
@@ -143,8 +149,14 @@
 				<field name="command">
 					<finfo/>
 				</field>
+				<field name="commandId">
+					<finfo ignore="true"/>
+				</field>
 				<field name="serviceInstance">
 					<finfo/>
+				</field>
+				<field name="serviceInstanceId">
+					<finfo ignore="true"/>
 				</field>
 				<field name="allowedUsers">
 					<finfo/>

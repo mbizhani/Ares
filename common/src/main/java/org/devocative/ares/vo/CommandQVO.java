@@ -14,12 +14,16 @@ public class CommandQVO implements Serializable {
 	private Map<String, Object> params;
 	private Long osiUserId;
 
+	private Long prepCommandId;
+
 	// ------------------------------
 
-	public CommandQVO(Long commandId, OServiceInstance serviceInstance, Map<String, Object> params) {
+	public CommandQVO(Long commandId, OServiceInstance serviceInstance, Map<String, Object> params, Long prepCommandId) {
 		this.commandId = commandId;
 		this.serviceInstance = serviceInstance;
 		this.params = params;
+
+		this.prepCommandId = prepCommandId;
 	}
 
 	public CommandQVO(String commandName, OServiceInstance serviceInstance, Map<String, Object> params) {
@@ -44,6 +48,10 @@ public class CommandQVO implements Serializable {
 
 	public Map<String, Object> getParams() {
 		return params;
+	}
+
+	public Long getPrepCommandId() {
+		return prepCommandId;
 	}
 
 	// ---------------
