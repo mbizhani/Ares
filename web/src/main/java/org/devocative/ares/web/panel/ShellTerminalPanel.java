@@ -2,7 +2,10 @@ package org.devocative.ares.web.panel;
 
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.event.Broadcast;
+import org.devocative.ares.entity.command.Command;
+import org.devocative.ares.entity.oservice.OSIUser;
 import org.devocative.ares.iservice.ITerminalConnectionService;
+import org.devocative.ares.iservice.command.ICommandService;
 import org.devocative.ares.vo.SshMessageVO;
 import org.devocative.ares.web.AresIcon;
 import org.devocative.ares.web.TerminalTabInfo;
@@ -21,8 +24,9 @@ public class ShellTerminalPanel extends DPanel implements ITaskResultCallback {
 
 	private static final Logger logger = LoggerFactory.getLogger(ShellTerminalPanel.class);
 
-	private Long osiUserId;
+	private OSIUser osiUser;
 	private String tabId;
+	private Long fileUploadCommandId;
 
 	private Long connectionId;
 	private WTerminal wTerminal;
@@ -31,10 +35,13 @@ public class ShellTerminalPanel extends DPanel implements ITaskResultCallback {
 	@Inject
 	private ITerminalConnectionService terminalConnectionService;
 
-	public ShellTerminalPanel(String id, Long osiUserId, String tabId) {
+	@Inject
+	private ICommandService commandService;
+
+	public ShellTerminalPanel(String id, OSIUser osiUser, String tabId) {
 		super(id);
 
-		this.osiUserId = osiUserId;
+		this.osiUser = osiUser;
 		this.tabId = tabId;
 
 		setOutputMarkupId(true);
@@ -47,14 +54,23 @@ public class ShellTerminalPanel extends DPanel implements ITaskResultCallback {
 		window = new WModalWindow("window");
 		add(window);
 
+		if (fileUploadCommandId == null) {
+			Command fileUpload = commandService.loadByNameAndOService("fileUpload", osiUser.getServiceId());
+			if (fileUpload != null) {
+				fileUploadCommandId = fileUpload.getId();
+			} else {
+				logger.warn("'fileUpload' command not found for serviceId=[{}], OSIUser=[{}]", osiUser.getServiceId(), osiUser);
+			}
+		}
+
 		wTerminal = new WTerminal("wTerminal") {
 			private static final long serialVersionUID = -4033298732740362278L;
 
 			@Override
 			protected void onConnect() {
 				try {
-					connectionId = terminalConnectionService.createTerminal(osiUserId, ShellTerminalPanel.this);
-					logger.info("ShellTerminalPanel Created: OSIUserId=[{}] ConnectionId=[{}]", osiUserId, connectionId);
+					connectionId = terminalConnectionService.createTerminal(osiUser.getId(), ShellTerminalPanel.this);
+					logger.info("ShellTerminalPanel Created: OSIUser=[{}] ConnectionId=[{}]", osiUser, connectionId);
 
 					if (tabId != null) {
 						send(ShellTerminalPanel.this, Broadcast.BUBBLE, new TerminalTabInfo(tabId, connectionId));
@@ -87,10 +103,14 @@ public class ShellTerminalPanel extends DPanel implements ITaskResultCallback {
 
 			@Override
 			public void onClick(AjaxRequestTarget target) {
-				window.setContent(new CommandExecPanel(window.getContentId(), "fileUpload", osiUserId));
+				window.setContent(
+					new CommandExecPanel(window.getContentId(), fileUploadCommandId)
+						.setOsiUserId(osiUser.getId())
+						.setTargetServiceInstanceId(osiUser.getServiceInstanceId())
+				);
 				window.show(target);
 			}
-		});
+		}.setEnabled(fileUploadCommandId != null));
 	}
 
 	@Override

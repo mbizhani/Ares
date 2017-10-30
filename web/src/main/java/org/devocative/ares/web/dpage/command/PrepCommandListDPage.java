@@ -4,12 +4,14 @@ import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.markup.html.form.Form;
 import org.apache.wicket.model.CompoundPropertyModel;
 import org.apache.wicket.model.IModel;
+import org.apache.wicket.model.Model;
 import org.apache.wicket.model.ResourceModel;
 import org.devocative.ares.AresPrivilegeKey;
 import org.devocative.ares.entity.command.PrepCommand;
 import org.devocative.ares.iservice.command.IPrepCommandService;
 import org.devocative.ares.vo.filter.command.PrepCommandFVO;
 import org.devocative.ares.web.AresIcon;
+import org.devocative.ares.web.panel.CommandExecPanel;
 import org.devocative.demeter.web.DPage;
 import org.devocative.demeter.web.component.DAjaxButton;
 import org.devocative.demeter.web.component.grid.OEditAjaxColumn;
@@ -25,6 +27,7 @@ import org.devocative.wickomp.grid.WDataGrid;
 import org.devocative.wickomp.grid.WSortField;
 import org.devocative.wickomp.grid.column.OColumnList;
 import org.devocative.wickomp.grid.column.OPropertyColumn;
+import org.devocative.wickomp.grid.column.link.OAjaxLinkColumn;
 import org.devocative.wickomp.html.WFloatTable;
 import org.devocative.wickomp.html.window.WModalWindow;
 import org.devocative.wickomp.opt.OSize;
@@ -161,6 +164,16 @@ public class PrepCommandListDPage extends DPage implements IGridDataSource<PrepC
 				}
 			});
 		}
+
+		columnList.add(new OAjaxLinkColumn<PrepCommand>(new Model<>(), AresIcon.EXECUTE) {
+			private static final long serialVersionUID = 7423601479360699023L;
+
+			@Override
+			public void onClick(AjaxRequestTarget target, IModel<PrepCommand> rowData) {
+				window.setContent(new CommandExecPanel(window.getContentId(), rowData.getObject().getId()));
+				window.show(new Model<>("PrepCommand Exec: " + rowData.getObject().getName()), target);
+			}
+		}.setField("EXECUTE"));
 
 		OGrid<PrepCommand> oGrid = new OGrid<>();
 		oGrid

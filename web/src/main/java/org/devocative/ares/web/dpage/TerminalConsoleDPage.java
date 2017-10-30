@@ -86,9 +86,7 @@ public class TerminalConsoleDPage extends DPage {
 			@Override
 			protected void populateItem(ListItem<OSIUser> item) {
 				OSIUser osiUser = item.getModelObject();
-
-				final Long osiUserId = osiUser.getId();
-				final IModel<String> title = new Model<>(osiUser.toString());
+				IModel<String> title = new Model<>(osiUser.toString());
 
 				item.add(new WAjaxLink("osiUser", title) {
 					private static final long serialVersionUID = -360097665014494986L;
@@ -96,8 +94,8 @@ public class TerminalConsoleDPage extends DPage {
 					@Override
 					public void onClick(AjaxRequestTarget target) {
 						String tabId = UUID.randomUUID().toString().replaceAll("[-]", "");
-						logger.info("Creating ShellTerminalPanel: OSIUser=[{}] tabId=[{}]", title.getObject(), tabId);
-						DPanel panel = new ShellTerminalPanel(tabPanel.getTabContentId(), osiUserId, tabId);
+						logger.info("Creating ShellTerminalPanel: OSIUser=[{}] tabId=[{}]", osiUser.toString(), tabId);
+						DPanel panel = new ShellTerminalPanel(tabPanel.getTabContentId(), osiUser, tabId);
 						tabPanel.addTab(target, panel, new OTab(title, true).setTabId(tabId));
 					}
 				});

@@ -16,11 +16,9 @@ import org.devocative.adroit.vo.KeyValueVO;
 import org.devocative.ares.AresPrivilegeKey;
 import org.devocative.ares.cmd.CommandOutput;
 import org.devocative.ares.entity.command.Command;
-import org.devocative.ares.entity.oservice.OSIUser;
 import org.devocative.ares.entity.oservice.OServiceInstance;
 import org.devocative.ares.iservice.IOServerService;
 import org.devocative.ares.iservice.command.ICommandService;
-import org.devocative.ares.iservice.oservice.IOSIUserService;
 import org.devocative.ares.iservice.oservice.IOServiceInstanceService;
 import org.devocative.ares.vo.CommandQVO;
 import org.devocative.ares.vo.TabularVO;
@@ -60,7 +58,7 @@ public class CommandExecPanel extends DPanel implements IAsyncResponse {
 	private Map<String, Object> params = new HashMap<>();
 	private List<OServiceInstance> targetServiceInstances = new ArrayList<>();
 
-	private String commandName;
+	private Long targetServiceInstanceId;
 	private Long osiUserId;
 
 	private DTaskBehavior taskBehavior;
@@ -76,9 +74,6 @@ public class CommandExecPanel extends DPanel implements IAsyncResponse {
 	@Inject
 	private IOServerService serverService;
 
-	@Inject
-	private IOSIUserService osiUserService;
-
 	// ------------------------------
 
 	public CommandExecPanel(String id, Long commandId) {
@@ -87,14 +82,19 @@ public class CommandExecPanel extends DPanel implements IAsyncResponse {
 		this.commandId = commandId;
 	}
 
-	public CommandExecPanel(String id, String commandName, Long osiUserId) {
-		super(id);
+	// ------------------------------
 
-		this.commandName = commandName;
-		this.osiUserId = osiUserId;
+	public CommandExecPanel setTargetServiceInstanceId(Long targetServiceInstanceId) {
+		this.targetServiceInstanceId = targetServiceInstanceId;
+		return this;
 	}
 
-	// ------------------------------
+	public CommandExecPanel setOsiUserId(Long osiUserId) {
+		this.osiUserId = osiUserId;
+		return this;
+	}
+
+	// ---------------
 
 	@Override
 	public void onAsyncResult(IPartialPageRequestHandler handler, Object result) {
@@ -137,22 +137,14 @@ public class CommandExecPanel extends DPanel implements IAsyncResponse {
 		taskBehavior = new DTaskBehavior(this);
 		add(taskBehavior);
 
-		Command command;
-		if (commandId != null) {
-			command = commandService.load(commandId);
-			targetServiceInstances.addAll(serviceInstanceService.findListForCommandExecution(command.getServiceId()));
+		Command command = commandService.load(commandId);
+
+		if (targetServiceInstanceId != null) {
+			OServiceInstance target = serviceInstanceService.load(targetServiceInstanceId);
+			params.put("target", target);
+			targetServiceInstances.add(target);
 		} else {
-			OSIUser osiUser = osiUserService.load(osiUserId);
-			if (osiUser == null) {
-				throw new RuntimeException("OSIUser not found: " + osiUserId); //TODO
-			}
-			command = commandService.loadByNameAndOService(commandName, osiUser.getServiceId());
-			if (command == null) {
-				throw new RuntimeException(String.format("Command not found: name=%s serviceId=%s", commandName, osiUser.getServiceId()));
-			}
-			commandId = command.getId();
-			targetServiceInstances.add(osiUser.getServiceInstance());
-			params.put("target", osiUser.getServiceInstance());
+			targetServiceInstances.addAll(serviceInstanceService.findListForCommandExecution(command.getServiceId()));
 		}
 
 		XCommand xCommand = command.getXCommand();

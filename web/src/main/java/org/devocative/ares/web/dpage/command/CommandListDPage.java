@@ -166,9 +166,7 @@ public class CommandListDPage extends DPage implements IGridDataSource<Command> 
 			@Override
 			public void onClick(AjaxRequestTarget target, IModel<Command> rowData) {
 				window.setContent(new CommandExecPanel(window.getContentId(), rowData.getObject().getId()));
-
-				//TODO remove first null
-				window.show(null, new Model<>(rowData.getObject().getName()), target);
+				window.show(new Model<>("Command Exec: " + rowData.getObject().getName()), target);
 			}
 		}.setField("EXECUTE"));
 
