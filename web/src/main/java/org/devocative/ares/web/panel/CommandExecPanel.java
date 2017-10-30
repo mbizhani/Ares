@@ -13,6 +13,7 @@ import org.apache.wicket.model.Model;
 import org.apache.wicket.model.ResourceModel;
 import org.apache.wicket.util.string.Strings;
 import org.devocative.adroit.vo.KeyValueVO;
+import org.devocative.ares.AresPrivilegeKey;
 import org.devocative.ares.cmd.CommandOutput;
 import org.devocative.ares.entity.command.Command;
 import org.devocative.ares.entity.oservice.OSIUser;
@@ -27,6 +28,7 @@ import org.devocative.ares.vo.xml.XCommand;
 import org.devocative.ares.vo.xml.XParam;
 import org.devocative.ares.vo.xml.XParamType;
 import org.devocative.ares.web.AresIcon;
+import org.devocative.ares.web.dpage.command.PrepCommandFormDPage;
 import org.devocative.demeter.web.DPanel;
 import org.devocative.demeter.web.DTaskBehavior;
 import org.devocative.demeter.web.component.DAjaxButton;
@@ -38,6 +40,7 @@ import org.devocative.wickomp.form.WSelectionInput;
 import org.devocative.wickomp.form.WSelectionInputAjaxUpdatingBehavior;
 import org.devocative.wickomp.form.WTextInput;
 import org.devocative.wickomp.html.WFloatTable;
+import org.devocative.wickomp.html.window.WModalWindow;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -127,6 +130,9 @@ public class CommandExecPanel extends DPanel implements IAsyncResponse {
 	@Override
 	protected void onInitialize() {
 		super.onInitialize();
+
+		WModalWindow window = new WModalWindow("window");
+		add(window);
 
 		taskBehavior = new DTaskBehavior(this);
 		add(taskBehavior);
@@ -229,18 +235,21 @@ public class CommandExecPanel extends DPanel implements IAsyncResponse {
 
 		Form<Map<String, Object>> form = new Form<>("form", new CompoundPropertyModel<>(params));
 		form.add(floatTable);
+
 		form.add(new DAjaxButton("execute", new ResourceModel("label.execute", "Exec"), AresIcon.EXECUTE) {
 			private static final long serialVersionUID = 8306959811796741L;
 
 			@Override
 			protected void onSubmit(AjaxRequestTarget target) {
 				OServiceInstance serviceInstance = (OServiceInstance) params.remove("target");
+				if (serviceInstance == null) {
+					error("'target' is required");
+				}
 				Map<String, Object> cmdParams = new HashMap<>();
 				for (Map.Entry<String, Object> entry : params.entrySet()) {
 					if (entry.getValue() instanceof KeyValueVO) {
 						KeyValueVO vo = (KeyValueVO) entry.getValue();
 						cmdParams.put(entry.getKey(), vo.getKey());
-						//cmdParams.put(entry.getKey() + "$Title", vo.getValue().toString());
 					} else {
 						cmdParams.put(entry.getKey(), entry.getValue());
 					}
@@ -251,6 +260,28 @@ public class CommandExecPanel extends DPanel implements IAsyncResponse {
 					taskBehavior);
 			}
 		});
+
+		form.add(new DAjaxButton("saveAsPrepCommand", new Model<>("Save as PrepCommand"), AresIcon.SAVE) {
+			private static final long serialVersionUID = -8824681522137817872L;
+
+			@Override
+			protected void onSubmit(AjaxRequestTarget target) {
+				OServiceInstance serviceInstance = (OServiceInstance) params.remove("target");
+				Map<String, Object> cmdParams = new HashMap<>();
+				for (Map.Entry<String, Object> entry : params.entrySet()) {
+					if (entry.getValue() instanceof KeyValueVO) {
+						KeyValueVO vo = (KeyValueVO) entry.getValue();
+						cmdParams.put(entry.getKey(), vo.getKey());
+					} else {
+						cmdParams.put(entry.getKey(), entry.getValue());
+					}
+				}
+
+				window.setContent(new PrepCommandFormDPage(window.getContentId(), commandId, serviceInstance.getId(), cmdParams));
+				window.show(target);
+			}
+		}.setVisible(hasPermission(AresPrivilegeKey.PrepCommandAdd)));
+
 		add(form);
 
 		tabs = new WebMarkupContainer("tabs");

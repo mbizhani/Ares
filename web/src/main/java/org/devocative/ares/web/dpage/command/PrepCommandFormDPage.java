@@ -1,12 +1,14 @@
-//overwrite
 package org.devocative.ares.web.dpage.command;
 
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.markup.html.form.Form;
+import org.apache.wicket.markup.html.form.TextArea;
 import org.apache.wicket.model.CompoundPropertyModel;
 import org.apache.wicket.model.ResourceModel;
 import org.devocative.ares.entity.command.PrepCommand;
+import org.devocative.ares.iservice.command.ICommandService;
 import org.devocative.ares.iservice.command.IPrepCommandService;
+import org.devocative.ares.iservice.oservice.IOServiceInstanceService;
 import org.devocative.ares.web.AresIcon;
 import org.devocative.demeter.web.DPage;
 import org.devocative.demeter.web.UrlUtil;
@@ -19,6 +21,7 @@ import org.devocative.wickomp.html.window.WModalWindow;
 import javax.inject.Inject;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 public class PrepCommandFormDPage extends DPage {
 	private static final long serialVersionUID = -1162490096L;
@@ -26,13 +29,30 @@ public class PrepCommandFormDPage extends DPage {
 	@Inject
 	private IPrepCommandService prepCommandService;
 
+	@Inject
+	private ICommandService commandService;
+
+	@Inject
+	private IOServiceInstanceService serviceInstanceService;
+
 	private PrepCommand entity;
 
 	// ------------------------------
 
-	public PrepCommandFormDPage(String id) {
-		this(id, new PrepCommand());
+	public PrepCommandFormDPage(String id, Long commandId, Long serviceInstanceId, Map<String, ?> cmdParams) {
+		super(id, Collections.<String>emptyList());
+
+		entity = new PrepCommand();
+		entity.setCommand(commandService.load(commandId));
+		entity.setServiceInstance(serviceInstanceService.load(serviceInstanceId));
+		entity.setParams(prepCommandService.convertParamsToString(cmdParams));
 	}
+
+	// ---------------
+
+	/*public PrepCommandFormDPage(String id) {
+		this(id, new PrepCommand());
+	}*/
 
 	// Main Constructor - For Ajax Call
 	public PrepCommandFormDPage(String id, PrepCommand entity) {
@@ -62,13 +82,10 @@ public class PrepCommandFormDPage extends DPage {
 		floatTable.add(new WTextInput("name")
 			.setRequired(true)
 			.setLabel(new ResourceModel("PrepCommand.name")));
-		floatTable.add(new WTextInput("params")
-			.setRequired(true)
-			.setLabel(new ResourceModel("PrepCommand.params")));
-		floatTable.add(new WSelectionInput("command", prepCommandService.getCommandList(), false)
+		floatTable.add(new WSelectionInput("command", Collections.singletonList(entity.getCommand()), false)
 			.setRequired(true)
 			.setLabel(new ResourceModel("PrepCommand.command")));
-		floatTable.add(new WSelectionInput("serviceInstance", prepCommandService.getServiceInstanceList(), false)
+		floatTable.add(new WSelectionInput("serviceInstance", Collections.singletonList(entity.getServiceInstance()), false)
 			.setRequired(true)
 			.setLabel(new ResourceModel("PrepCommand.serviceInstance")));
 		floatTable.add(new WSelectionInput("allowedUsers", prepCommandService.getAllowedUsersList(), true)
@@ -78,6 +95,9 @@ public class PrepCommandFormDPage extends DPage {
 
 		Form<PrepCommand> form = new Form<>("form", new CompoundPropertyModel<>(entity));
 		form.add(floatTable);
+		form.add(new TextArea<>("params")
+			.setRequired(true)
+			.setLabel(new ResourceModel("PrepCommand.params")));
 
 		form.add(new DAjaxButton("save", new ResourceModel("label.save"), AresIcon.SAVE) {
 			private static final long serialVersionUID = 651391736L;

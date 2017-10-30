@@ -5,6 +5,7 @@ import org.devocative.ares.entity.command.CommandLog;
 import org.devocative.ares.entity.command.ECommandResult;
 import org.devocative.ares.entity.oservice.OServiceInstance;
 import org.devocative.ares.iservice.command.ICommandLogService;
+import org.devocative.ares.iservice.command.IPrepCommandService;
 import org.devocative.ares.vo.filter.command.CommandLogFVO;
 import org.devocative.demeter.entity.User;
 import org.devocative.demeter.iservice.persistor.IPersistorService;
@@ -15,7 +16,6 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Map;
-import java.util.TreeMap;
 
 @Service("arsCommandLogService")
 public class CommandLogService implements ICommandLogService {
@@ -23,6 +23,9 @@ public class CommandLogService implements ICommandLogService {
 
 	@Autowired
 	private IPersistorService persistorService;
+
+	@Autowired
+	private IPrepCommandService prepCommandService;
 
 	// ------------------------------
 
@@ -81,20 +84,10 @@ public class CommandLogService implements ICommandLogService {
 
 	@Override
 	public Long insertLog(Command command, OServiceInstance serviceInstance, Map<String, ?> params) {
-		StringBuilder builder = new StringBuilder();
-		Map<String, ?> sortedParams = new TreeMap<>(params);
-		for (Map.Entry<String, ?> entry : sortedParams.entrySet()) {
-			builder
-				.append(entry.getKey())
-				.append("=")
-				.append(entry.getValue())
-				.append(";;");
-		}
-
 		CommandLog log = new CommandLog();
 		log.setCommand(command);
 		log.setServiceInstance(serviceInstance);
-		log.setParams(builder.toString());
+		log.setParams(prepCommandService.convertParamsToString(params));
 		log.setResult(ECommandResult.RUNNING);
 
 		saveOrUpdate(log);

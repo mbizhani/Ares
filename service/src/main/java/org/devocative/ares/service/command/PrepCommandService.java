@@ -1,4 +1,3 @@
-//overwrite
 package org.devocative.ares.service.command;
 
 import org.devocative.ares.entity.command.Command;
@@ -15,6 +14,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
 
 @Service("arsPrepCommandService")
 public class PrepCommandService implements IPrepCommandService {
@@ -91,4 +92,18 @@ public class PrepCommandService implements IPrepCommandService {
 	}
 
 	// ==============================
+
+	@Override
+	public String convertParamsToString(Map<String, ?> params) {
+		StringBuilder builder = new StringBuilder();
+		Map<String, ?> sortedParams = new TreeMap<>(params);
+		for (Map.Entry<String, ?> entry : sortedParams.entrySet()) {
+			builder
+				.append(entry.getKey())
+				.append("=")
+				.append(entry.getValue())
+				.append(";;");
+		}
+		return builder.toString();
+	}
 }

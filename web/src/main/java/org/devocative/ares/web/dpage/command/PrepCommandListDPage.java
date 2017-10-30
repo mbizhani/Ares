@@ -1,4 +1,3 @@
-//overwrite
 package org.devocative.ares.web.dpage.command;
 
 import org.apache.wicket.ajax.AjaxRequestTarget;
@@ -26,7 +25,6 @@ import org.devocative.wickomp.grid.WDataGrid;
 import org.devocative.wickomp.grid.WSortField;
 import org.devocative.wickomp.grid.column.OColumnList;
 import org.devocative.wickomp.grid.column.OPropertyColumn;
-import org.devocative.wickomp.html.WAjaxLink;
 import org.devocative.wickomp.html.WFloatTable;
 import org.devocative.wickomp.html.window.WModalWindow;
 import org.devocative.wickomp.opt.OSize;
@@ -86,7 +84,7 @@ public class PrepCommandListDPage extends DPage implements IGridDataSource<PrepC
 		final WModalWindow window = new WModalWindow("window");
 		add(window);
 
-		add(new WAjaxLink("add", AresIcon.ADD) {
+		/*add(new WAjaxLink("add", AresIcon.ADD) {
 			private static final long serialVersionUID = -977379527L;
 
 			@Override
@@ -94,7 +92,7 @@ public class PrepCommandListDPage extends DPage implements IGridDataSource<PrepC
 				window.setContent(new PrepCommandFormDPage(window.getContentId()));
 				window.show(target);
 			}
-		}.setVisible(hasPermission(AresPrivilegeKey.PrepCommandAdd)));
+		}.setVisible(hasPermission(AresPrivilegeKey.PrepCommandAdd)));*/
 
 		WFloatTable floatTable = new WFloatTable("floatTable");
 		floatTable.add(new WTextInput("name")

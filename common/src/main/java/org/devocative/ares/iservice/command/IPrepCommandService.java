@@ -1,4 +1,3 @@
-//overwrite
 package org.devocative.ares.iservice.command;
 
 import org.devocative.ares.entity.command.Command;
@@ -9,6 +8,7 @@ import org.devocative.demeter.entity.Role;
 import org.devocative.demeter.entity.User;
 
 import java.util.List;
+import java.util.Map;
 
 public interface IPrepCommandService {
 	void saveOrUpdate(PrepCommand entity);
@@ -34,4 +34,6 @@ public interface IPrepCommandService {
 	List<User> getModifierUserList();
 
 	// ==============================
+
+	String convertParamsToString(Map<String, ?> params);
 }
