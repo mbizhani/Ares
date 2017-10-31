@@ -7,7 +7,11 @@ import org.devocative.ares.iservice.command.IPrepCommandService;
 import org.devocative.ares.vo.filter.command.PrepCommandFVO;
 import org.devocative.demeter.entity.Role;
 import org.devocative.demeter.entity.User;
+import org.devocative.demeter.iservice.ISecurityService;
+import org.devocative.demeter.iservice.persistor.EJoinMode;
 import org.devocative.demeter.iservice.persistor.IPersistorService;
+import org.devocative.demeter.iservice.persistor.IQueryBuilder;
+import org.devocative.demeter.vo.UserVO;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,6 +28,9 @@ public class PrepCommandService implements IPrepCommandService {
 
 	@Autowired
 	private IPersistorService persistorService;
+
+	@Autowired
+	private ISecurityService securityService;
 
 	// ------------------------------
 
@@ -120,5 +127,29 @@ public class PrepCommandService implements IPrepCommandService {
 			result.put(key, value);
 		}
 		return result;
+	}
+
+	@Override
+	public List<PrepCommand> findAllowed() {
+		UserVO currentUser = securityService.getCurrentUser();
+
+		IQueryBuilder queryBuilder = persistorService.createQueryBuilder()
+			.addSelect("select ent")
+			.addFrom(PrepCommand.class, "ent")
+			//TODO .addWhere("and ent.enabled = true")
+			;
+
+		if (!currentUser.isAdmin()) {
+			queryBuilder
+				.addJoin("usr", "ent.allowedUsers", EJoinMode.Left)
+				.addJoin("role", "ent.allowedRoles", EJoinMode.Left)
+
+				.addWhere("and (usr.id = :userId or role in (:roles))")
+				.addParam("userId", currentUser.getUserId())
+				.addParam("roles", currentUser.getRoles())
+			;
+		}
+
+		return queryBuilder.list();
 	}
 }

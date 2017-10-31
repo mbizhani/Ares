@@ -38,4 +38,6 @@ public interface IPrepCommandService {
 	String convertParamsToString(Map<String, ?> params);
 
 	Map<String, String> convertParamsFromString(String params);
+
+	List<PrepCommand> findAllowed();
 }

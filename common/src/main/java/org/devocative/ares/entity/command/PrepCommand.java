@@ -29,7 +29,7 @@ public class PrepCommand implements ICreationDate, ICreatorUser, IModificationDa
 	@Column(name = "c_name", nullable = false)
 	private String name;
 
-	@Column(name = "c_params", nullable = false, length = 1000)
+	@Column(name = "c_params", length = 1000)
 	private String params;
 
 	@NotAudited

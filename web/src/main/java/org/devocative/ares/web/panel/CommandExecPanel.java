@@ -95,7 +95,9 @@ public class CommandExecPanel extends DPanel implements IAsyncResponse {
 		this.prepCommandId = prepCommand.getId();
 		this.commandId = prepCommand.getCommandId();
 		this.targetServiceInstanceId = prepCommand.getServiceInstanceId();
-		this.paramsAsStr.putAll(prepCommandService.convertParamsFromString(prepCommand.getParams()));
+		if (prepCommand.getParams() != null) {
+			this.paramsAsStr.putAll(prepCommandService.convertParamsFromString(prepCommand.getParams()));
+		}
 	}
 
 	// ------------------------------

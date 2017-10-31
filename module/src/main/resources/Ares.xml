@@ -107,6 +107,13 @@
 			   roles="User"
 				/>
 
+		<dPage type="org.devocative.ares.web.dpage.CommandConsoleDPage"
+			   title="KEY:dPage.ars.CommandConsole"
+			   uri="/cconsole"
+			   inMenu="true"
+			   roles="User"
+				/>
+
 		<dPage type="org.devocative.ares.web.dpage.OBasicDataListDPage"
 			   title="KEY:dPage.ars.OBasicDataList"
 			   uri="/basic"

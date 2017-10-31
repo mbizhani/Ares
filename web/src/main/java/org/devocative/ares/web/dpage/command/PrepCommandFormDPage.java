@@ -96,7 +96,6 @@ public class PrepCommandFormDPage extends DPage {
 		Form<PrepCommand> form = new Form<>("form", new CompoundPropertyModel<>(entity));
 		form.add(floatTable);
 		form.add(new TextArea<>("params")
-			.setRequired(true)
 			.setLabel(new ResourceModel("PrepCommand.params")));
 
 		form.add(new DAjaxButton("save", new ResourceModel("label.save"), AresIcon.SAVE) {
