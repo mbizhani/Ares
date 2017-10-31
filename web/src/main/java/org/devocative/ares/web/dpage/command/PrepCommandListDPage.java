@@ -16,9 +16,11 @@ import org.devocative.demeter.web.DPage;
 import org.devocative.demeter.web.component.DAjaxButton;
 import org.devocative.demeter.web.component.grid.OEditAjaxColumn;
 import org.devocative.wickomp.WModel;
+import org.devocative.wickomp.form.WBooleanInput;
 import org.devocative.wickomp.form.WSelectionInput;
 import org.devocative.wickomp.form.WTextInput;
 import org.devocative.wickomp.form.range.WDateRangeInput;
+import org.devocative.wickomp.formatter.OBooleanFormatter;
 import org.devocative.wickomp.formatter.ODateFormatter;
 import org.devocative.wickomp.formatter.ONumberFormatter;
 import org.devocative.wickomp.grid.IGridDataSource;
@@ -102,6 +104,8 @@ public class PrepCommandListDPage extends DPage implements IGridDataSource<PrepC
 			.setLabel(new ResourceModel("PrepCommand.name")));
 		floatTable.add(new WTextInput("params")
 			.setLabel(new ResourceModel("PrepCommand.params")));
+		floatTable.add(new WBooleanInput("enabled")
+			.setLabel(new ResourceModel("PrepCommand.enabled")));
 		floatTable.add(new WSelectionInput("command", prepCommandService.getCommandList(), true)
 			.setLabel(new ResourceModel("PrepCommand.command")));
 		floatTable.add(new WSelectionInput("serviceInstance", prepCommandService.getServiceInstanceList(), true)
@@ -137,6 +141,8 @@ public class PrepCommandListDPage extends DPage implements IGridDataSource<PrepC
 		OColumnList<PrepCommand> columnList = new OColumnList<>();
 		columnList.add(new OPropertyColumn<>(new ResourceModel("PrepCommand.name"), "name"));
 		columnList.add(new OPropertyColumn<>(new ResourceModel("PrepCommand.params"), "params"));
+		columnList.add(new OPropertyColumn<PrepCommand>(new ResourceModel("PrepCommand.enabled"), "enabled")
+			.setFormatter(OBooleanFormatter.bool()));
 		columnList.add(new OPropertyColumn<>(new ResourceModel("PrepCommand.command"), "command"));
 		columnList.add(new OPropertyColumn<>(new ResourceModel("PrepCommand.serviceInstance"), "serviceInstance"));
 		columnList.add(new OPropertyColumn<>(new ResourceModel("PrepCommand.allowedUsers"), "allowedUsers"));

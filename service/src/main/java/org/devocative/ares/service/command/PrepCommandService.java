@@ -136,8 +136,7 @@ public class PrepCommandService implements IPrepCommandService {
 		IQueryBuilder queryBuilder = persistorService.createQueryBuilder()
 			.addSelect("select ent")
 			.addFrom(PrepCommand.class, "ent")
-			//TODO .addWhere("and ent.enabled = true")
-			;
+			.addWhere("and ent.enabled = true");
 
 		if (!currentUser.isAdmin()) {
 			queryBuilder

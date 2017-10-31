@@ -146,6 +146,9 @@
 				<field name="params">
 					<finfo/>
 				</field>
+				<field name="enabled">
+					<finfo/>
+				</field>
 				<field name="command">
 					<finfo/>
 				</field>

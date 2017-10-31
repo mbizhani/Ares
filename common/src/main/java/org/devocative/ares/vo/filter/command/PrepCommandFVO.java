@@ -18,6 +18,7 @@ public class PrepCommandFVO implements Serializable {
 
 	private String name;
 	private String params;
+	private Boolean enabled;
 	private List<Command> command;
 	private List<OServiceInstance> serviceInstance;
 	private List<User> allowedUsers;
@@ -43,6 +44,14 @@ public class PrepCommandFVO implements Serializable {
 
 	public void setParams(String params) {
 		this.params = params;
+	}
+
+	public Boolean getEnabled() {
+		return enabled;
+	}
+
+	public void setEnabled(Boolean enabled) {
+		this.enabled = enabled;
 	}
 
 	public List<Command> getCommand() {

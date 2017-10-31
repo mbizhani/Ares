@@ -13,6 +13,7 @@ import org.devocative.ares.web.AresIcon;
 import org.devocative.demeter.web.DPage;
 import org.devocative.demeter.web.UrlUtil;
 import org.devocative.demeter.web.component.DAjaxButton;
+import org.devocative.wickomp.form.WBooleanInput;
 import org.devocative.wickomp.form.WSelectionInput;
 import org.devocative.wickomp.form.WTextInput;
 import org.devocative.wickomp.html.WFloatTable;
@@ -82,6 +83,9 @@ public class PrepCommandFormDPage extends DPage {
 		floatTable.add(new WTextInput("name")
 			.setRequired(true)
 			.setLabel(new ResourceModel("PrepCommand.name")));
+		floatTable.add(new WBooleanInput("enabled")
+			.setRequired(true)
+			.setLabel(new ResourceModel("PrepCommand.enabled")));
 		floatTable.add(new WSelectionInput("command", Collections.singletonList(entity.getCommand()), false)
 			.setRequired(true)
 			.setLabel(new ResourceModel("PrepCommand.command")));

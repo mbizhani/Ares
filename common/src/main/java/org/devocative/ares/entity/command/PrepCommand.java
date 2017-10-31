@@ -32,20 +32,23 @@ public class PrepCommand implements ICreationDate, ICreatorUser, IModificationDa
 	@Column(name = "c_params", length = 1000)
 	private String params;
 
+	@Column(name = "b_enabled", nullable = false)
+	private Boolean enabled = true;
+
 	@NotAudited
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "f_command", nullable = false, foreignKey = @ForeignKey(name = "prpCommand2command"))
 	private Command command;
 
 	@NotAudited
-	@Column(name = "f_command", insertable = false, updatable = false)
+	@Column(name = "f_command", nullable = false, insertable = false, updatable = false)
 	private Long commandId;
 
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "f_service_instance", nullable = false, foreignKey = @ForeignKey(name = "prpCommand2serviceInstance"))
 	private OServiceInstance serviceInstance;
 
-	@Column(name = "f_service_instance", insertable = false, updatable = false)
+	@Column(name = "f_service_instance", nullable = false, insertable = false, updatable = false)
 	private Long serviceInstanceId;
 
 	@ManyToMany(fetch = FetchType.LAZY)
@@ -121,6 +124,14 @@ public class PrepCommand implements ICreationDate, ICreatorUser, IModificationDa
 
 	public void setParams(String params) {
 		this.params = params;
+	}
+
+	public Boolean getEnabled() {
+		return enabled;
+	}
+
+	public void setEnabled(Boolean enabled) {
+		this.enabled = enabled;
 	}
 
 	public Command getCommand() {
