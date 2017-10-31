@@ -102,6 +102,8 @@ public class PrepCommandListDPage extends DPage implements IGridDataSource<PrepC
 		WFloatTable floatTable = new WFloatTable("floatTable");
 		floatTable.add(new WTextInput("name")
 			.setLabel(new ResourceModel("PrepCommand.name")));
+		floatTable.add(new WTextInput("code")
+			.setLabel(new ResourceModel("PrepCommand.code")));
 		floatTable.add(new WTextInput("params")
 			.setLabel(new ResourceModel("PrepCommand.params")));
 		floatTable.add(new WBooleanInput("enabled")
@@ -140,6 +142,7 @@ public class PrepCommandListDPage extends DPage implements IGridDataSource<PrepC
 
 		OColumnList<PrepCommand> columnList = new OColumnList<>();
 		columnList.add(new OPropertyColumn<>(new ResourceModel("PrepCommand.name"), "name"));
+		columnList.add(new OPropertyColumn<>(new ResourceModel("PrepCommand.code"), "code"));
 		columnList.add(new OPropertyColumn<>(new ResourceModel("PrepCommand.params"), "params"));
 		columnList.add(new OPropertyColumn<PrepCommand>(new ResourceModel("PrepCommand.enabled"), "enabled")
 			.setFormatter(OBooleanFormatter.bool()));

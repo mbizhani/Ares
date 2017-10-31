@@ -15,6 +15,8 @@ public interface IPrepCommandService {
 
 	PrepCommand load(Long id);
 
+	PrepCommand loadByCode(String code);
+
 	List<PrepCommand> list();
 
 	List<PrepCommand> search(PrepCommandFVO filter, long pageIndex, long pageSize);

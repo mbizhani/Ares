@@ -45,6 +45,16 @@ public class PrepCommandService implements IPrepCommandService {
 	}
 
 	@Override
+	public PrepCommand loadByCode(String code) {
+		return persistorService
+			.createQueryBuilder()
+			.addFrom(PrepCommand.class, "ent")
+			.addWhere("and ent.code = :code")
+			.addParam("code", code)
+			.object();
+	}
+
+	@Override
 	public List<PrepCommand> list() {
 		return persistorService.list(PrepCommand.class);
 	}

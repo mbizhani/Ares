@@ -22,12 +22,17 @@ public class CommandConsoleDPage extends DPage {
 	@Inject
 	private IPrepCommandService prepCommandService;
 
+	private String prepCommandAsParam;
 	private WTabbedPanel tabPanel;
 
 	// ------------------------------
 
 	public CommandConsoleDPage(String id, List<String> params) {
 		super(id, params);
+
+		if (params.size() > 0) {
+			prepCommandAsParam = params.get(0);
+		}
 	}
 
 	// ------------------------------
@@ -36,10 +41,20 @@ public class CommandConsoleDPage extends DPage {
 	protected void onInitialize() {
 		super.onInitialize();
 
+		List<PrepCommand> allowed = prepCommandService.findAllowed();
+
 		tabPanel = new WTabbedPanel("tabPanel");
+		if (prepCommandAsParam != null) {
+			for (PrepCommand cmd : allowed) {
+				if (cmd.getCode().equals(prepCommandAsParam)) {
+					tabPanel.addTab(new CommandExecPanel(tabPanel.getTabContentId(), cmd), new Model<>(cmd.getName()));
+					break;
+				}
+			}
+		}
 		add(tabPanel);
 
-		add(new ListView<PrepCommand>("commands", prepCommandService.findAllowed()) {
+		add(new ListView<PrepCommand>("commands", allowed) {
 			private static final long serialVersionUID = -771588095063507634L;
 
 			@Override

@@ -17,6 +17,7 @@ public class PrepCommandFVO implements Serializable {
 	private static final long serialVersionUID = 1119320524L;
 
 	private String name;
+	private String code;
 	private String params;
 	private Boolean enabled;
 	private List<Command> command;
@@ -36,6 +37,14 @@ public class PrepCommandFVO implements Serializable {
 
 	public void setName(String name) {
 		this.name = name;
+	}
+
+	public String getCode() {
+		return code;
+	}
+
+	public void setCode(String code) {
+		this.code = code;
 	}
 
 	public String getParams() {

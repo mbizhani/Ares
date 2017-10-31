@@ -11,7 +11,9 @@ import java.util.List;
 
 @Audited
 @Entity
-@Table(name = "t_ars_prp_command")
+@Table(name = "t_ars_prp_command", uniqueConstraints = {
+	@UniqueConstraint(name = "uk_ars_prepCommand_code", columnNames = {"c_code"})
+})
 public class PrepCommand implements ICreationDate, ICreatorUser, IModificationDate, IModifierUser {
 	private static final long serialVersionUID = 2051551440648987293L;
 
@@ -28,6 +30,9 @@ public class PrepCommand implements ICreationDate, ICreatorUser, IModificationDa
 
 	@Column(name = "c_name", nullable = false)
 	private String name;
+
+	@Column(name = "c_code", nullable = false)
+	private String code;
 
 	@Column(name = "c_params", length = 1000)
 	private String params;
@@ -116,6 +121,14 @@ public class PrepCommand implements ICreationDate, ICreatorUser, IModificationDa
 
 	public void setName(String name) {
 		this.name = name;
+	}
+
+	public String getCode() {
+		return code;
+	}
+
+	public void setCode(String code) {
+		this.code = code;
 	}
 
 	public String getParams() {

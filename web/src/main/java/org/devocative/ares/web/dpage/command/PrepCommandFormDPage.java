@@ -83,6 +83,9 @@ public class PrepCommandFormDPage extends DPage {
 		floatTable.add(new WTextInput("name")
 			.setRequired(true)
 			.setLabel(new ResourceModel("PrepCommand.name")));
+		floatTable.add(new WTextInput("code")
+			.setRequired(true)
+			.setLabel(new ResourceModel("PrepCommand.code")));
 		floatTable.add(new WBooleanInput("enabled")
 			.setRequired(true)
 			.setLabel(new ResourceModel("PrepCommand.enabled")));

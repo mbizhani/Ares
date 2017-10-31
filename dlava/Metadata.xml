@@ -143,6 +143,9 @@
 				<field name="name">
 					<finfo/>
 				</field>
+				<field name="code">
+					<finfo/>
+				</field>
 				<field name="params">
 					<finfo/>
 				</field>
