@@ -2,6 +2,22 @@
 -- CREATE AUDIT TABLES
 -----------------------
 
+CREATE TABLE a_mt_ars_prpCommand_role (
+	r_num         NUMBER(10, 0) NOT NULL,
+	f_prp_command NUMBER(19, 0) NOT NULL,
+	f_role        NUMBER(19, 0) NOT NULL,
+	r_type        NUMBER(3, 0),
+	PRIMARY KEY (r_num, f_prp_command, f_role)
+);
+
+CREATE TABLE a_mt_ars_prpCommand_user (
+	r_num         NUMBER(10, 0) NOT NULL,
+	f_prp_command NUMBER(19, 0) NOT NULL,
+	f_user        NUMBER(19, 0) NOT NULL,
+	r_type        NUMBER(3, 0),
+	PRIMARY KEY (r_num, f_prp_command, f_user)
+);
+
 CREATE TABLE a_mt_ars_siUser_role (
 	r_num    NUMBER(10, 0) NOT NULL,
 	f_siUser NUMBER(19, 0) NOT NULL,
@@ -26,6 +42,20 @@ CREATE TABLE a_t_ars_basic_data (
 	d_modification  DATE,
 	f_modifier_user NUMBER(19, 0),
 	c_name          VARCHAR2(255 CHAR),
+	PRIMARY KEY (id, r_num)
+);
+
+CREATE TABLE a_t_ars_prp_command (
+	id                 NUMBER(19, 0) NOT NULL,
+	r_num              NUMBER(10, 0) NOT NULL,
+	r_type             NUMBER(3, 0),
+	c_code             VARCHAR2(255 CHAR),
+	b_enabled          NUMBER(1, 0),
+	d_modification     DATE,
+	f_modifier_user    NUMBER(19, 0),
+	c_name             VARCHAR2(255 CHAR),
+	c_params           VARCHAR2(1000 CHAR),
+	f_service_instance NUMBER(19, 0),
 	PRIMARY KEY (id, r_num)
 );
 
@@ -121,6 +151,16 @@ CREATE TABLE a_t_ars_service_prop (
 -- CREATE MIDDLE TABLES
 ------------------------
 
+CREATE TABLE mt_ars_prpCommand_role (
+	f_prp_command NUMBER(19, 0) NOT NULL,
+	f_role        NUMBER(19, 0) NOT NULL
+);
+
+CREATE TABLE mt_ars_prpCommand_user (
+	f_prp_command NUMBER(19, 0) NOT NULL,
+	f_user        NUMBER(19, 0) NOT NULL
+);
+
 CREATE TABLE mt_ars_siUser_role (
 	f_siUser NUMBER(19, 0) NOT NULL,
 	f_role   NUMBER(19, 0) NOT NULL
@@ -134,7 +174,7 @@ CREATE TABLE mt_ars_siUser_user (
 CREATE TABLE t_ars_basic_data (
 	id              NUMBER(19, 0)      NOT NULL,
 	d_creation      DATE               NOT NULL,
-	f_creator_user  NUMBER(19, 0),
+	f_creator_user NUMBER(19, 0) NOT NULL,
 	e_discriminator NUMBER(10, 0)      NOT NULL,
 	d_modification  DATE,
 	f_modifier_user NUMBER(19, 0),
@@ -147,7 +187,7 @@ CREATE TABLE t_ars_command (
 	id              NUMBER(19, 0)      NOT NULL,
 	f_config        NUMBER(19, 0),
 	d_creation      DATE               NOT NULL,
-	f_creator_user  NUMBER(19, 0),
+	f_creator_user NUMBER(19, 0) NOT NULL,
 	b_list_view     NUMBER(1, 0)       NOT NULL,
 	d_modification  DATE,
 	f_modifier_user NUMBER(19, 0),
@@ -160,10 +200,11 @@ CREATE TABLE t_ars_command (
 CREATE TABLE t_ars_command_log (
 	id                 NUMBER(19, 0) NOT NULL,
 	d_creation         DATE          NOT NULL,
-	f_creator_user     NUMBER(19, 0),
+	f_creator_user NUMBER(19, 0) NOT NULL,
 	n_duration         NUMBER(19, 0),
 	c_error            VARCHAR2(2000 CHAR),
 	c_params           VARCHAR2(1000 CHAR),
+	f_prep_command NUMBER(19, 0),
 	e_result           NUMBER(10, 0) NOT NULL,
 	f_command          NUMBER(19, 0) NOT NULL,
 	f_service_instance NUMBER(19, 0) NOT NULL,
@@ -173,7 +214,7 @@ CREATE TABLE t_ars_command_log (
 CREATE TABLE t_ars_config_lob (
 	id              NUMBER(19, 0) NOT NULL,
 	d_creation      DATE          NOT NULL,
-	f_creator_user  NUMBER(19, 0),
+	f_creator_user NUMBER(19, 0) NOT NULL,
 	d_modification  DATE,
 	f_modifier_user NUMBER(19, 0),
 	c_value         CLOB          NOT NULL,
@@ -181,23 +222,39 @@ CREATE TABLE t_ars_config_lob (
 	PRIMARY KEY (id)
 );
 
+CREATE TABLE t_ars_prp_command (
+	id                 NUMBER(19, 0)      NOT NULL,
+	c_code             VARCHAR2(255 CHAR) NOT NULL,
+	f_command          NUMBER(19, 0)      NOT NULL,
+	d_creation         DATE               NOT NULL,
+	f_creator_user     NUMBER(19, 0)      NOT NULL,
+	b_enabled          NUMBER(1, 0)       NOT NULL,
+	d_modification     DATE,
+	f_modifier_user    NUMBER(19, 0),
+	c_name             VARCHAR2(255 CHAR) NOT NULL,
+	c_params           VARCHAR2(1000 CHAR),
+	f_service_instance NUMBER(19, 0),
+	n_version          NUMBER(10, 0)      NOT NULL,
+	PRIMARY KEY (id)
+);
+
 CREATE TABLE t_ars_server (
 	id              NUMBER(19, 0)      NOT NULL,
-	c_address    VARCHAR2(255 CHAR),
-	n_counter    NUMBER(10, 0),
+	c_address      VARCHAR2(255 CHAR),
+	n_counter      NUMBER(10, 0),
 	d_creation      DATE               NOT NULL,
-	f_creator_user  NUMBER(19, 0),
-	f_hypervisor NUMBER(19, 0),
+	f_creator_user NUMBER(19, 0) NOT NULL,
+	f_hypervisor   NUMBER(19, 0),
 	d_modification  DATE,
 	f_modifier_user NUMBER(19, 0),
 	c_name          VARCHAR2(255 CHAR) NOT NULL,
 	e_os            NUMBER(10, 0),
 	n_version       NUMBER(10, 0)      NOT NULL,
 	c_vm_id         VARCHAR2(255 CHAR),
-	f_comp       NUMBER(19, 0),
-	f_env        NUMBER(19, 0),
-	f_func       NUMBER(19, 0),
-	f_loc        NUMBER(19, 0),
+	f_comp         NUMBER(19, 0),
+	f_env          NUMBER(19, 0),
+	f_func         NUMBER(19, 0),
+	f_loc          NUMBER(19, 0),
 	f_owner         NUMBER(19, 0),
 	PRIMARY KEY (id)
 );
@@ -207,7 +264,7 @@ CREATE TABLE t_ars_service (
 	n_admin_port    NUMBER(10, 0),
 	c_conn_pattern  VARCHAR2(1000 CHAR),
 	d_creation      DATE               NOT NULL,
-	f_creator_user  NUMBER(19, 0),
+	f_creator_user NUMBER(19, 0) NOT NULL,
 	d_modification  DATE,
 	f_modifier_user NUMBER(19, 0),
 	c_name          VARCHAR2(255 CHAR) NOT NULL,
@@ -219,11 +276,11 @@ CREATE TABLE t_ars_service (
 CREATE TABLE t_ars_service_inst (
 	id              NUMBER(19, 0) NOT NULL,
 	d_creation      DATE          NOT NULL,
-	f_creator_user  NUMBER(19, 0),
+	f_creator_user NUMBER(19, 0) NOT NULL,
 	d_modification  DATE,
 	f_modifier_user NUMBER(19, 0),
 	n_port          NUMBER(10, 0),
-	f_server NUMBER(19, 0),
+	f_server       NUMBER(19, 0),
 	n_version       NUMBER(10, 0) NOT NULL,
 	f_service       NUMBER(19, 0) NOT NULL,
 	PRIMARY KEY (id)
@@ -232,7 +289,7 @@ CREATE TABLE t_ars_service_inst (
 CREATE TABLE t_ars_service_inst_prop_val (
 	id              NUMBER(19, 0)      NOT NULL,
 	d_creation      DATE               NOT NULL,
-	f_creator_user  NUMBER(19, 0),
+	f_creator_user NUMBER(19, 0) NOT NULL,
 	d_modification  DATE,
 	f_modifier_user NUMBER(19, 0),
 	c_value         VARCHAR2(255 CHAR) NOT NULL,
@@ -245,7 +302,7 @@ CREATE TABLE t_ars_service_inst_prop_val (
 CREATE TABLE t_ars_service_inst_user (
 	id              NUMBER(19, 0)      NOT NULL,
 	d_creation      DATE               NOT NULL,
-	f_creator_user  NUMBER(19, 0),
+	f_creator_user NUMBER(19, 0) NOT NULL,
 	b_enabled       NUMBER(1, 0)       NOT NULL,
 	b_executor      NUMBER(1, 0)       NOT NULL,
 	d_modification  DATE,
@@ -253,7 +310,7 @@ CREATE TABLE t_ars_service_inst_user (
 	c_password      VARCHAR2(255 CHAR) NOT NULL,
 	e_remote_mode   NUMBER(10, 0)      NOT NULL,
 	e_mod           NUMBER(10, 0)      NOT NULL,
-	f_service NUMBER(19, 0),
+	f_service      NUMBER(19, 0),
 	f_service_inst  NUMBER(19, 0),
 	c_username      VARCHAR2(255 CHAR) NOT NULL,
 	n_version       NUMBER(10, 0)      NOT NULL,
@@ -264,7 +321,7 @@ CREATE TABLE t_ars_service_inst_user (
 CREATE TABLE t_ars_service_prop (
 	id              NUMBER(19, 0)      NOT NULL,
 	d_creation      DATE               NOT NULL,
-	f_creator_user  NUMBER(19, 0),
+	f_creator_user NUMBER(19, 0) NOT NULL,
 	d_modification  DATE,
 	f_modifier_user NUMBER(19, 0),
 	c_name          VARCHAR2(255 CHAR) NOT NULL,
@@ -279,7 +336,7 @@ CREATE TABLE t_ars_terminal (
 	id              NUMBER(19, 0) NOT NULL,
 	b_active        NUMBER(1, 0)  NOT NULL,
 	d_creation      DATE          NOT NULL,
-	f_creator_user  NUMBER(19, 0),
+	f_creator_user NUMBER(19, 0) NOT NULL,
 	d_disconnection DATE,
 	f_target        NUMBER(19, 0) NOT NULL,
 	PRIMARY KEY (id)
@@ -293,6 +350,9 @@ ADD CONSTRAINT uk_ars_basNameDis UNIQUE (c_name, e_discriminator);
 
 ALTER TABLE t_ars_command
 ADD CONSTRAINT uk_ars_command UNIQUE (c_name, f_service);
+
+ALTER TABLE t_ars_prp_command
+ADD CONSTRAINT uk_ars_prepCommand_code UNIQUE (c_code);
 
 ALTER TABLE t_ars_server
 ADD CONSTRAINT uk_ars_serverName UNIQUE (c_name);
@@ -316,6 +376,15 @@ ADD CONSTRAINT uk_ars_serviceProp UNIQUE (c_name, f_service);
 -- CREATE REFERENTIAL CONSTRAINTS
 ----------------------------------
 
+ALTER TABLE a_mt_ars_prpCommand_role
+ADD CONSTRAINT FK_b5hdkseipp6d66x02dtjjrlfh
+FOREIGN KEY (r_num)
+REFERENCES REVINFO;
+
+ALTER TABLE a_mt_ars_prpCommand_user
+ADD CONSTRAINT FK_92qini1y0vu4wq39q9e22hbpn
+FOREIGN KEY (r_num)
+REFERENCES REVINFO;
 ALTER TABLE a_mt_ars_siUser_role
 ADD CONSTRAINT FK_5ivgm2bpb7p78jmp3pikd69ns
 FOREIGN KEY (r_num)
@@ -328,6 +397,11 @@ REFERENCES REVINFO;
 
 ALTER TABLE a_t_ars_basic_data
 ADD CONSTRAINT FK_rxpfspiu9xx6t9srlyrxxky5k
+FOREIGN KEY (r_num)
+REFERENCES REVINFO;
+
+ALTER TABLE a_t_ars_prp_command
+ADD CONSTRAINT FK_bmhrr1tfevwvamce18t32mxft
 FOREIGN KEY (r_num)
 REFERENCES REVINFO;
 
@@ -362,6 +436,26 @@ FOREIGN KEY (r_num)
 REFERENCES REVINFO;
 
 ------------------------------
+
+ALTER TABLE mt_ars_prpCommand_role
+ADD CONSTRAINT prpCommandRole2role
+FOREIGN KEY (f_role)
+REFERENCES t_dmt_role;
+
+ALTER TABLE mt_ars_prpCommand_role
+ADD CONSTRAINT prpCommandRole2prpCommand
+FOREIGN KEY (f_prp_command)
+REFERENCES t_ars_prp_command;
+
+ALTER TABLE mt_ars_prpCommand_user
+ADD CONSTRAINT prpCommandUser2user
+FOREIGN KEY (f_user)
+REFERENCES t_dmt_user;
+
+ALTER TABLE mt_ars_prpCommand_user
+ADD CONSTRAINT prpCommandUser2prpCommand
+FOREIGN KEY (f_prp_command)
+REFERENCES t_ars_prp_command;
 
 ALTER TABLE mt_ars_siUser_role
 ADD CONSTRAINT siUserRole2role
@@ -424,6 +518,11 @@ FOREIGN KEY (f_creator_user)
 REFERENCES t_dmt_user;
 
 ALTER TABLE t_ars_command_log
+ADD CONSTRAINT commandLog2prepCommand
+FOREIGN KEY (f_prep_command)
+REFERENCES t_ars_prp_command;
+
+ALTER TABLE t_ars_command_log
 ADD CONSTRAINT commandLog2serviceInstance
 FOREIGN KEY (f_service_instance)
 REFERENCES t_ars_service_inst;
@@ -437,6 +536,26 @@ ALTER TABLE t_ars_config_lob
 ADD CONSTRAINT arsCfgLob_mdfrUsr2user
 FOREIGN KEY (f_modifier_user)
 REFERENCES t_dmt_user;
+
+ALTER TABLE t_ars_prp_command
+ADD CONSTRAINT prpCommand2command
+FOREIGN KEY (f_command)
+REFERENCES t_ars_command;
+
+ALTER TABLE t_ars_prp_command
+ADD CONSTRAINT prpCommand_crtrUsr2user
+FOREIGN KEY (f_creator_user)
+REFERENCES t_dmt_user;
+
+ALTER TABLE t_ars_prp_command
+ADD CONSTRAINT prpCommand_mdfrUsr2user
+FOREIGN KEY (f_modifier_user)
+REFERENCES t_dmt_user;
+
+ALTER TABLE t_ars_prp_command
+ADD CONSTRAINT prpCommand2serviceInstance
+FOREIGN KEY (f_service_instance)
+REFERENCES t_ars_service_inst;
 
 ALTER TABLE t_ars_server
 ADD CONSTRAINT server_comp2basic
@@ -588,6 +707,8 @@ CREATE SEQUENCE ars_command START WITH 1 INCREMENT BY 1;
 CREATE SEQUENCE ars_command_log START WITH 1 INCREMENT BY 1;
 
 CREATE SEQUENCE ars_config_lob START WITH 1 INCREMENT BY 1;
+
+CREATE SEQUENCE ars_prp_command START WITH 1 INCREMENT BY 1;
 
 CREATE SEQUENCE ars_server START WITH 1 INCREMENT BY 1;
 
