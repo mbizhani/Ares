@@ -7,6 +7,7 @@ import org.devocative.ares.iservice.command.IPrepCommandService;
 import org.devocative.ares.vo.filter.command.PrepCommandFVO;
 import org.devocative.demeter.entity.Role;
 import org.devocative.demeter.entity.User;
+import org.devocative.demeter.iservice.IRoleService;
 import org.devocative.demeter.iservice.ISecurityService;
 import org.devocative.demeter.iservice.persistor.EJoinMode;
 import org.devocative.demeter.iservice.persistor.IPersistorService;
@@ -17,10 +18,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.TreeMap;
+import java.util.*;
 
 @Service("arsPrepCommandService")
 public class PrepCommandService implements IPrepCommandService {
@@ -31,6 +29,9 @@ public class PrepCommandService implements IPrepCommandService {
 
 	@Autowired
 	private ISecurityService securityService;
+
+	@Autowired
+	private IRoleService roleService;
 
 	// ------------------------------
 
@@ -146,7 +147,8 @@ public class PrepCommandService implements IPrepCommandService {
 		IQueryBuilder queryBuilder = persistorService.createQueryBuilder()
 			.addSelect("select ent")
 			.addFrom(PrepCommand.class, "ent")
-			.addWhere("and ent.enabled = true");
+			.addWhere("and ent.enabled = true")
+			.setOrderBy("ent.name");
 
 		if (!currentUser.isAdmin()) {
 			queryBuilder
@@ -160,5 +162,21 @@ public class PrepCommandService implements IPrepCommandService {
 		}
 
 		return queryBuilder.list();
+	}
+
+	@Override
+	public void saveByCommand(Command command) {
+		Role role = roleService.loadByName(command.getService().getName());
+
+		PrepCommand prepCommand = new PrepCommand();
+		prepCommand.setName(command.getName());
+		prepCommand.setCode("c" + command.getId());
+		prepCommand.setCommand(command);
+
+		if (role != null) {
+			prepCommand.setAllowedRoles(Collections.singletonList(role));
+		}
+
+		saveOrUpdate(prepCommand);
 	}
 }

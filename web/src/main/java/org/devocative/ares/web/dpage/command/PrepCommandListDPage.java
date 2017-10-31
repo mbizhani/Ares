@@ -171,6 +171,11 @@ public class PrepCommandListDPage extends DPage implements IGridDataSource<PrepC
 					window.setContent(new PrepCommandFormDPage(window.getContentId(), rowData.getObject()));
 					window.show(target);
 				}
+
+				@Override
+				public boolean onCellRender(PrepCommand bean, String id) {
+					return bean.getServiceInstanceId() != null || getCurrentUser().isAdmin();
+				}
 			});
 		}
 

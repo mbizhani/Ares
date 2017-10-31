@@ -18,6 +18,7 @@ import org.devocative.ares.entity.oservice.OService;
 import org.devocative.ares.iservice.IOServerService;
 import org.devocative.ares.iservice.command.ICommandLogService;
 import org.devocative.ares.iservice.command.ICommandService;
+import org.devocative.ares.iservice.command.IPrepCommandService;
 import org.devocative.ares.iservice.oservice.IOSIUserService;
 import org.devocative.ares.iservice.oservice.IOServiceInstanceService;
 import org.devocative.ares.service.command.dsl.MainCommandDSL;
@@ -87,6 +88,9 @@ public class CommandService implements ICommandService, IMissedHitHandler<Long, 
 
 	@Autowired
 	private IOServerService serverService;
+
+	@Autowired
+	private IPrepCommandService prepCommandService;
 
 	// ------------------------------
 
@@ -189,6 +193,8 @@ public class CommandService implements ICommandService, IMissedHitHandler<Long, 
 			command.setConfig(lob);
 			command.setListView(false); //TODO
 			persistorService.saveOrUpdate(command);
+
+			prepCommandService.saveByCommand(command);
 
 			logger.info("Command not found and created: {} for {}", xCommand.getName(), oService.getName());
 		} else {

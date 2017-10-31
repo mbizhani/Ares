@@ -42,4 +42,6 @@ public interface IPrepCommandService {
 	Map<String, String> convertParamsFromString(String params);
 
 	List<PrepCommand> findAllowed();
+
+	void saveByCommand(Command command);
 }

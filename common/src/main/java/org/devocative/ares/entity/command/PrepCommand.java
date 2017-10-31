@@ -50,10 +50,10 @@ public class PrepCommand implements ICreationDate, ICreatorUser, IModificationDa
 	private Long commandId;
 
 	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "f_service_instance", nullable = false, foreignKey = @ForeignKey(name = "prpCommand2serviceInstance"))
+	@JoinColumn(name = "f_service_instance", foreignKey = @ForeignKey(name = "prpCommand2serviceInstance"))
 	private OServiceInstance serviceInstance;
 
-	@Column(name = "f_service_instance", nullable = false, insertable = false, updatable = false)
+	@Column(name = "f_service_instance", insertable = false, updatable = false)
 	private Long serviceInstanceId;
 
 	@ManyToMany(fetch = FetchType.LAZY)

@@ -13,7 +13,9 @@ import org.devocative.ares.vo.xml.XCommand;
 import org.devocative.ares.vo.xml.XOperation;
 import org.devocative.ares.vo.xml.XProperty;
 import org.devocative.ares.vo.xml.XService;
+import org.devocative.demeter.entity.ERowMod;
 import org.devocative.demeter.entity.User;
+import org.devocative.demeter.iservice.IRoleService;
 import org.devocative.demeter.iservice.persistor.IPersistorService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -37,6 +39,9 @@ public class OServiceService implements IOServiceService {
 
 	@Autowired
 	private ICommandService commandService;
+
+	@Autowired
+	private IRoleService roleService;
 
 	// ------------------------------
 
@@ -124,6 +129,9 @@ public class OServiceService implements IOServiceService {
 				oService.setConnectionPattern(xService.getConnectionPattern());
 				oService.setAdminPort(xService.getAdminPort());
 				oService.setPorts(xService.getPorts());
+
+				roleService.createOrUpdateRole(xService.getName(), ERowMod.ADMIN, false);
+
 				logger.info("OService not found and created: {}", xService.getName());
 			} else {
 				oService.setConnectionPattern(xService.getConnectionPattern());

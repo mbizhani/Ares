@@ -93,7 +93,7 @@ public class PrepCommandFormDPage extends DPage {
 			.setRequired(true)
 			.setLabel(new ResourceModel("PrepCommand.command")));
 		floatTable.add(new WSelectionInput("serviceInstance", Collections.singletonList(entity.getServiceInstance()), false)
-			.setRequired(true)
+			.setRequired(!getCurrentUser().isAdmin())
 			.setLabel(new ResourceModel("PrepCommand.serviceInstance")));
 		floatTable.add(new WSelectionInput("allowedUsers", prepCommandService.getAllowedUsersList(), true)
 			.setLabel(new ResourceModel("PrepCommand.allowedUsers")));
