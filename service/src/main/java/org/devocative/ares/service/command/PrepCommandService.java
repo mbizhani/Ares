@@ -2,8 +2,10 @@ package org.devocative.ares.service.command;
 
 import org.devocative.ares.entity.command.Command;
 import org.devocative.ares.entity.command.PrepCommand;
+import org.devocative.ares.entity.oservice.OService;
 import org.devocative.ares.entity.oservice.OServiceInstance;
 import org.devocative.ares.iservice.command.IPrepCommandService;
+import org.devocative.ares.iservice.oservice.IOServiceService;
 import org.devocative.ares.vo.filter.command.PrepCommandFVO;
 import org.devocative.demeter.entity.Role;
 import org.devocative.demeter.entity.User;
@@ -32,6 +34,9 @@ public class PrepCommandService implements IPrepCommandService {
 
 	@Autowired
 	private IRoleService roleService;
+
+	@Autowired
+	private IOServiceService serviceService;
 
 	// ------------------------------
 
@@ -141,13 +146,19 @@ public class PrepCommandService implements IPrepCommandService {
 	}
 
 	@Override
-	public List<PrepCommand> findAllowed() {
+	public Map<OService, List<PrepCommand>> findAllowed() {
+		Map<OService, List<PrepCommand>> result = new HashMap<>();
+
 		UserVO currentUser = securityService.getCurrentUser();
+		List<OService> services = serviceService.list();
 
 		IQueryBuilder queryBuilder = persistorService.createQueryBuilder()
 			.addSelect("select ent")
 			.addFrom(PrepCommand.class, "ent")
+			.addJoin("cmd", "ent.command")
 			.addWhere("and ent.enabled = true")
+			.addWhere("and cmd.enabled = true")
+			.addWhere("and cmd.service = :service")
 			.setOrderBy("ent.name");
 
 		if (!currentUser.isAdmin()) {
@@ -161,7 +172,14 @@ public class PrepCommandService implements IPrepCommandService {
 			;
 		}
 
-		return queryBuilder.list();
+		for (OService service : services) {
+			List<PrepCommand> list = queryBuilder
+				.addParam("service", service)
+				.list();
+			result.put(service, list);
+		}
+
+		return result;
 	}
 
 	@Override

@@ -2,6 +2,7 @@ package org.devocative.ares.iservice.command;
 
 import org.devocative.ares.entity.command.Command;
 import org.devocative.ares.entity.command.PrepCommand;
+import org.devocative.ares.entity.oservice.OService;
 import org.devocative.ares.entity.oservice.OServiceInstance;
 import org.devocative.ares.vo.filter.command.PrepCommandFVO;
 import org.devocative.demeter.entity.Role;
@@ -41,7 +42,7 @@ public interface IPrepCommandService {
 
 	Map<String, String> convertParamsFromString(String params);
 
-	List<PrepCommand> findAllowed();
+	Map<OService, List<PrepCommand>> findAllowed();
 
 	void saveByCommand(Command command);
 }

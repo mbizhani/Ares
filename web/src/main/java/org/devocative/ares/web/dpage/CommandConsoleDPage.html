@@ -2,10 +2,13 @@
 
 <wicket:panel xmlns:wicket="http://wicket.apache.org">
 	<div class="easyui-layout" data-options="fit:true">
-		<div data-options="region:'west',title:'Commands',split:true" style="width:250px;">
-			<wicket:container wicket:id="commands">
-				<button style="margin-bottom: 5px;" wicket:id="command"></button>
-			</wicket:container>
+		<div data-options="region:'west',title:'Commands',split:true" style="width:220px;">
+			<div wicket:id="services" class="easyui-panel" style="border: 0; padding: 10px; width:100%"
+				 data-options="collapsible:true">
+				<wicket:container wicket:id="commands">
+					<button style="margin-bottom: 5px;" wicket:id="command"></button>
+				</wicket:container>
+			</div>
 		</div>
 		<div data-options="region:'center',title:'Outputs'">
 			<div wicket:id="tabPanel"></div>
