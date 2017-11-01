@@ -314,7 +314,7 @@ public class CommandExecPanel extends DPanel implements IAsyncResponse {
 				window.setContent(new PrepCommandFormDPage(window.getContentId(), commandId, serviceInstance.getId(), cmdParams));
 				window.show(target);
 			}
-		}.setVisible(hasPermission(AresPrivilegeKey.PrepCommandAdd) && prepCommandId == null));
+		}.setVisible(hasPermission(AresPrivilegeKey.PrepCommandAdd)));
 
 		add(form);
 
