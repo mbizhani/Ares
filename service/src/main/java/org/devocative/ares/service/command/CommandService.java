@@ -301,6 +301,11 @@ public class CommandService implements ICommandService, IMissedHitHandler<Long, 
 	private Object executeCommand(Command command, CommandQVO commandQVO, CommandCenterResource resource) throws Exception {
 		logger.debug("CommandService.executeCommand: currentUser=[{}] cmd=[{}]", securityService.getCurrentUser(), command.getName());
 
+		if (!command.getEnabled()) {
+			logger.warn("Disabled Command: [{}]", command.getName());
+			throw new RuntimeException("Disabled Command: " + command.getName());
+		}
+
 		Map<String, Object> params = commandQVO.getParams();
 		XCommand xCommand = command.getXCommand();
 		for (XParam xParam : xCommand.getParams()) {

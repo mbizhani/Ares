@@ -82,12 +82,12 @@ public class PrepCommand implements ICreationDate, ICreatorUser, IModificationDa
 
 	@NotAudited
 	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "f_creator_user", insertable = false, updatable = false,
+	@JoinColumn(name = "f_creator_user", nullable = false, insertable = false, updatable = false,
 		foreignKey = @ForeignKey(name = "prpCommand_crtrUsr2user"))
 	private User creatorUser;
 
 	@NotAudited
-	@Column(name = "f_creator_user")
+	@Column(name = "f_creator_user", nullable = false)
 	private Long creatorUserId;
 
 	@Column(name = "d_modification", columnDefinition = "date")
@@ -203,10 +203,6 @@ public class PrepCommand implements ICreationDate, ICreatorUser, IModificationDa
 		return creatorUser;
 	}
 
-	public void setCreatorUser(User creatorUser) {
-		this.creatorUser = creatorUser;
-	}
-
 	@Override
 	public Long getCreatorUserId() {
 		return creatorUserId;
@@ -229,10 +225,6 @@ public class PrepCommand implements ICreationDate, ICreatorUser, IModificationDa
 
 	public User getModifierUser() {
 		return modifierUser;
-	}
-
-	public void setModifierUser(User modifierUser) {
-		this.modifierUser = modifierUser;
 	}
 
 	@Override

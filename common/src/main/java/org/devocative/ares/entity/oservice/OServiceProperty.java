@@ -47,12 +47,12 @@ public class OServiceProperty implements ICreationDate, ICreatorUser, IModificat
 
 	@NotAudited
 	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "f_creator_user", insertable = false, updatable = false,
+	@JoinColumn(name = "f_creator_user", nullable = false, insertable = false, updatable = false,
 		foreignKey = @ForeignKey(name = "srvcprop_crtrusr2user"))
 	private User creatorUser;
 
 	@NotAudited
-	@Column(name = "f_creator_user")
+	@Column(name = "f_creator_user", nullable = false)
 	private Long creatorUserId;
 
 	@Column(name = "d_modification", columnDefinition = "date")
@@ -128,10 +128,6 @@ public class OServiceProperty implements ICreationDate, ICreatorUser, IModificat
 		return creatorUser;
 	}
 
-	public void setCreatorUser(User creatorUser) {
-		this.creatorUser = creatorUser;
-	}
-
 	@Override
 	public Long getCreatorUserId() {
 		return creatorUserId;
@@ -154,10 +150,6 @@ public class OServiceProperty implements ICreationDate, ICreatorUser, IModificat
 
 	public User getModifierUser() {
 		return modifierUser;
-	}
-
-	public void setModifierUser(User modifierUser) {
-		this.modifierUser = modifierUser;
 	}
 
 	@Override

@@ -4,6 +4,7 @@ import org.devocative.demeter.entity.IPrivilegeKey;
 
 public enum AresPrivilegeKey implements IPrivilegeKey {
 
+	CommandAdd, CommandEdit,
 	OServiceAdd, OServiceEdit,
 	OServicePropertyAdd, OServicePropertyEdit,
 	OServiceInstanceAdd, OServiceInstanceEdit,

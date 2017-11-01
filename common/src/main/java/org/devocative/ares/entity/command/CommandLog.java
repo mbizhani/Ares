@@ -60,12 +60,12 @@ public class CommandLog implements ICreationDate, ICreatorUser {
 
 	//@NotAudited
 	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "f_creator_user", insertable = false, updatable = false,
+	@JoinColumn(name = "f_creator_user", nullable = false, insertable = false, updatable = false,
 		foreignKey = @ForeignKey(name = "commandLog_crtrUsr2user"))
 	private User creatorUser;
 
 	//@NotAudited
-	@Column(name = "f_creator_user")
+	@Column(name = "f_creator_user", nullable = false)
 	private Long creatorUserId;
 
 	// ------------------------------
@@ -153,10 +153,6 @@ public class CommandLog implements ICreationDate, ICreatorUser {
 
 	public User getCreatorUser() {
 		return creatorUser;
-	}
-
-	public void setCreatorUser(User creatorUser) {
-		this.creatorUser = creatorUser;
 	}
 
 	@Override

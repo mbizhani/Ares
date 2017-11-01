@@ -40,11 +40,11 @@ public class TerminalConnection implements ICreationDate, ICreatorUser {
 	private Date creationDate;
 
 	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "f_creator_user", insertable = false, updatable = false,
+	@JoinColumn(name = "f_creator_user", nullable = false, insertable = false, updatable = false,
 		foreignKey = @ForeignKey(name = "trmConn2user"))
 	private User creatorUser;
 
-	@Column(name = "f_creator_user")
+	@Column(name = "f_creator_user", nullable = false)
 	private Long creatorUserId;
 
 	// ------------------------------
@@ -93,10 +93,6 @@ public class TerminalConnection implements ICreationDate, ICreatorUser {
 
 	public User getCreatorUser() {
 		return creatorUser;
-	}
-
-	public void setCreatorUser(User creatorUser) {
-		this.creatorUser = creatorUser;
 	}
 
 	@Override

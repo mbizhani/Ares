@@ -17,6 +17,9 @@
 				<field name="name">
 					<finfo/>
 				</field>
+				<field name="enabled">
+					<finfo/>
+				</field>
 				<field name="listView">
 					<finfo/>
 				</field>

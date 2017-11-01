@@ -188,6 +188,7 @@ CREATE TABLE t_ars_command (
 	f_config        NUMBER(19, 0),
 	d_creation      DATE               NOT NULL,
 	f_creator_user NUMBER(19, 0) NOT NULL,
+	b_enabled      NUMBER(1, 0)  NOT NULL,
 	b_list_view     NUMBER(1, 0)       NOT NULL,
 	d_modification  DATE,
 	f_modifier_user NUMBER(19, 0),
@@ -345,6 +346,7 @@ CREATE TABLE t_ars_terminal (
 -----------------------------
 -- CREATE UNIQUE CONSTRAINTS
 -----------------------------
+
 ALTER TABLE t_ars_basic_data
 ADD CONSTRAINT uk_ars_basNameDis UNIQUE (c_name, e_discriminator);
 
@@ -700,6 +702,7 @@ REFERENCES t_ars_service_inst_user;
 --------------------
 -- CREATE SEQUENCES
 --------------------
+
 CREATE SEQUENCE ars_basic START WITH 1 INCREMENT BY 1;
 
 CREATE SEQUENCE ars_command START WITH 1 INCREMENT BY 1;

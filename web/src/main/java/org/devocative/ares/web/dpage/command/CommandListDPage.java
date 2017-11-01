@@ -6,6 +6,7 @@ import org.apache.wicket.model.CompoundPropertyModel;
 import org.apache.wicket.model.IModel;
 import org.apache.wicket.model.Model;
 import org.apache.wicket.model.ResourceModel;
+import org.devocative.ares.AresPrivilegeKey;
 import org.devocative.ares.entity.command.Command;
 import org.devocative.ares.iservice.command.ICommandService;
 import org.devocative.ares.vo.filter.command.CommandFVO;
@@ -88,7 +89,6 @@ public class CommandListDPage extends DPage implements IGridDataSource<Command> 
 		super.onInitialize();
 
 		final WModalWindow window = new WModalWindow("window");
-		//window.getOptions().setHeight(OSize.percent(80)).setWidth(OSize.percent(80));
 		add(window);
 
 		add(new WAjaxLink("add", AresIcon.ADD) {
@@ -100,11 +100,13 @@ public class CommandListDPage extends DPage implements IGridDataSource<Command> 
 				window.setContent(new OServiceAndCommandBatchPanel(window.getContentId()));
 				window.show(target);
 			}
-		});
+		}.setVisible(hasPermission(AresPrivilegeKey.CommandAdd)));
 
 		WFloatTable floatTable = new WFloatTable("floatTable");
 		floatTable.add(new WTextInput("name")
 			.setLabel(new ResourceModel("Command.name")));
+		floatTable.add(new WBooleanInput("enabled")
+			.setLabel(new ResourceModel("Command.enabled")));
 		floatTable.add(new WBooleanInput("listView")
 			.setLabel(new ResourceModel("Command.listView")));
 		floatTable.add(new WSelectionInput("service", commandService.getServiceList(), true)
@@ -134,31 +136,35 @@ public class CommandListDPage extends DPage implements IGridDataSource<Command> 
 		add(form);
 
 		OColumnList<Command> columnList = new OColumnList<>();
-		columnList.add(new OPropertyColumn<Command>(new ResourceModel("Command.name"), "name"));
+		columnList.add(new OPropertyColumn<>(new ResourceModel("Command.name"), "name"));
+		columnList.add(new OPropertyColumn<Command>(new ResourceModel("Command.enabled"), "enabled")
+			.setFormatter(OBooleanFormatter.bool()));
 		columnList.add(new OPropertyColumn<Command>(new ResourceModel("Command.listView"), "listView")
 			.setFormatter(OBooleanFormatter.bool()));
-		columnList.add(new OPropertyColumn<Command>(new ResourceModel("Command.service"), "service"));
+		columnList.add(new OPropertyColumn<>(new ResourceModel("Command.service"), "service"));
 		columnList.add(new OPropertyColumn<Command>(new ResourceModel("entity.creationDate"), "creationDate")
 			.setFormatter(ODateFormatter.getDateTimeByUserPreference())
 			.setStyle("direction:ltr"));
-		columnList.add(new OPropertyColumn<Command>(new ResourceModel("entity.creatorUser"), "creatorUser"));
+		columnList.add(new OPropertyColumn<>(new ResourceModel("entity.creatorUser"), "creatorUser"));
 		columnList.add(new OPropertyColumn<Command>(new ResourceModel("entity.modificationDate"), "modificationDate")
 			.setFormatter(ODateFormatter.getDateTimeByUserPreference())
 			.setStyle("direction:ltr"));
-		columnList.add(new OPropertyColumn<Command>(new ResourceModel("entity.modifierUser"), "modifierUser"));
+		columnList.add(new OPropertyColumn<>(new ResourceModel("entity.modifierUser"), "modifierUser"));
 		columnList.add(new OPropertyColumn<Command>(new ResourceModel("entity.version"), "version")
 			.setFormatter(ONumberFormatter.integer())
 			.setStyle("direction:ltr"));
 
-		columnList.add(new OEditAjaxColumn<Command>() {
-			private static final long serialVersionUID = 1205302042L;
+		if (hasPermission(AresPrivilegeKey.CommandEdit)) {
+			columnList.add(new OEditAjaxColumn<Command>() {
+				private static final long serialVersionUID = -1600839638L;
 
-			@Override
-			public void onClick(AjaxRequestTarget target, IModel<Command> rowData) {
-				window.setContent(new CommandFormDPage(window.getContentId(), rowData.getObject()));
-				window.show(target);
-			}
-		});
+				@Override
+				public void onClick(AjaxRequestTarget target, IModel<Command> rowData) {
+					window.setContent(new CommandFormDPage(window.getContentId(), rowData.getObject()));
+					window.show(target);
+				}
+			});
+		}
 
 		columnList.add(new OAjaxLinkColumn<Command>(new Model<>(), AresIcon.EXECUTE) {
 			private static final long serialVersionUID = 1205302042L;

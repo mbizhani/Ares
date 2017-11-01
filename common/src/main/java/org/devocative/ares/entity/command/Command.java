@@ -28,6 +28,9 @@ public class Command implements ICreationDate, ICreatorUser, IModificationDate, 
 	@Column(name = "c_name", nullable = false)
 	private String name;
 
+	@Column(name = "b_enabled", nullable = false)
+	private Boolean enabled = true;
+
 	@Column(name = "b_list_view", nullable = false)
 	private Boolean listView;
 
@@ -53,12 +56,12 @@ public class Command implements ICreationDate, ICreatorUser, IModificationDate, 
 
 	//@NotAudited
 	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "f_creator_user", insertable = false, updatable = false,
+	@JoinColumn(name = "f_creator_user", nullable = false, insertable = false, updatable = false,
 		foreignKey = @ForeignKey(name = "command_crtrUsr2user"))
 	private User creatorUser;
 
 	//@NotAudited
-	@Column(name = "f_creator_user")
+	@Column(name = "f_creator_user", nullable = false)
 	private Long creatorUserId;
 
 	@Column(name = "d_modification", columnDefinition = "date")
@@ -97,6 +100,14 @@ public class Command implements ICreationDate, ICreatorUser, IModificationDate, 
 
 	public void setName(String name) {
 		this.name = name;
+	}
+
+	public Boolean getEnabled() {
+		return enabled;
+	}
+
+	public void setEnabled(Boolean enabled) {
+		this.enabled = enabled;
 	}
 
 	public Boolean getListView() {
@@ -147,10 +158,6 @@ public class Command implements ICreationDate, ICreatorUser, IModificationDate, 
 		return creatorUser;
 	}
 
-	public void setCreatorUser(User creatorUser) {
-		this.creatorUser = creatorUser;
-	}
-
 	@Override
 	public Long getCreatorUserId() {
 		return creatorUserId;
@@ -173,10 +180,6 @@ public class Command implements ICreationDate, ICreatorUser, IModificationDate, 
 
 	public User getModifierUser() {
 		return modifierUser;
-	}
-
-	public void setModifierUser(User modifierUser) {
-		this.modifierUser = modifierUser;
 	}
 
 	@Override

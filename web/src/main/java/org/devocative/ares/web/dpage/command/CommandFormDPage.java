@@ -65,6 +65,9 @@ public class CommandFormDPage extends DPage {
 		floatTable.add(new WTextInput("name")
 			.setLabel(new ResourceModel("Command.name"))
 			.setEnabled(false));
+		floatTable.add(new WBooleanInput("enabled")
+			.setRequired(true)
+			.setLabel(new ResourceModel("Command.enabled")));
 		floatTable.add(new WBooleanInput("listView")
 			.setLabel(new ResourceModel("Command.listView"))
 			.setEnabled(false));
