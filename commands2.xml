@@ -18,7 +18,7 @@
 						<param name="account_status"/>
 					</params>
 					<body><![CDATA[
-def map = inputs('username', 'account_status')
+def map = $inputs('username', 'account_status')
 db {
 	prompt 'show all users'
 	query """
@@ -59,7 +59,7 @@ db {
 	prompt "change password for '${username}'"
 	query "alter user ${username} identified by \"${newPassword}\" account unlock"
 }
-userPasswordUpdated(username, newPassword)
+$userPasswordUpdated(username, newPassword)
 ]]></body>
 				</command>
 
@@ -121,7 +121,7 @@ db {
 					<body>
 						<![CDATA[
 if(!checkUser([schema:sourceSchema])) {
-	error("Invalid user '${sourceSchema}' to create dump file")
+	$error("Invalid user '${sourceSchema}' to create dump file")
 }
 
 if(backUpDest) {
@@ -161,10 +161,10 @@ ssh {
 					<body>
 						<![CDATA[
 if(!checkUser([schema:schema])) {
-	error("Invalid user '${schema}' to create dump file")
+	$error("Invalid user '${schema}' to create dump file")
 }
 
-def file = "${schema}_bkUp_${now()}.dmp".toLowerCase()
+def file = "${schema}_bkUp_${$now()}.dmp".toLowerCase()
 ssh {
 	prompt "create backup from '${schema}' as '${file}'"
 	cmd "su - oracle -c 'expdp ${target.username}/${target.password} schemas=${schema} directory=${target.prop.pumpDbDir} dumpfile=${file} logfile=${schema}.log'"
@@ -180,11 +180,11 @@ ssh {
 					<body>
 						<![CDATA[
 if(!checkUser([schema:schema])) {
-	error("Invalid user '${schema}' to restore dump file")
+	$error("Invalid user '${schema}' to restore dump file")
 }
 
 if(!checkFile([file:"${target.prop.pumpOsDir}/${file}"])) {
-	error("Invalid dump file: '${target.prop.pumpOsDir}/${file}'")
+	$error("Invalid dump file: '${target.prop.pumpOsDir}/${file}'")
 }
 
 truncateSchema([schema:schema])
@@ -205,8 +205,8 @@ ssh {
 	cmd """ find ${target.prop.pumpOsDir} -maxdepth 1 -name "*.dmp" -printf "%f\n" """
 	result {
 		it.toTabular("\\n")
-			.prepend("Files\n")
-			.build()
+		  .prepend("Files\n")
+		  .build()
 	}
 }
 ]]></body>
@@ -240,18 +240,7 @@ ssh {
 
 					<body><![CDATA[
 $cmd.ssh("change password for '${username}'", "passwd ${username} --stdin", newPassword)
-$cmd.userPasswordUpdated(username, newPassword)
-]]></body>
-				</command>
-
-				<command name="ll">
-					<params>
-						<param name="dir" required="true"/>
-					</params>
-
-					<body><![CDATA[
-$cmd.ssh("echo", "echo dir=${dir}")
-$cmd.ssh("ls", "ls -l ${dir}")
+$userPasswordUpdated(username, newPassword)
 ]]></body>
 				</command>
 
@@ -290,31 +279,36 @@ $cmd.scpTo(file, '~')
 					</params>
 
 					<body><![CDATA[
-def filter = [:]
-if (binding.variables['Vmid']) {
-	filter['Vmid'] = Vmid
-}
-if (binding.variables['Name']) {
-	filter['Name'] = Name
-}
+def filter = $inputs('Vmid', 'Name')
 
-def tab = $cmd.ssh('List of VMs', 'vim-cmd vmsvc/getallvms')
-	.toTabular('\\s{3,}')
-	.build(filter)
+def tab = ssh {
+	prompt 'List of VMs'
+	cmd 'vim-cmd vmsvc/getallvms'
+	result {
+		it.toTabular('\\s{3,}')
+		  .build(filter)
+	}
+}
 
 def listOfServers = []
 
-tab.rows.each {
-	$util.log("listVM: Before change ${it}")
+tab.rows.each {Map vmMap ->
+	$log("listVM: Before change ${vmMap}")
 
-	it['DataStore'] = it.File.find('\\[(.+?)\\]', 1)
-	it.File = it.File.replaceAll('\\[.+?\\] ', '')
+	vmMap.DataStore = vmMap.File.find('\\[(.+?)\\]', 1)
+	vmMap.File = vmMap.File.replaceAll('\\[.+?\\] ', '')
 	if(ShowAdvanced) {
-		it['PowerStat'] = $cmd.exec('powerStat', [Vmid : it.Vmid])
-		it['IpAddress'] = $cmd.exec('getIP', [Vmid : it.Vmid])
+		vmMap.PowerStat = powerStat([Vmid : vmMap.Vmid])
+		vmMap.IpAddress = getIP([Vmid : vmMap.Vmid])
 
-		def vmVMX = $cmd.ssh("Get VMX: ${it.Vmid}", """cat "/vmfs/volumes/${it.DataStore}/${it.File}" """).toMap()
-		it['INFO'] = vmVMX
+		def vmVMX = ssh {
+			prompt "Get VMX: ${vmMap.Vmid}"
+			cmd """cat "/vmfs/volumes/${vmMap.DataStore}/${vmMap.File}" """
+			result {
+				it.toMap()
+			}
+		}
+		vmMap.INFO = vmVMX
 
 		def vmdkMap = [:]
 		vmVMX.each { String k, String v ->
@@ -322,19 +316,19 @@ tab.rows.each {
 				if(v.startsWith('/')) {
 					vmdkMap[k] = v
 				} else {
-					vmdkMap[k] = "/vmfs/volumes/${it.DataStore}/${it.Name}/${v}"
+					vmdkMap[k] = "/vmfs/volumes/${vmMap.DataStore}/${vmMap.Name}/${v}"
 				}
 			}
 		}
-		it['VMDK'] = vmdkMap
+		vmMap.VMDK = vmdkMap
 	} else if(UpdateServer) {
-		it['IpAddress'] = $cmd.exec('getIP', [Vmid : it.Vmid])
+		vmMap.IpAddress = getIP([Vmid : vmMap.Vmid])
 	}
 
-	$util.log("listVM: After change ${it}")
+	$log("listVM: After change ${vmMap}")
 
 	if (UpdateServer) {
-		listOfServers.add([name: it.Name, address: it.IpAddress, vmId: it.Vmid])
+		listOfServers.add([name: vmMap.Name, address: vmMap.IpAddress, vmId: vmMap.Vmid])
 	}
 }
 
@@ -352,7 +346,13 @@ return tab
 					</params>
 
 					<body><![CDATA[
-$cmd.ssh("Check power status: '${Vmid}'", "vim-cmd vmsvc/power.getstate ${Vmid}").stdout.contains('Powered on')
+ssh {
+	prompt "Check power status: '${Vmid}'"
+	cmd "vim-cmd vmsvc/power.getstate ${Vmid}"
+	result {
+		it.stdout.contains('Powered on')
+	}
+}
 ]]></body>
 				</command>
 
@@ -362,10 +362,13 @@ $cmd.ssh("Check power status: '${Vmid}'", "vim-cmd vmsvc/power.getstate ${Vmid}"
 					</params>
 
 					<body><![CDATA[
-if(!$cmd.exec('powerStat')) {
-	$cmd.ssh("Power On: '${Vmid}'", "vim-cmd vmsvc/power.on ${Vmid}")
+if(!powerStat([Vmid:Vmid])) {
+	ssh {
+		prompt "Power On: '${Vmid}'"
+		cmd "vim-cmd vmsvc/power.on ${Vmid}"
+	}
 } else {
-	$cmd.error("Already on")
+	$error("Already on")
 }
 ]]></body>
 				</command>
@@ -376,10 +379,13 @@ if(!$cmd.exec('powerStat')) {
 					</params>
 
 					<body><![CDATA[
-if($cmd.exec('powerStat')) {
-	$cmd.ssh("Power Off: '${Vmid}'", "vim-cmd vmsvc/power.off ${Vmid}")
+if(powerStat([Vmid:Vmid])) {
+	ssh {
+		prompt "Power Off: '${Vmid}'"
+		cmd "vim-cmd vmsvc/power.off ${Vmid}"
+	}
 } else {
-	$cmd.error("Already off")
+	$error("Already off")
 }
 ]]></body>
 				</command>
@@ -390,10 +396,13 @@ if($cmd.exec('powerStat')) {
 					</params>
 
 					<body><![CDATA[
-if($cmd.exec('powerStat')) {
-	$cmd.ssh("Reboot: '${Vmid}'", "vim-cmd vmsvc/power.reboot ${Vmid}")
+if(powerStat([Vmid:Vmid])) {
+	ssh {
+		prompt "Reboot: '${Vmid}'"
+		cmd "vim-cmd vmsvc/power.reboot ${Vmid}"
+	}
 } else {
-	$cmd.error('Already off')
+	$error('Already off')
 }
 ]]></body>
 				</command>
@@ -404,10 +413,13 @@ if($cmd.exec('powerStat')) {
 					</params>
 
 					<body><![CDATA[
-if($cmd.exec('powerStat')) {
-	$cmd.error('Can not unregister a powered-on VM')
+if(!powerStat([Vmid:Vmid])) {
+	ssh {
+		prompt "Unregister VM: '${Vmid}'"
+		cmd "vim-cmd vmsvc/unregister ${Vmid}"
+	}
 } else {
-	$cmd.ssh("Unregister VM: '${Vmid}'", "vim-cmd vmsvc/unregister ${Vmid}")
+	$error('Can not unregister a powered-on VM')
 }
 ]]></body>
 				</command>
@@ -418,10 +430,13 @@ if($cmd.exec('powerStat')) {
 					</params>
 
 					<body><![CDATA[
-if(!$cmd.exec('powerStat')) {
-	$cmd.ssh("Delete: '${Vmid}'", "vim-cmd vmsvc/destroy ${Vmid}")
+if(!powerStat([Vmid:Vmid])) {
+	ssh {
+		prompt "Delete: '${Vmid}'"
+		cmd "vim-cmd vmsvc/destroy ${Vmid}"
+	}
 } else {
-	$cmd.error('Power off before delete')
+	$error('Power off before delete')
 }
 ]]></body>
 				</command>
@@ -432,9 +447,15 @@ if(!$cmd.exec('powerStat')) {
 					</params>
 
 					<body><![CDATA[
-$cmd.ssh("Get IP: '${Vmid}'", """ vim-cmd vmsvc/get.guest ${Vmid} | grep -m 1 "ipAddress = \\"" """, true)
-.stdout
-.find('\"(.+?)\"', 1)
+ssh {
+	prompt "Get IP: '${Vmid}'"
+	cmd """ vim-cmd vmsvc/get.guest ${Vmid} | grep -m 1 "ipAddress = \\"" """
+	force true
+	result {
+		it.stdout
+		  .find('\"(.+?)\"', 1)
+	}
+}
 ]]></body>
 				</command>
 
@@ -448,7 +469,7 @@ $cmd.ssh("Get IP: '${Vmid}'", """ vim-cmd vmsvc/get.guest ${Vmid} | grep -m 1 "i
 def srcVm = $cmd.exec('listVM', [Vmid: srcVmid, ShowAdvanced: true]).object
 
 if (srcVm.PowerStat) {
-	$cmd.error("Turn off '${srcVm.Name}' before cloning!")
+	$error("Turn off '${srcVm.Name}' before cloning!")
 }
 
 if (destVM.hypervisorId == target.serverId) { //same hypervisor
@@ -457,13 +478,13 @@ if (destVM.hypervisorId == target.serverId) { //same hypervisor
 		def dstVm = $cmd.exec('listVM', [Vmid: destVM.vmId, ShowAdvanced: true]).object
 
 		if (dstVm.PowerStat) {
-			$cmd.error("Turn off '${dstVm.Name}' before cloning!")
+			$error("Turn off '${dstVm.Name}' before cloning!")
 		}
 
 		if (srcVm.VMDK.size() == dstVm.VMDK.size()) {
 			srcVm.VMDK.each {k, v ->
 				if (!dstVm.VMDK[k]) {
-					$cmd.error("Invalid dest vm ${destVM}: '${k}' not found for vmdk")
+					$error("Invalid dest vm ${destVM}: '${k}' not found for vmdk")
 				}
 			}
 
@@ -471,7 +492,7 @@ if (destVM.hypervisorId == target.serverId) { //same hypervisor
 				$cmd.ssh("Copy VMDK: ${k}", """vmkfstools -U "${dstVm.VMDK[k]}"; vmkfstools -i "${v}" "${dstVm.VMDK[k]}" """)
 			}
 		} else {
-			$cmd.error('Invalid number of vmdks')
+			$error('Invalid number of vmdks')
 		}
 	} else { // new dest VM
 		def newVmxDir = "/vmfs/volumes/${srcVm.DataStore}/${destVM.name}"
@@ -505,7 +526,7 @@ EOF2
 		$cmd.updateServer(destVM.id, newVmId)
 	}
 } else { //different hypervisor, scp required
-	$cmd.error('Different hypervisor not implemented')
+	$error('Different hypervisor not implemented')
 }
 ]]></body>
 				</command>
@@ -520,7 +541,7 @@ EOF2
 def vm = $cmd.exec('listVM', [Vmid: Vmid, ShowAdvanced: true]).object
 
 if (vm.PowerStat) {
-	$cmd.error("Turn off '${vm.Name}' before renaming!")
+	$error("Turn off '${vm.Name}' before renaming!")
 }
 
 if (vm.Name != destName) {
