@@ -130,17 +130,18 @@ public class OServiceInstanceListDPage extends DPage implements IGridDataSource<
 		columnList.add(new OPropertyColumn<OServiceInstance>(new ResourceModel("OServiceInstance.port"), "port")
 			.setFormatter(ONumberFormatter.integer())
 			.setStyle("direction:ltr"));
-		columnList.add(new OPropertyColumn<OServiceInstance>(new ResourceModel("OServiceInstance.server"), "server"));
-		columnList.add(new OPropertyColumn<OServiceInstance>(new ResourceModel("OServiceInstance.service"), "service"));
-		columnList.add(new OPropertyColumn<OServiceInstance>(new ResourceModel("OServiceInstance.propertyValues"), "propertyValues"));
+		columnList.add(new OPropertyColumn<>(new ResourceModel("OServiceInstance.server"), "server"));
+		columnList.add(new OPropertyColumn<>(new ResourceModel("OServiceInstance.service"), "service"));
+		columnList.add(new OPropertyColumn<OServiceInstance>(new ResourceModel("OServiceInstance.propertyValues"), "propertyValues")
+			.setWidth(OSize.fixed(400)));
 		columnList.add(new OPropertyColumn<OServiceInstance>(new ResourceModel("entity.creationDate"), "creationDate")
 			.setFormatter(ODateFormatter.getDateTimeByUserPreference())
 			.setStyle("direction:ltr"));
-		columnList.add(new OPropertyColumn<OServiceInstance>(new ResourceModel("entity.creatorUser"), "creatorUser"));
+		columnList.add(new OPropertyColumn<>(new ResourceModel("entity.creatorUser"), "creatorUser"));
 		columnList.add(new OPropertyColumn<OServiceInstance>(new ResourceModel("entity.modificationDate"), "modificationDate")
 			.setFormatter(ODateFormatter.getDateTimeByUserPreference())
 			.setStyle("direction:ltr"));
-		columnList.add(new OPropertyColumn<OServiceInstance>(new ResourceModel("entity.modifierUser"), "modifierUser"));
+		columnList.add(new OPropertyColumn<>(new ResourceModel("entity.modifierUser"), "modifierUser"));
 		columnList.add(new OPropertyColumn<OServiceInstance>(new ResourceModel("entity.version"), "version")
 			.setFormatter(ONumberFormatter.integer())
 			.setStyle("direction:ltr"));

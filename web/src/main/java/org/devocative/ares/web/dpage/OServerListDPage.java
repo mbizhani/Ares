@@ -149,27 +149,27 @@ public class OServerListDPage extends DPage implements IGridDataSource<OServer> 
 		add(form);
 
 		OColumnList<OServer> columnList = new OColumnList<>();
-		columnList.add(new OPropertyColumn<OServer>(new ResourceModel("OServer.name"), "name"));
-		columnList.add(new OPropertyColumn<OServer>(new ResourceModel("OServer.address"), "address"));
-		columnList.add(new OPropertyColumn<OServer>(new ResourceModel("OServer.function"), "function"));
+		columnList.add(new OPropertyColumn<>(new ResourceModel("OServer.name"), "name"));
+		columnList.add(new OPropertyColumn<>(new ResourceModel("OServer.address"), "address"));
+		columnList.add(new OPropertyColumn<>(new ResourceModel("OServer.function"), "function"));
 		columnList.add(new OPropertyColumn<OServer>(new ResourceModel("OServer.counter"), "counter")
 			.setFormatter(ONumberFormatter.integer())
 			.setStyle("direction:ltr"));
-		columnList.add(new OPropertyColumn<OServer>(new ResourceModel("OServer.environment"), "environment"));
-		columnList.add(new OPropertyColumn<OServer>(new ResourceModel("OServer.location"), "location"));
-		columnList.add(new OPropertyColumn<OServer>(new ResourceModel("OServer.company"), "company"));
-		columnList.add(new OPropertyColumn<OServer>(new ResourceModel("OServer.vmId"), "vmId"));
-		columnList.add(new OPropertyColumn<OServer>(new ResourceModel("OServer.serverOS"), "serverOS"));
-		columnList.add(new OPropertyColumn<OServer>(new ResourceModel("OServer.hypervisor"), "hypervisor"));
-		columnList.add(new OPropertyColumn<OServer>(new ResourceModel("OServer.owner"), "owner"));
+		columnList.add(new OPropertyColumn<>(new ResourceModel("OServer.environment"), "environment"));
+		columnList.add(new OPropertyColumn<>(new ResourceModel("OServer.location"), "location"));
+		columnList.add(new OPropertyColumn<>(new ResourceModel("OServer.company"), "company"));
+		columnList.add(new OPropertyColumn<>(new ResourceModel("OServer.vmId"), "vmId"));
+		columnList.add(new OPropertyColumn<>(new ResourceModel("OServer.serverOS"), "serverOS"));
+		columnList.add(new OPropertyColumn<>(new ResourceModel("OServer.hypervisor"), "hypervisor"));
+		columnList.add(new OPropertyColumn<>(new ResourceModel("OServer.owner"), "owner"));
 		columnList.add(new OPropertyColumn<OServer>(new ResourceModel("entity.creationDate"), "creationDate")
 			.setFormatter(ODateFormatter.getDateTimeByUserPreference())
 			.setStyle("direction:ltr"));
-		columnList.add(new OPropertyColumn<OServer>(new ResourceModel("entity.creatorUser"), "creatorUser"));
+		columnList.add(new OPropertyColumn<>(new ResourceModel("entity.creatorUser"), "creatorUser"));
 		columnList.add(new OPropertyColumn<OServer>(new ResourceModel("entity.modificationDate"), "modificationDate")
 			.setFormatter(ODateFormatter.getDateTimeByUserPreference())
 			.setStyle("direction:ltr"));
-		columnList.add(new OPropertyColumn<OServer>(new ResourceModel("entity.modifierUser"), "modifierUser"));
+		columnList.add(new OPropertyColumn<>(new ResourceModel("entity.modifierUser"), "modifierUser"));
 		columnList.add(new OPropertyColumn<OServer>(new ResourceModel("entity.version"), "version")
 			.setFormatter(ONumberFormatter.integer())
 			.setStyle("direction:ltr"));
@@ -191,7 +191,7 @@ public class OServerListDPage extends DPage implements IGridDataSource<OServer> 
 			.setColumns(columnList)
 			.setMultiSort(false)
 			.setRowStyler((IStyler<OServer> & Serializable) (bean, id) ->
-				OStyle.style(bean.getHypervisorId() == null ? "color:blue" : null))
+				OStyle.style(bean.getHypervisorId() == null ? "background-color:#f0e68c" : null))
 			.setHeight(gridHeight)
 			.setWidth(gridWidth)
 			.setFit(gridFit);

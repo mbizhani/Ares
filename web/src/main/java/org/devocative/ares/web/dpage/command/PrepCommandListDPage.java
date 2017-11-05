@@ -143,7 +143,8 @@ public class PrepCommandListDPage extends DPage implements IGridDataSource<PrepC
 		OColumnList<PrepCommand> columnList = new OColumnList<>();
 		columnList.add(new OPropertyColumn<>(new ResourceModel("PrepCommand.name"), "name"));
 		columnList.add(new OPropertyColumn<>(new ResourceModel("PrepCommand.code"), "code"));
-		columnList.add(new OPropertyColumn<>(new ResourceModel("PrepCommand.params"), "params"));
+		columnList.add(new OPropertyColumn<PrepCommand>(new ResourceModel("PrepCommand.params"), "params")
+			.setWidth(OSize.fixed(200)));
 		columnList.add(new OPropertyColumn<PrepCommand>(new ResourceModel("PrepCommand.enabled"), "enabled")
 			.setFormatter(OBooleanFormatter.bool()));
 		columnList.add(new OPropertyColumn<>(new ResourceModel("PrepCommand.command"), "command"));

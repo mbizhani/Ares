@@ -155,11 +155,13 @@ public class OSIUserListDPage extends DPage implements IGridDataSource<OSIUser> 
 		columnList.add(new OPropertyColumn<OSIUser>(new ResourceModel("OSIUser.enabled"), "enabled")
 			.setFormatter(OBooleanFormatter.bool()));
 		columnList.add(new OPropertyColumn<>(new ResourceModel("OSIUser.remoteMode"), "remoteMode"));
-		columnList.add(new OPropertyColumn<>(new ResourceModel("OSIUser.serviceInstance"), "serviceInstance"));
+		//columnList.add(new OPropertyColumn<>(new ResourceModel("OSIUser.serviceInstance"), "serviceInstance"));
 		columnList.add(new OPropertyColumn<>(new ResourceModel("OSIUser.server"), "server"));
 		columnList.add(new OPropertyColumn<>(new ResourceModel("OSIUser.service"), "service"));
-		columnList.add(new OPropertyColumn<>(new ResourceModel("OSIUser.allowedUsers"), "allowedUsers"));
-		columnList.add(new OPropertyColumn<>(new ResourceModel("OSIUser.allowedRoles"), "allowedRoles"));
+		columnList.add(new OPropertyColumn<OSIUser>(new ResourceModel("OSIUser.allowedUsers"), "allowedUsers")
+			.setWidth(OSize.fixed(200)));
+		columnList.add(new OPropertyColumn<OSIUser>(new ResourceModel("OSIUser.allowedRoles"), "allowedRoles")
+			.setWidth(OSize.fixed(200)));
 		if (getCurrentUser().isRoot()) {
 			columnList.add(new OPropertyColumn<>(new ResourceModel("entity.rowMod"), "rowMod"));
 		}

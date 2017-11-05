@@ -115,13 +115,14 @@ public class CommandLogListDPage extends DPage implements IGridDataSource<Comman
 		add(form);
 
 		OColumnList<CommandLog> columnList = new OColumnList<>();
-		columnList.add(new OPropertyColumn<>(new ResourceModel("CommandLog.params"), "params"));
+		columnList.add(new OPropertyColumn<CommandLog>(new ResourceModel("CommandLog.params"), "params")
+			.setWidth(OSize.fixed(200)));
 		columnList.add(new OPropertyColumn<>(new ResourceModel("CommandLog.result"), "result"));
 		columnList.add(new OPropertyColumn<CommandLog>(new ResourceModel("CommandLog.duration"), "duration")
 			.setFormatter(ONumberFormatter.integer())
 			.setStyle("direction:ltr"));
 		columnList.add(new OPropertyColumn<CommandLog>(new ResourceModel("CommandLog.error"), "error")
-			.setWidth(OSize.fixed(200)));
+			.setWidth(OSize.fixed(400)));
 		columnList.add(new OPropertyColumn<>(new ResourceModel("CommandLog.command"), "command"));
 		columnList.add(new OPropertyColumn<>(new ResourceModel("CommandLog.serviceInstance"), "serviceInstance"));
 		columnList.add(new OPropertyColumn<>(new ResourceModel("CommandLog.prepCommand"), "prepCommand"));
