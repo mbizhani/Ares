@@ -44,7 +44,11 @@ public interface IOServerService {
 
 	List<KeyValueVO<String, String>> findGuestsOf(Long hypervisorId);
 
+	KeyValueVO<String, String> findGuestOf(Long hypervisorId, String vmId);
+
 	List<KeyValueVO<Long, String>> findServersAsVM();
+
+	KeyValueVO<Long, String> findServerAsVM(Long id);
 
 	void updateVmid(Long id, String vmId);
 

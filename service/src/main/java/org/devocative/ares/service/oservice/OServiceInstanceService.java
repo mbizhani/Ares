@@ -114,6 +114,10 @@ public class OServiceInstanceService implements IOServiceInstanceService, IMisse
 	@Override
 	public OServiceInstance loadForCache(Long key) {
 		OServiceInstance oServiceInstance = persistorService.get(OServiceInstance.class, key);
+
+		//NOTE: this line is called to prevent damn LazyException!!!
+		oServiceInstance.getPropertyValues().size();
+
 		updateProperties(oServiceInstance.getService(), oServiceInstance);
 		return oServiceInstance;
 	}
@@ -124,7 +128,6 @@ public class OServiceInstanceService implements IOServiceInstanceService, IMisse
 			.addFrom(OServiceInstance.class, "ent")
 			.addWhere("and ent.service.id=:serviceId")
 			.addParam("serviceId", serviceId)
-				// TODO filter by access
 			.list();
 	}
 

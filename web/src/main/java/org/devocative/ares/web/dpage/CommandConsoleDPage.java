@@ -14,6 +14,7 @@ import org.devocative.demeter.web.DPage;
 import org.devocative.wickomp.html.WAjaxLink;
 import org.devocative.wickomp.html.tab.OTab;
 import org.devocative.wickomp.html.tab.WTabbedPanel;
+import org.devocative.wickomp.wrcs.CommonBehavior;
 
 import javax.inject.Inject;
 import java.util.ArrayList;
@@ -37,6 +38,8 @@ public class CommandConsoleDPage extends DPage {
 		if (params.size() > 0) {
 			prepCommandAsParam = params.get(0);
 		}
+
+		add(new CommonBehavior());
 	}
 
 	// ------------------------------

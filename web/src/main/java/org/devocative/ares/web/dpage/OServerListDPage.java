@@ -31,9 +31,12 @@ import org.devocative.wickomp.grid.column.OPropertyColumn;
 import org.devocative.wickomp.html.WAjaxLink;
 import org.devocative.wickomp.html.WFloatTable;
 import org.devocative.wickomp.html.window.WModalWindow;
+import org.devocative.wickomp.opt.IStyler;
 import org.devocative.wickomp.opt.OSize;
+import org.devocative.wickomp.opt.OStyle;
 
 import javax.inject.Inject;
+import java.io.Serializable;
 import java.util.Collections;
 import java.util.List;
 
@@ -187,6 +190,8 @@ public class OServerListDPage extends DPage implements IGridDataSource<OServer> 
 		oGrid
 			.setColumns(columnList)
 			.setMultiSort(false)
+			.setRowStyler((IStyler<OServer> & Serializable) (bean, id) ->
+				OStyle.style(bean.getHypervisorId() == null ? "color:blue" : null))
 			.setHeight(gridHeight)
 			.setWidth(gridWidth)
 			.setFit(gridFit);

@@ -146,6 +146,23 @@ public class OServerService implements IOServerService {
 	}
 
 	@Override
+	public KeyValueVO<String, String> findGuestOf(Long hypervisorId, String vmId) {
+		OServer oServer = persistorService.createQueryBuilder()
+			.addFrom(OServer.class, "ent")
+			.addWhere("and ent.hypervisorId = :hypervisorId")
+			.addWhere("and ent.vmId = :vmId")
+			.addParam("hypervisorId", hypervisorId)
+			.addParam("vmId", vmId)
+			.object();
+
+		if (oServer != null) {
+			return new KeyValueVO<>(oServer.getVmId(), oServer.getName());
+		}
+
+		return null;
+	}
+
+	@Override
 	public List<KeyValueVO<Long, String>> findServersAsVM() {
 		List<OServer> servers = persistorService.createQueryBuilder()
 			.addFrom(OServer.class, "ent")
@@ -157,6 +174,18 @@ public class OServerService implements IOServerService {
 			result.add(new KeyValueVO<>(oServer.getId(), oServer.getName()));
 		}
 		return result;
+	}
+
+	@Override
+	public KeyValueVO<Long, String> findServerAsVM(Long id) {
+		OServer oServer = persistorService.createQueryBuilder()
+			.addFrom(OServer.class, "ent")
+			.addWhere("and ent.hypervisor is not null")
+			.addWhere("and ent.id = :id")
+			.addParam("id", id)
+			.object();
+
+		return new KeyValueVO<>(oServer.getId(), oServer.getName());
 	}
 
 	@Override

@@ -52,6 +52,7 @@ public class CommandExecutionDTask extends DTask implements ICommandResultCallBa
 			}
 		} catch (Exception e) {
 			onResult(new CommandOutput(CommandOutput.Type.ERROR, e.getMessage()));
+			logger.error("CommandExecutionDTask:", e);
 		}
 	}
 

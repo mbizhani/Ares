@@ -35,10 +35,7 @@ import org.devocative.demeter.web.component.DAjaxButton;
 import org.devocative.demeter.web.panel.FileStoreUploadPanel;
 import org.devocative.wickomp.WebUtil;
 import org.devocative.wickomp.async.IAsyncResponse;
-import org.devocative.wickomp.form.WBooleanInput;
-import org.devocative.wickomp.form.WSelectionInput;
-import org.devocative.wickomp.form.WSelectionInputAjaxUpdatingBehavior;
-import org.devocative.wickomp.form.WTextInput;
+import org.devocative.wickomp.form.*;
 import org.devocative.wickomp.html.WFloatTable;
 import org.devocative.wickomp.html.window.WModalWindow;
 import org.slf4j.Logger;
@@ -188,78 +185,76 @@ public class CommandExecPanel extends DPanel implements IAsyncResponse {
 				XParam xParam = item.getModelObject();
 				String xParamName = xParam.getName();
 
-				FormComponent fieldFormItem;
+				FormComponent fieldFormItem = null;
 
 				switch (xParam.getType()) {
 					case Guest:
-						WSelectionInput guestSelectionInput = new WSelectionInput(xParamName, new ArrayList(), false);
-						guestInputList.add(guestSelectionInput);
-						fieldFormItem = guestSelectionInput;
-						//TODO defaultValue
-						/*TODO if(paramsAsStr.containsKey(xParamName)) {
-							params.put(xParamName, ?);
-							fieldFormItem.setEnabled(false);
-						}*/
+						if (paramsAsStr.containsKey(xParamName)) {
+							KeyValueVO<String, String> guestOf = serverService.findGuestOf(targetServiceInstances.get(0).getServerId(), paramsAsStr.get(xParamName));
+							params.put(xParamName, guestOf);
+							fieldFormItem = new WLabelInput(xParamName);
+						} else {
+							WSelectionInput guestSelectionInput = new WSelectionInput(xParamName, new ArrayList(), false);
+							guestInputList.add(guestSelectionInput);
+							fieldFormItem = guestSelectionInput;
+						}
 						break;
 
 					case Server:
-						fieldFormItem = new WSelectionInput(xParamName, serverService.findServersAsVM(), false);
-						/*TODO if(paramsAsStr.containsKey(xParamName)) {
-							params.put(xParamName, ?);
-							fieldFormItem.setEnabled(false);
-						}*/
+						if (paramsAsStr.containsKey(xParamName)) {
+							KeyValueVO<Long, String> serverAsVM = serverService.findServerAsVM(Long.valueOf(paramsAsStr.get(xParamName)));
+							params.put(xParamName, serverAsVM);
+							fieldFormItem = new WLabelInput(xParamName);
+						} else {
+							fieldFormItem = new WSelectionInput(xParamName, serverService.findServersAsVM(), false);
+						}
 						break;
 
 					case Service:
-						//WSelectionInput selectionInput = new WSelectionInput(xParam.getName(), serviceInstanceService.findListForCommandExecution(targetServiceId), false);
-						//TODO only work for target param
-						WSelectionInput selectionInput = new WSelectionInput(xParamName, targetServiceInstances, false);
+						if (targetServiceInstanceId == null) {
+							WSelectionInput selectionInput = new WSelectionInput(xParamName, targetServiceInstances, false);
 
-						if (hasGuest) {
-							selectionInput.addToChoices(new WSelectionInputAjaxUpdatingBehavior() {
-								private static final long serialVersionUID = -2226097679754487094L;
+							if (hasGuest) {
+								selectionInput.addToChoices(new WSelectionInputAjaxUpdatingBehavior() {
+									private static final long serialVersionUID = -2226097679754487094L;
 
-								@Override
-								protected void onUpdate(AjaxRequestTarget target) {
-									OServiceInstance serviceInstance = (OServiceInstance) getComponent().getDefaultModelObject();
-									List<KeyValueVO<String, String>> guestsOf = serverService.findGuestsOf(serviceInstance.getServerId());
-									for (WSelectionInput guestInput : guestInputList) {
-										guestInput.updateChoices(target, guestsOf);
+									@Override
+									protected void onUpdate(AjaxRequestTarget target) {
+										OServiceInstance serviceInstance = (OServiceInstance) getComponent().getDefaultModelObject();
+										List<KeyValueVO<String, String>> guestsOf = serverService.findGuestsOf(serviceInstance.getServerId());
+										for (WSelectionInput guestInput : guestInputList) {
+											guestInput.updateChoices(target, guestsOf);
+										}
 									}
-								}
-							});
+								});
+							}
+							fieldFormItem = selectionInput;
+						} else {
+							fieldFormItem = new WLabelInput(xParamName);
 						}
-						fieldFormItem = selectionInput;
-						//TODO defaultValue
-						/*TODO if(paramsAsStr.containsKey(xParamName)) {
-							params.put(xParamName, ?);
-							fieldFormItem.setEnabled(false);
-						}*/
 						break;
 
 					case File:
 						fieldFormItem = new FileStoreUploadPanel(xParamName, false);
-						/*TODO if(paramsAsStr.containsKey(xParamName)) {
-							params.put(xParamName, ?);
-							fieldFormItem.setEnabled(false);
-						}*/
 						break;
 
 					case Boolean:
-						fieldFormItem = new WBooleanInput(xParamName);
 						if (paramsAsStr.containsKey(xParamName)) {
+							fieldFormItem = new WLabelInput(xParamName);
 							params.put(xParamName, Boolean.valueOf(paramsAsStr.get(xParamName)));
-							fieldFormItem.setEnabled(false);
 						} else if (xParam.getDefaultValue() != null) {
+							fieldFormItem = new WBooleanInput(xParamName);
 							params.put(xParamName, xParam.getDefaultValueObject());
 						}
 						break;
 
 					default:
-						fieldFormItem = new WTextInput(xParamName);
 						if (paramsAsStr.containsKey(xParamName)) {
+							fieldFormItem = new WLabelInput(xParamName);
 							params.put(xParamName, paramsAsStr.get(xParamName));
-							fieldFormItem.setEnabled(false);
+						} else {
+							fieldFormItem = new WTextInput(xParamName);
+							params.put(xParamName, xParam.getDefaultValueObject());
 						}
 				}
 				view.add(fieldFormItem.setRequired(xParam.getRequired()).setLabel(new Model<>(xParamName)));
