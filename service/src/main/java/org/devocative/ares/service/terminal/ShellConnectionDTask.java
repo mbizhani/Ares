@@ -29,6 +29,7 @@ public class ShellConnectionDTask extends DTask implements ITerminalProcess {
 	private ISecurityService securityService;
 
 	private long connId;
+	private SshMessageVO initConfig;
 	private OServiceInstanceTargetVO targetVO;
 
 	private JSch jsch;
@@ -45,6 +46,7 @@ public class ShellConnectionDTask extends DTask implements ITerminalProcess {
 		jsch = new JSch();
 		TerminalConnectionVO terminalConnectionVO = (TerminalConnectionVO) getInputData();
 		connId = terminalConnectionVO.getConnectionId();
+		initConfig = (SshMessageVO) terminalConnectionVO.getInitConfig();
 		targetVO = terminalConnectionVO.getTargetVO();
 		lastActivityTime = System.currentTimeMillis();
 	}
@@ -68,6 +70,10 @@ public class ShellConnectionDTask extends DTask implements ITerminalProcess {
 
 			channel = (ChannelShell) session.openChannel("shell");
 			channel.setPtyType("xterm");
+			if (initConfig != null && initConfig.getSize() != null) {
+				SshMessageVO.Size size = initConfig.getSize();
+				channel.setPtySize(size.getCols(), size.getRows(), size.getWidth(), size.getHeight());
+			}
 			processor = new ShellTextProcessor(connId, securityService.getCurrentUser().getUsername());
 
 			InputStream in = channel.getInputStream();
@@ -99,12 +105,17 @@ public class ShellConnectionDTask extends DTask implements ITerminalProcess {
 			if (sshMsg.getText() != null) {
 				processor.onClientText(sshMsg.getText());
 				commander.print(sshMsg.getText());
-			} else {
+			} else if (sshMsg.getSpecialKey() != null) {
 				processor.onClientSpecialKey(sshMsg.getSpecialKey());
 				byte[] shellCode = EShellSpecialKey.findShellCode(sshMsg.getSpecialKey());
 				if (shellCode != null) {
 					commander.write(shellCode);
 				}
+			} else if (sshMsg.getSize() != null) {
+				SshMessageVO.Size size = sshMsg.getSize();
+				channel.setPtySize(size.getCols(), size.getRows(), size.getWidth(), size.getHeight());
+			} else {
+				throw new RuntimeException("Invalid SshMessageVO");
 			}
 		} catch (IOException e) {
 			logger.error("ShellConnectionDTask.send: connId=" + connId, e);

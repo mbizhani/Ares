@@ -2,6 +2,7 @@ package org.devocative.ares.web.panel;
 
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.event.Broadcast;
+import org.apache.wicket.model.Model;
 import org.devocative.ares.entity.command.Command;
 import org.devocative.ares.entity.oservice.OSIUser;
 import org.devocative.ares.iservice.ITerminalConnectionService;
@@ -67,9 +68,10 @@ public class ShellTerminalPanel extends DPanel implements ITaskResultCallback {
 			private static final long serialVersionUID = -4033298732740362278L;
 
 			@Override
-			protected void onConnect() {
+			protected void onConnect(int cols, int rows, int width, int height) {
 				try {
-					connectionId = terminalConnectionService.createTerminal(osiUser.getId(), ShellTerminalPanel.this);
+					SshMessageVO vo = new SshMessageVO(cols, rows, width, height);
+					connectionId = terminalConnectionService.createTerminal(osiUser.getId(), vo, ShellTerminalPanel.this);
 					logger.info("ShellTerminalPanel Created: OSIUser=[{}] ConnectionId=[{}]", osiUser, connectionId);
 
 					if (tabId != null) {
@@ -79,6 +81,11 @@ public class ShellTerminalPanel extends DPanel implements ITaskResultCallback {
 					logger.error("ShellTerminalPanel.onConnect: ", e);
 					ShellTerminalPanel.this.onTaskError(null, e);
 				}
+			}
+
+			@Override
+			protected void onResize(int cols, int rows, int width, int height) {
+				terminalConnectionService.sendMessage(connectionId, new SshMessageVO(cols, rows, width, height));
 			}
 
 			@Override
@@ -96,6 +103,9 @@ public class ShellTerminalPanel extends DPanel implements ITaskResultCallback {
 				terminalConnectionService.closeConnection(connectionId);
 			}
 		};
+		wTerminal
+			.setCharWidth(9)
+			.setCharHeight(16);
 		add(wTerminal);
 
 		add(new WAjaxLink("fileUpload", AresIcon.UPLOAD) {
@@ -108,7 +118,7 @@ public class ShellTerminalPanel extends DPanel implements ITaskResultCallback {
 						.setOsiUserId(osiUser.getId())
 						.setTargetServiceInstanceId(osiUser.getServiceInstanceId())
 				);
-				window.show(target);
+				window.show(new Model<>("fileUpload"), target);
 			}
 		}.setEnabled(fileUploadCommandId != null));
 	}

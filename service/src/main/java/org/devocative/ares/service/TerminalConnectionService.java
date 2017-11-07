@@ -101,7 +101,7 @@ public class TerminalConnectionService implements ITerminalConnectionService {
 	// ==============================
 
 	@Override
-	public Long createTerminal(Long osiUserId, ITaskResultCallback callback) {
+	public Long createTerminal(Long osiUserId, Object initConfig, ITaskResultCallback callback) {
 		if (!osiUserService.isOSIUserAllowed(osiUserId)) {
 			throw new AresException(AresErrorCode.TerminalConnectionAccessViolation);
 		}
@@ -116,7 +116,7 @@ public class TerminalConnectionService implements ITerminalConnectionService {
 		persistorService.commitOrRollback();
 
 		DTaskResult result = null;
-		TerminalConnectionVO vo = new TerminalConnectionVO(connection.getId(), targetVOByUser);
+		TerminalConnectionVO vo = new TerminalConnectionVO(connection.getId(), initConfig, targetVOByUser);
 		if (ERemoteMode.SSH.equals(targetVOByUser.getUser().getRemoteMode())) {
 			result = taskService.start(ShellConnectionDTask.class, connection.getId(), vo, callback);
 		} else if (ERemoteMode.JDBC.equals(targetVOByUser.getUser().getRemoteMode())) {

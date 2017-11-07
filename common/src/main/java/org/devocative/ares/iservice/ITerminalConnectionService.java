@@ -25,7 +25,7 @@ public interface ITerminalConnectionService {
 
 	// ==============================
 
-	Long createTerminal(Long osiUserId, ITaskResultCallback callback);
+	Long createTerminal(Long osiUserId, Object initConfig, ITaskResultCallback callback);
 
 	void sendMessage(Long connId, Object message);
 

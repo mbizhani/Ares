@@ -9,12 +9,13 @@ import org.apache.wicket.model.Model;
 import org.devocative.adroit.sql.result.RowVO;
 import org.devocative.ares.iservice.ITerminalConnectionService;
 import org.devocative.ares.vo.SqlMessageVO;
+import org.devocative.ares.web.AresIcon;
 import org.devocative.ares.web.TerminalTabInfo;
 import org.devocative.demeter.web.DPanel;
 import org.devocative.demeter.web.DTaskBehavior;
+import org.devocative.demeter.web.component.DAjaxButton;
 import org.devocative.wickomp.WModel;
 import org.devocative.wickomp.async.IAsyncResponse;
-import org.devocative.wickomp.form.WAjaxButton;
 import org.devocative.wickomp.form.code.OCode;
 import org.devocative.wickomp.form.code.OCodeMode;
 import org.devocative.wickomp.form.code.WCodeInput;
@@ -66,7 +67,7 @@ public class SqlTerminalPanel extends DPanel implements IGridAsyncDataSource<Row
 		sql = new WCodeInput("sql", new Model<>(), oCode);
 		Form<Void> form = new Form<>("form");
 		form.add(sql);
-		form.add(new WAjaxButton("exec") {
+		form.add(new DAjaxButton("exec", AresIcon.EXECUTE) {
 			private static final long serialVersionUID = 1902167679817410777L;
 
 			@Override
@@ -93,7 +94,7 @@ public class SqlTerminalPanel extends DPanel implements IGridAsyncDataSource<Row
 		DTaskBehavior dtb = new DTaskBehavior(this);
 		add(dtb);
 
-		connectionId = terminalConnectionService.createTerminal(osiUserId, dtb);
+		connectionId = terminalConnectionService.createTerminal(osiUserId, null, dtb);
 		if (tabId != null) {
 			send(this, Broadcast.BUBBLE, new TerminalTabInfo(tabId, connectionId));
 		}

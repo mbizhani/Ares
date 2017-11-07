@@ -18,6 +18,7 @@ import org.devocative.demeter.web.DPage;
 import org.devocative.demeter.web.DPanel;
 import org.devocative.wickomp.html.WAjaxLink;
 import org.devocative.wickomp.html.tab.OTab;
+import org.devocative.wickomp.html.tab.OTabbedPanel;
 import org.devocative.wickomp.html.tab.WTabbedPanel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -54,7 +55,10 @@ public class TerminalConsoleDPage extends DPage {
 	protected void onInitialize() {
 		super.onInitialize();
 
-		tabPanel = new WTabbedPanel("tabPanel") {
+		OTabbedPanel oTabbedPanel = new OTabbedPanel();
+		oTabbedPanel
+			.setFit(true);
+		tabPanel = new WTabbedPanel("tabPanel", oTabbedPanel) {
 			private static final long serialVersionUID = 3302863870173680811L;
 
 			@Override
