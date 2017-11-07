@@ -12,10 +12,12 @@ import org.devocative.ares.web.AresIcon;
 import org.devocative.demeter.web.DPage;
 import org.devocative.demeter.web.UrlUtil;
 import org.devocative.demeter.web.component.DAjaxButton;
+import org.devocative.demeter.web.component.DPasswordStrengthValidator;
 import org.devocative.wickomp.form.WBooleanInput;
 import org.devocative.wickomp.form.WSelectionInput;
 import org.devocative.wickomp.form.WTextInput;
 import org.devocative.wickomp.form.validator.WEqualInputValidator;
+import org.devocative.wickomp.form.validator.WPatternValidator;
 import org.devocative.wickomp.html.WFloatTable;
 import org.devocative.wickomp.html.window.WModalWindow;
 
@@ -66,13 +68,16 @@ public class OSIUserFormDPage extends DPage {
 		WFloatTable floatTable = new WFloatTable("floatTable");
 		floatTable.add(new WTextInput("username")
 			.setRequired(true)
-			.setLabel(new ResourceModel("OSIUser.username")));
+			.setLabel(new ResourceModel("OSIUser.username"))
+			.add(new WPatternValidator("^[A-Za-z]+?[A-Za-z0-9.]*?$", "OSIUser.username.invalid.format")));
 
-		password = new WTextInput("password", new Model<String>(), true);
-		floatTable.add(password
+		password = new WTextInput("password", new Model<>(), true);
+		password
 			.setRequired(entity.getId() == null)
-			.setLabel(new ResourceModel("OSIUser.password")));
-		WTextInput password2 = new WTextInput("password2", new Model<String>(), true);
+			.setLabel(new ResourceModel("OSIUser.password"))
+			.add(new DPasswordStrengthValidator());
+		floatTable.add(password);
+		WTextInput password2 = new WTextInput("password2", new Model<>(), true);
 		floatTable.add(password2
 			.setRequired(entity.getId() == null)
 			.setLabel(new ResourceModel("OSIUser.password2")));

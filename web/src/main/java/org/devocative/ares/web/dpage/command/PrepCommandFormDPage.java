@@ -16,6 +16,7 @@ import org.devocative.demeter.web.component.DAjaxButton;
 import org.devocative.wickomp.form.WBooleanInput;
 import org.devocative.wickomp.form.WSelectionInput;
 import org.devocative.wickomp.form.WTextInput;
+import org.devocative.wickomp.form.validator.WAsciiIdentifierValidator;
 import org.devocative.wickomp.html.WFloatTable;
 import org.devocative.wickomp.html.window.WModalWindow;
 
@@ -85,7 +86,8 @@ public class PrepCommandFormDPage extends DPage {
 			.setLabel(new ResourceModel("PrepCommand.name")));
 		floatTable.add(new WTextInput("code")
 			.setRequired(true)
-			.setLabel(new ResourceModel("PrepCommand.code")));
+			.setLabel(new ResourceModel("PrepCommand.code"))
+			.add(new WAsciiIdentifierValidator()));
 		floatTable.add(new WBooleanInput("enabled")
 			.setRequired(true)
 			.setLabel(new ResourceModel("PrepCommand.enabled")));

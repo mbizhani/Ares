@@ -16,6 +16,7 @@ import org.devocative.wickomp.form.WTextInput;
 import org.devocative.wickomp.form.code.OCode;
 import org.devocative.wickomp.form.code.OCodeMode;
 import org.devocative.wickomp.form.code.WCodeInput;
+import org.devocative.wickomp.form.validator.WAsciiIdentifierValidator;
 import org.devocative.wickomp.html.WFloatTable;
 import org.devocative.wickomp.html.window.WModalWindow;
 
@@ -64,6 +65,7 @@ public class CommandFormDPage extends DPage {
 		WFloatTable floatTable = new WFloatTable("floatTable");
 		floatTable.add(new WTextInput("name")
 			.setLabel(new ResourceModel("Command.name"))
+			.add(new WAsciiIdentifierValidator())
 			.setEnabled(false));
 		floatTable.add(new WBooleanInput("enabled")
 			.setRequired(true)
