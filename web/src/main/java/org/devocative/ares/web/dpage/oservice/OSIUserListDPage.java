@@ -17,7 +17,7 @@ import org.devocative.demeter.web.DPage;
 import org.devocative.demeter.web.component.DAjaxButton;
 import org.devocative.demeter.web.component.grid.OEditAjaxColumn;
 import org.devocative.demeter.web.component.grid.ORowModAjaxColumn;
-import org.devocative.wickomp.WModel;
+import org.devocative.demeter.web.model.DEntityLazyLoadModel;
 import org.devocative.wickomp.WebUtil;
 import org.devocative.wickomp.form.WBooleanInput;
 import org.devocative.wickomp.form.WSelectionInput;
@@ -281,6 +281,6 @@ public class OSIUserListDPage extends DPage implements IGridDataSource<OSIUser> 
 
 	@Override
 	public IModel<OSIUser> model(OSIUser object) {
-		return new WModel<>(object);
+		return new DEntityLazyLoadModel<>(object.getId(), oSIUserService);
 	}
 }

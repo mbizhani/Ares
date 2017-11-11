@@ -8,10 +8,11 @@ import org.devocative.ares.entity.oservice.OServiceInstance;
 import org.devocative.ares.vo.filter.oservice.OSIUserFVO;
 import org.devocative.demeter.entity.Role;
 import org.devocative.demeter.entity.User;
+import org.devocative.demeter.iservice.IEntityService;
 
 import java.util.List;
 
-public interface IOSIUserService {
+public interface IOSIUserService extends IEntityService<OSIUser> {
 	void saveOrUpdate(OSIUser entity);
 
 	OSIUser load(Long id);
