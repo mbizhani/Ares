@@ -339,14 +339,15 @@ public class CommandExecPanel extends DPanel implements IAsyncResponse {
 		String tabId = tabular.getMarkupId() + "-tab";
 
 		StringBuilder builder = new StringBuilder();
-		builder.append(String.format("<table id='%s' border='1' style='width:100%%;'><thead><tr>", tabId));
+		builder.append(String.format("<table id='%s' border='1' style='width:100%%;'><caption><b>Total: %s</b></caption><thead><tr><td></td>", tabId, tabularVO.getSize()));
 		for (String col : tabularVO.getColumns()) {
 			//builder.append(String.format("<th data-options=\\\"field:'%s'\\\">", col.replaceAll("\\W",""))).append(col).append("</th>");
 			builder.append("<th>").append(col).append("</th>");
 		}
 		builder.append("</tr></thead><tbody>");
+		int i = 1;
 		for (Map<String, ?> row : tabularVO.getRows()) {
-			builder.append("<tr>");
+			builder.append("<tr><td>").append(i++).append("</td>");
 			for (Object cell : row.values()) {
 				builder.append("<td>").append(cell != null ? cell : "").append("</td>");
 			}
@@ -355,7 +356,7 @@ public class CommandExecPanel extends DPanel implements IAsyncResponse {
 		builder.append("</tbody></table>");
 
 		handler.appendJavaScript(String.format("$('#%s').remove();", tabId));
-		handler.appendJavaScript(String.format("$('#%s').html(\"%s\");", tabular.getMarkupId(), builder.toString()));
+		handler.appendJavaScript(String.format("$('#%s').html(\"%s\");", tabular.getMarkupId(), builder.toString().replaceAll("\"", "")));
 		//handler.appendJavaScript(String.format("$('#%s').datagrid();", tabId));
 		handler.appendJavaScript(String.format("$('#%s').tabs('select', 'Tabular');", tabs.getMarkupId()));
 	}

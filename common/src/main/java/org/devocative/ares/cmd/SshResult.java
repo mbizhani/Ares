@@ -58,6 +58,14 @@ public class SshResult {
 		return result;
 	}
 
+	public Integer toInteger() {
+		return new Integer(stdout);
+	}
+
+	public Long toLong() {
+		return new Long(stdout);
+	}
+
 	// ---------------
 
 	@Override

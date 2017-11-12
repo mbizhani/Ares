@@ -19,6 +19,8 @@ public class ConsoleResultProcessing {
 
 	private String text;
 
+	private Integer size;
+
 	// ---------------
 
 	private List<String> possibleColumns = new ArrayList<>();
@@ -54,6 +56,11 @@ public class ConsoleResultProcessing {
 
 	public ConsoleResultProcessing setSplitBy(String splitBy) {
 		this.splitBy = splitBy;
+		return this;
+	}
+
+	public ConsoleResultProcessing setSize(Integer size) {
+		this.size = size;
 		return this;
 	}
 
@@ -109,7 +116,7 @@ public class ConsoleResultProcessing {
 		logger.debug("Final Columns: {}", columns);
 		logger.debug("Rows: {}", rows);
 
-		return new TabularVO<>(columns, rows, filter);
+		return new TabularVO<>(columns, rows, filter).setSize(size);
 	}
 
 	// ------------------------------

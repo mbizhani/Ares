@@ -10,6 +10,8 @@ public class TabularVO<T> implements Serializable {
 	private final List<Map<String, T>> listOfDataAsMap = new ArrayList<>();
 	private final Map<String, T> filter;
 
+	private Integer size;
+
 	// ------------------------------
 
 	public TabularVO(List<String> columns, List<List<T>> rows) {
@@ -50,6 +52,15 @@ public class TabularVO<T> implements Serializable {
 		} else {
 			throw new RuntimeException("More than one result found: size = " + listOfDataAsMap.size() + ", filters = " + filter);
 		}
+	}
+
+	public Integer getSize() {
+		return size != null ? size : listOfDataAsMap.size();
+	}
+
+	public TabularVO<T> setSize(Integer size) {
+		this.size = size;
+		return this;
 	}
 
 	// ---------------
