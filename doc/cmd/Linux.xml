@@ -1,0 +1,180 @@
+<operation>
+	<services>
+		<service name="Linux" adminPort="22">
+			<commands>
+
+				<command name="checkFile">
+					<params>
+						<param name="file" required="true"/>
+					</params>
+					<body>
+						<![CDATA[
+ssh {
+	prompt "Check file: ${file}"
+	cmd "[ -e '${file}' ] && echo 'true' || echo 'false'"
+	result {
+		it.stdout == 'true'
+	}
+}
+]]></body>
+				</command>
+
+				<command name="changePassword">
+					<params>
+						<param name="username" required="true"/>
+						<param name="newPassword" required="true"/>
+					</params>
+
+					<body><![CDATA[
+ssh{
+	prompt "Change password for '${username}'"
+	cmd "passwd ${username} --stdin"
+	stdin newPassword
+}
+$userPasswordUpdated(username, newPassword)
+]]></body>
+				</command>
+
+				<command name="netstat">
+					<params/>
+
+					<body><![CDATA[
+ssh{
+	prompt "netstat"
+	cmd "netstat -antp"
+	result {
+		it.toTabular()
+		  .setIgnoreStartingLines(1)
+		  .setPossibleColumns("Proto", "Recv-Q", "Send-Q", "Local Address", "Foreign Address", "State", "PID/Program name")
+	}
+}
+
+]]></body>
+				</command>
+
+				<command name="fileUpload">
+					<params>
+						<param name="file" type="File" required="true"/>
+					</params>
+
+					<body><![CDATA[
+$cmd.scpTo(file, '~')
+					]]></body>
+				</command>
+
+				<command name="listOpenFile">
+					<params>
+						<param name="pid" required="true"/>
+					</params>
+
+					<body><![CDATA[
+def size = ssh {
+	prompt "Total number of open files for '${pid}'"
+	cmd "lsof -p ${pid} | wc -l"
+	result {
+		it.toInteger()
+	}
+}
+
+if(size > 0)
+	size--;
+
+def tab = ssh {
+	prompt "List open files for '${pid}' (max 200)"
+	cmd "lsof -p ${pid} | head -n 200"
+	result {
+		it.toTabular()
+		  .setSize(size)
+		  .setPossibleColumns("COMMAND", "PID", "TID", "USER", "FD", "TYPE", "DEVICE", "SIZE/OFF", "NODE", "NAME")
+	}
+}
+]]></body>
+				</command>
+
+				<!-- ============= OS QUERY ============= -->
+
+				<command name="oQuery">
+					<params>
+						<param name="prompt" defaultValue="Querying"/>
+						<param name="sql" required="true"/>
+						<param name="lim_start" required="true" defaultValue="0"/>
+						<param name="lim_count" required="true" defaultValue="100"/>
+					</params>
+
+					<body><![CDATA[
+def sql_lim = "${sql} limit ${lim_start}, ${lim_count}"
+def sql_cnt = "select count(*) from (${sql})"
+
+def cnt = ssh {
+	prompt "Counting: ${prompt}"
+	cmd """ osqueryi "${sql_cnt}" --csv --noheader """
+	result {
+		it.toInteger()
+	}
+}
+
+ssh {
+	prompt prompt
+	cmd """ osqueryi "${sql_lim}" --csv """
+	result {
+		it.toTabular("[|]")
+		  .setSize(cnt)
+		  .build()
+	}
+}
+]]></body>
+				</command>
+
+				<command name="oListUser">
+					<params>
+						<param name="uid"/>
+						<param name="username"/>
+						<param name="show_normal" type="Boolean" required="true" defaultValue="true"/>
+					</params>
+
+					<body><![CDATA[
+def sql = "select uid, username, description, directory, shell from users where 1=1"
+if(username != null)
+	sql += " and username='${username}'"
+if(uid != null)
+	sql += " and uid='${uid}'"
+if(show_normal)
+	sql += " and shell='/bin/bash'"
+
+oQuery([prompt: 'List of Users', sql: sql])
+]]></body>
+				</command>
+
+				<command name="oListOpenFile">
+					<params>
+						<param name="pid"/>
+						<param name="process_name"/>
+						<param name="username"/>
+						<param name="show_process_path" type="Boolean" required="true" defaultValue="false"/>
+						<param name="show_cmdline" type="Boolean" required="true" defaultValue="false"/>
+					</params>
+					<body><![CDATA[
+def sql = "select pr.pid, pr.name process_name, of.path file_path, us.username"
+
+if(show_process_path)
+	sql += ", pr.path process_path"
+if(show_cmdline)
+	sql += ", pr.cmdline"
+
+sql += " from process_open_files of join processes pr using(pid) join users us using(uid) where 1=1"
+
+if(pid)
+	sql += " and pr.pid = '${pid}'"
+if(process_name)
+	sql += " and pr.name = '${process_name}'"
+if(username)
+	sql += " and us.username = '${username}'"
+
+oQuery([prompt: 'List of Opened Files', sql: sql])
+]]></body>
+				</command>
+
+			</commands>
+		</service>
+	</services>
+</operation>
