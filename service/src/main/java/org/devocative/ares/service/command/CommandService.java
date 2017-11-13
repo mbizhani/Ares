@@ -191,7 +191,7 @@ public class CommandService implements ICommandService, IMissedHitHandler<Long, 
 			command.setName(xCommand.getName());
 			command.setService(oService);
 			command.setConfig(lob);
-			command.setListView(false); //TODO
+			command.setListView(xCommand.getListViewSafely());
 			persistorService.saveOrUpdate(command);
 
 			prepCommandService.saveByCommand(command);

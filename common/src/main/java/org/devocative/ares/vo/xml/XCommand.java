@@ -13,6 +13,9 @@ public class XCommand implements Serializable {
 	@XStreamAsAttribute
 	private String name;
 
+	@XStreamAsAttribute
+	private Boolean listView;
+
 	private List<XParam> params;
 
 	private String body;
@@ -25,6 +28,14 @@ public class XCommand implements Serializable {
 
 	public void setName(String name) {
 		this.name = name;
+	}
+
+	public Boolean getListView() {
+		return listView;
+	}
+
+	public void setListView(Boolean listView) {
+		this.listView = listView;
 	}
 
 	public List<XParam> getParams() {
@@ -53,4 +64,9 @@ public class XCommand implements Serializable {
 		}
 		return false;
 	}
+
+	public Boolean getListViewSafely() {
+		return getListView() != null ? getListView() : false;
+	}
+
 }
