@@ -4,9 +4,10 @@ import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.markup.html.form.Form;
 import org.apache.wicket.model.CompoundPropertyModel;
 import org.apache.wicket.model.IModel;
-import org.apache.wicket.model.LoadableDetachableModel;
+import org.apache.wicket.model.Model;
 import org.apache.wicket.model.ResourceModel;
 import org.devocative.ares.AresPrivilegeKey;
+import org.devocative.ares.entity.oservice.OSIUser;
 import org.devocative.ares.entity.oservice.OServiceInstance;
 import org.devocative.ares.iservice.oservice.IOServiceInstanceService;
 import org.devocative.ares.vo.filter.oservice.OServiceInstanceFVO;
@@ -14,6 +15,7 @@ import org.devocative.ares.web.AresIcon;
 import org.devocative.demeter.web.DPage;
 import org.devocative.demeter.web.component.DAjaxButton;
 import org.devocative.demeter.web.component.grid.OEditAjaxColumn;
+import org.devocative.demeter.web.model.DEntityLazyLoadModel;
 import org.devocative.wickomp.form.WSelectionInput;
 import org.devocative.wickomp.form.range.WDateRangeInput;
 import org.devocative.wickomp.form.range.WNumberRangeInput;
@@ -25,6 +27,7 @@ import org.devocative.wickomp.grid.WDataGrid;
 import org.devocative.wickomp.grid.WSortField;
 import org.devocative.wickomp.grid.column.OColumnList;
 import org.devocative.wickomp.grid.column.OPropertyColumn;
+import org.devocative.wickomp.grid.column.link.OAjaxLinkColumn;
 import org.devocative.wickomp.html.WAjaxLink;
 import org.devocative.wickomp.html.WFloatTable;
 import org.devocative.wickomp.html.window.WModalWindow;
@@ -158,6 +161,19 @@ public class OServiceInstanceListDPage extends DPage implements IGridDataSource<
 			});
 		}
 
+		if (hasPermission(AresPrivilegeKey.OSIUserAdd)) {
+			columnList.add(new OAjaxLinkColumn<OServiceInstance>(new Model<>(), AresIcon.ADD_USER.setTooltip(new Model<>("Add Service Instance User"))) {
+				private static final long serialVersionUID = 2390378199618608413L;
+
+				@Override
+				public void onClick(AjaxRequestTarget target, IModel<OServiceInstance> rowData) {
+					window.setContent(new OSIUserFormDPage(window.getContentId(), new OSIUser(rowData.getObject())));
+					window.show(target);
+				}
+			});
+		}
+
+
 		OGrid<OServiceInstance> oGrid = new OGrid<>();
 		oGrid
 			.setColumns(columnList)
@@ -238,14 +254,6 @@ public class OServiceInstanceListDPage extends DPage implements IGridDataSource<
 
 	@Override
 	public IModel<OServiceInstance> model(OServiceInstance object) {
-		final Long id = object.getId();
-		return new LoadableDetachableModel<OServiceInstance>() {
-			private static final long serialVersionUID = -6002081215165866814L;
-
-			@Override
-			protected OServiceInstance load() {
-				return oServiceInstanceService.load(id);
-			}
-		};
+		return new DEntityLazyLoadModel<>(object.getId(), oServiceInstanceService);
 	}
 }

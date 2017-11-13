@@ -7,10 +7,11 @@ import org.devocative.ares.entity.oservice.OServiceInstance;
 import org.devocative.ares.vo.OServiceInstanceTargetVO;
 import org.devocative.ares.vo.filter.oservice.OServiceInstanceFVO;
 import org.devocative.demeter.entity.User;
+import org.devocative.demeter.iservice.IEntityService;
 
 import java.util.List;
 
-public interface IOServiceInstanceService {
+public interface IOServiceInstanceService extends IEntityService<OServiceInstance> {
 	void saveOrUpdate(OServiceInstance entity);
 
 	OServiceInstance load(Long id);
@@ -40,4 +41,7 @@ public interface IOServiceInstanceService {
 	OServiceInstanceTargetVO getTargetVOByUser(Long osiUserId);
 
 	OServiceInstanceTargetVO getTargetVOByServer(Long serviceInstanceId, ERemoteMode remoteMode);
+
+	List<OServiceInstance> loadByServer(Long serverId);
+
 }

@@ -125,6 +125,10 @@ public class OSIUser implements IRowMod, ICreationDate, ICreatorUser, IModificat
 		this.password = password;
 	}
 
+	public OSIUser(OServiceInstance serviceInstance) {
+		this.serviceInstance = serviceInstance;
+	}
+
 	// ------------------------------
 
 	public Long getId() {

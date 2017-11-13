@@ -279,7 +279,7 @@ public class CommandExecPanel extends DPanel implements IAsyncResponse {
 					if (entry.getValue() instanceof KeyValueVO) {
 						KeyValueVO vo = (KeyValueVO) entry.getValue();
 						cmdParams.put(entry.getKey(), vo.getKey());
-					} else {
+					} else if (entry.getValue() != null) {
 						cmdParams.put(entry.getKey(), entry.getValue());
 					}
 				}
@@ -301,7 +301,7 @@ public class CommandExecPanel extends DPanel implements IAsyncResponse {
 					if (entry.getValue() instanceof KeyValueVO) {
 						KeyValueVO vo = (KeyValueVO) entry.getValue();
 						cmdParams.put(entry.getKey(), vo.getKey());
-					} else {
+					} else if (entry.getValue() != null)  {
 						cmdParams.put(entry.getKey(), entry.getValue());
 					}
 				}

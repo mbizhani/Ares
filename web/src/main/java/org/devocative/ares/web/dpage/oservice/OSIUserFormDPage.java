@@ -7,7 +7,9 @@ import org.apache.wicket.model.Model;
 import org.apache.wicket.model.ResourceModel;
 import org.devocative.ares.entity.oservice.ERemoteMode;
 import org.devocative.ares.entity.oservice.OSIUser;
+import org.devocative.ares.entity.oservice.OServiceInstance;
 import org.devocative.ares.iservice.oservice.IOSIUserService;
+import org.devocative.ares.iservice.oservice.IOServiceInstanceService;
 import org.devocative.ares.web.AresIcon;
 import org.devocative.demeter.web.DPage;
 import org.devocative.demeter.web.UrlUtil;
@@ -31,9 +33,14 @@ public class OSIUserFormDPage extends DPage {
 	@Inject
 	private IOSIUserService oSIUserService;
 
+	@Inject
+	private IOServiceInstanceService oServiceInstanceService;
+
 	private OSIUser entity;
 
 	private WTextInput password;
+
+	private Long serverId;
 
 	// ------------------------------
 
@@ -57,6 +64,13 @@ public class OSIUserFormDPage extends DPage {
 		this.entity = params != null && !params.isEmpty() ?
 			oSIUserService.load(Long.valueOf(params.get(0))) :
 			new OSIUser();
+	}
+
+	// ------------------------------
+
+	public OSIUserFormDPage setServerId(Long serverId) {
+		this.serverId = serverId;
+		return this;
 	}
 
 	// ------------------------------
@@ -91,9 +105,21 @@ public class OSIUserFormDPage extends DPage {
 		floatTable.add(new WSelectionInput("remoteMode", ERemoteMode.list(), false)
 			.setRequired(true)
 			.setLabel(new ResourceModel("OSIUser.remoteMode")));
-		floatTable.add(new WSelectionInput("serviceInstance", oSIUserService.getServiceInstanceList(), false)
+
+		List<OServiceInstance> oServiceInstances;
+		if (serverId != null) {
+			oServiceInstances = oServiceInstanceService.loadByServer(serverId);
+
+			if (entity.getId() == null && oServiceInstances.size() == 1) {
+				entity.setServiceInstance(oServiceInstances.get(0));
+			}
+		} else {
+			oServiceInstances = oSIUserService.getServiceInstanceList();
+		}
+		floatTable.add(new WSelectionInput("serviceInstance", oServiceInstances, false)
 			.setRequired(true)
 			.setLabel(new ResourceModel("OSIUser.serviceInstance")));
+
 		floatTable.add(new WSelectionInput("allowedUsers", oSIUserService.getAllowedUsersList(), true)
 			.setLabel(new ResourceModel("OSIUser.allowedUsers")));
 		floatTable.add(new WSelectionInput("allowedRoles", oSIUserService.getAllowedRolesList(), true)

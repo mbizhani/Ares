@@ -199,6 +199,15 @@ public class OServiceInstanceService implements IOServiceInstanceService, IMisse
 			.setSudoer(true);
 	}
 
+	@Override
+	public List<OServiceInstance> loadByServer(Long serverId) {
+		return persistorService.createQueryBuilder()
+			.addFrom(OServiceInstance.class, "ent")
+			.addWhere("and ent.serverId = :serverId")
+			.addParam("serverId", serverId)
+			.list();
+	}
+
 	// ------------------------------
 
 	private OServiceInstanceTargetVO createTargetVO(OSIUser user) {

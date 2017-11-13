@@ -1,17 +1,20 @@
-//overwrite
 package org.devocative.ares.web.dpage;
 
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.markup.html.form.Form;
 import org.apache.wicket.model.CompoundPropertyModel;
 import org.apache.wicket.model.IModel;
+import org.apache.wicket.model.Model;
 import org.apache.wicket.model.ResourceModel;
 import org.devocative.ares.AresPrivilegeKey;
 import org.devocative.ares.entity.EServerOS;
 import org.devocative.ares.entity.OServer;
+import org.devocative.ares.entity.oservice.OServiceInstance;
 import org.devocative.ares.iservice.IOServerService;
 import org.devocative.ares.vo.filter.OServerFVO;
 import org.devocative.ares.web.AresIcon;
+import org.devocative.ares.web.dpage.oservice.OSIUserFormDPage;
+import org.devocative.ares.web.dpage.oservice.OServiceInstanceFormDPage;
 import org.devocative.demeter.web.DPage;
 import org.devocative.demeter.web.component.DAjaxButton;
 import org.devocative.demeter.web.component.grid.OEditAjaxColumn;
@@ -28,6 +31,7 @@ import org.devocative.wickomp.grid.WDataGrid;
 import org.devocative.wickomp.grid.WSortField;
 import org.devocative.wickomp.grid.column.OColumnList;
 import org.devocative.wickomp.grid.column.OPropertyColumn;
+import org.devocative.wickomp.grid.column.link.OAjaxLinkColumn;
 import org.devocative.wickomp.html.WAjaxLink;
 import org.devocative.wickomp.html.WFloatTable;
 import org.devocative.wickomp.html.window.WModalWindow;
@@ -181,6 +185,30 @@ public class OServerListDPage extends DPage implements IGridDataSource<OServer> 
 				@Override
 				public void onClick(AjaxRequestTarget target, IModel<OServer> rowData) {
 					window.setContent(new OServerFormDPage(window.getContentId(), rowData.getObject()));
+					window.show(target);
+				}
+			});
+		}
+
+		if (hasPermission(AresPrivilegeKey.OServiceInstanceAdd)) {
+			columnList.add(new OAjaxLinkColumn<OServer>(new Model<>(), AresIcon.ADD.setTooltip(new Model<>("Add Service Instance"))) {
+				private static final long serialVersionUID = 6041498077363834924L;
+
+				@Override
+				public void onClick(AjaxRequestTarget target, IModel<OServer> rowData) {
+					window.setContent(new OServiceInstanceFormDPage(window.getContentId(), new OServiceInstance(null, rowData.getObject(), null)));
+					window.show(target);
+				}
+			});
+		}
+
+		if (hasPermission(AresPrivilegeKey.OSIUserAdd)) {
+			columnList.add(new OAjaxLinkColumn<OServer>(new Model<>(), AresIcon.ADD_USER.setTooltip(new Model<>("Add Service Instance User"))) {
+				private static final long serialVersionUID = 6041498077363834924L;
+
+				@Override
+				public void onClick(AjaxRequestTarget target, IModel<OServer> rowData) {
+					window.setContent(new OSIUserFormDPage(window.getContentId()).setServerId(rowData.getObject().getId()));
 					window.show(target);
 				}
 			});
