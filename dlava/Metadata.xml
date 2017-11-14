@@ -103,7 +103,7 @@
 				</field>
 			</fields>
 		</class>
-		<class fqn="org.devocative.ares.entity.command.ConfigLob">
+		<class fqn="org.devocative.ares.entity.command.CommandCfgLob">
 			<cinfo ignore="true"/>
 			<id ref="id"/>
 			<fields>

@@ -14,7 +14,7 @@
 	<entities>
 		<entity type="org.devocative.ares.entity.command.Command"/>
 		<entity type="org.devocative.ares.entity.command.CommandLog"/>
-		<entity type="org.devocative.ares.entity.command.ConfigLob"/>
+		<entity type="org.devocative.ares.entity.command.CommandCfgLob"/>
 		<entity type="org.devocative.ares.entity.command.PrepCommand"/>
 
 		<entity type="org.devocative.ares.entity.OBasicData"/>

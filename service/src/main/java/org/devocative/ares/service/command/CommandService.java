@@ -12,7 +12,7 @@ import org.devocative.ares.cmd.CommandCenterResource;
 import org.devocative.ares.cmd.ICommandResultCallBack;
 import org.devocative.ares.entity.OServer;
 import org.devocative.ares.entity.command.Command;
-import org.devocative.ares.entity.command.ConfigLob;
+import org.devocative.ares.entity.command.CommandCfgLob;
 import org.devocative.ares.entity.oservice.OSIUser;
 import org.devocative.ares.entity.oservice.OService;
 import org.devocative.ares.iservice.IOServerService;
@@ -183,7 +183,7 @@ public class CommandService implements ICommandService, IMissedHitHandler<Long, 
 		//Command command = loadByNameAndOService(oService.getId(), xCommand.getName());
 
 		if (command == null) {
-			ConfigLob lob = new ConfigLob();
+			CommandCfgLob lob = new CommandCfgLob();
 			lob.setValue(xstream.toXML(xCommand));
 			persistorService.saveOrUpdate(lob);
 

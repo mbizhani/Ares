@@ -7,7 +7,7 @@ import java.util.Date;
 
 @Entity
 @Table(name = "t_ars_config_lob")
-public class ConfigLob implements ICreationDate, ICreatorUser, IModificationDate, IModifierUser {
+public class CommandCfgLob implements ICreationDate, ICreatorUser, IModificationDate, IModifierUser {
 	private static final long serialVersionUID = -3022742465248443299L;
 
 	@Id
@@ -139,9 +139,9 @@ public class ConfigLob implements ICreationDate, ICreatorUser, IModificationDate
 	@Override
 	public boolean equals(Object o) {
 		if (this == o) return true;
-		if (!(o instanceof ConfigLob)) return false;
+		if (!(o instanceof CommandCfgLob)) return false;
 
-		ConfigLob that = (ConfigLob) o;
+		CommandCfgLob that = (CommandCfgLob) o;
 
 		return !(getId() != null ? !getId().equals(that.getId()) : that.getId() != null);
 

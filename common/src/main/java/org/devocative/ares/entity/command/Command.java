@@ -43,7 +43,7 @@ public class Command implements ICreationDate, ICreatorUser, IModificationDate, 
 
 	@OneToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "f_config", nullable = false, foreignKey = @ForeignKey(name = "command2configLob"))
-	private ConfigLob config;
+	private CommandCfgLob config;
 
 	@Column(name = "f_config", insertable = false, updatable = false)
 	private Long configId;
@@ -130,11 +130,11 @@ public class Command implements ICreationDate, ICreatorUser, IModificationDate, 
 		return serviceId;
 	}
 
-	public ConfigLob getConfig() {
+	public CommandCfgLob getConfig() {
 		return config;
 	}
 
-	public void setConfig(ConfigLob config) {
+	public void setConfig(CommandCfgLob config) {
 		this.config = config;
 	}
 
