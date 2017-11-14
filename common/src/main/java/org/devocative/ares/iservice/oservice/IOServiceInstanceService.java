@@ -44,4 +44,5 @@ public interface IOServiceInstanceService extends IEntityService<OServiceInstanc
 
 	List<OServiceInstance> loadByServer(Long serverId);
 
+	OServiceInstance loadByServerAndService(OServer oServer, OService oService);
 }

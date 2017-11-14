@@ -208,6 +208,17 @@ public class OServiceInstanceService implements IOServiceInstanceService, IMisse
 			.list();
 	}
 
+	@Override
+	public OServiceInstance loadByServerAndService(OServer oServer, OService oService) {
+		return persistorService.createQueryBuilder()
+			.addFrom(OServiceInstance.class, "ent")
+			.addWhere("and ent.server = :server")
+			.addWhere("and ent.service = :service")
+			.addParam("server", oServer)
+			.addParam("service", oService)
+			.object();
+	}
+
 	// ------------------------------
 
 	private OServiceInstanceTargetVO createTargetVO(OSIUser user) {

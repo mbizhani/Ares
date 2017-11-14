@@ -2,10 +2,15 @@ package org.devocative.ares.service;
 
 import org.devocative.adroit.vo.KeyValueVO;
 import org.devocative.ares.entity.EBasicDiscriminator;
+import org.devocative.ares.entity.EServerOS;
 import org.devocative.ares.entity.OBasicData;
 import org.devocative.ares.entity.OServer;
+import org.devocative.ares.entity.oservice.OService;
+import org.devocative.ares.entity.oservice.OServiceInstance;
 import org.devocative.ares.iservice.IOBasicDataService;
 import org.devocative.ares.iservice.IOServerService;
+import org.devocative.ares.iservice.oservice.IOServiceInstanceService;
+import org.devocative.ares.iservice.oservice.IOServiceService;
 import org.devocative.ares.vo.filter.OServerFVO;
 import org.devocative.demeter.entity.User;
 import org.devocative.demeter.iservice.persistor.IPersistorService;
@@ -28,11 +33,27 @@ public class OServerService implements IOServerService {
 	@Autowired
 	private IOBasicDataService basicDataService;
 
+	@Autowired
+	private IOServiceService oServiceService;
+
+	@Autowired
+	private IOServiceInstanceService oServiceInstanceService;
+
 	// ------------------------------
 
 	@Override
 	public void saveOrUpdate(OServer entity) {
 		persistorService.saveOrUpdate(entity);
+
+		if (entity.getServerOS() != null) {
+			OService oService = oServiceService.loadByName(entity.getServerOS().getName());
+			if (oService != null) {
+				OServiceInstance serviceInstance = oServiceInstanceService.loadByServerAndService(entity, oService);
+				if (serviceInstance == null) {
+					oServiceInstanceService.saveOrUpdate(new OServiceInstance(null, entity, oService));
+				}
+			}
+		}
 	}
 
 	@Override
@@ -212,6 +233,7 @@ public class OServerService implements IOServerService {
 			String name = server.get("name");
 			String address = server.get("address");
 			String vmId = server.get("vmId");
+			String os = server.get("os");
 
 			OServer oServer = persistorService.createQueryBuilder()
 				.addFrom(OServer.class, "ent")
@@ -232,6 +254,17 @@ public class OServerService implements IOServerService {
 				oServer = new OServer(name, address);
 				oServer.setVmId(vmId);
 				oServer.setHypervisor(new OServer(hypervisorId));
+			}
+
+			if (os != null) {
+				switch (os) {
+					case "Linux":
+						oServer.setServerOS(EServerOS.LINUX);
+						break;
+					case "Windows":
+						oServer.setServerOS(EServerOS.WINDOWS);
+						break;
+				}
 			}
 
 			saveOrUpdate(oServer);

@@ -77,8 +77,8 @@ public class OServer implements ICreationDate, ICreatorUser, IModificationDate, 
 
 	@ManyToMany(fetch = FetchType.LAZY)
 	@JoinTable(name = "t_ars_service_inst",
-		joinColumns = {@JoinColumn(name = "f_service", insertable = false, updatable = false)},
-		inverseJoinColumns = {@JoinColumn(name = "f_server", insertable = false, updatable = false)}
+		joinColumns = {@JoinColumn(name = "f_server", insertable = false, updatable = false)},
+		inverseJoinColumns = {@JoinColumn(name = "f_service", insertable = false, updatable = false)}
 	)
 	private List<OService> services;
 
