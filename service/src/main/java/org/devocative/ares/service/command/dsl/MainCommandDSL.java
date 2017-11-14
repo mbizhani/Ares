@@ -96,6 +96,10 @@ public class MainCommandDSL {
 		commandCenter.userPasswordUpdated(username.toString(), password.toString());
 	}
 
+	public void $checkVMServers(List<Map<String, String>> servers) {
+		commandCenter.checkVMServers(servers);
+	}
+
 	public void $error(CharSequence message) {
 		commandCenter.error(message.toString());
 	}

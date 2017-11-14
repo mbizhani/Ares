@@ -72,6 +72,7 @@ public class OServerService implements IOServerService {
 			.addSelect("select ent")
 			.addFrom(OServer.class, "ent")
 			.applyFilter(OServer.class, "ent", filter)
+			.setOrderBy("ent.hypervisorId nulls first")
 			.list((pageIndex - 1) * pageSize, pageSize);
 	}
 

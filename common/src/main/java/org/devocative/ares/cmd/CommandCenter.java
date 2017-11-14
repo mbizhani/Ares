@@ -177,6 +177,10 @@ public class CommandCenter {
 		resource.getCommandService().userPasswordUpdated(targetVO, username, password);
 	}
 
+	public void checkVMServers(List<Map<String, String>> servers) {
+		checkVMServers(targetVO.getServerId(), servers);
+	}
+
 	public void checkVMServers(Long hypervisorId, List<Map<String, String>> servers) {
 		logger.info("CommandCenter: checkServers hypervisorId=[{}] servers={}", hypervisorId, servers);
 		resource.getServerService().checkVMServers(hypervisorId, servers);

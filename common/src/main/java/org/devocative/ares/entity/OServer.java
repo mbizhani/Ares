@@ -1,11 +1,13 @@
 package org.devocative.ares.entity;
 
+import org.devocative.ares.entity.oservice.OService;
 import org.devocative.demeter.entity.*;
 import org.hibernate.envers.Audited;
 import org.hibernate.envers.NotAudited;
 
 import javax.persistence.*;
 import java.util.Date;
+import java.util.List;
 
 @Audited
 @Entity
@@ -72,6 +74,13 @@ public class OServer implements ICreationDate, ICreatorUser, IModificationDate, 
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "f_owner", foreignKey = @ForeignKey(name = "server_owner2user"))
 	private User owner;
+
+	@ManyToMany(fetch = FetchType.LAZY)
+	@JoinTable(name = "t_ars_service_inst",
+		joinColumns = {@JoinColumn(name = "f_service", insertable = false, updatable = false)},
+		inverseJoinColumns = {@JoinColumn(name = "f_server", insertable = false, updatable = false)}
+	)
+	private List<OService> services;
 
 	// --------------- CREATE / MODIFY
 
@@ -218,6 +227,10 @@ public class OServer implements ICreationDate, ICreatorUser, IModificationDate, 
 
 	public void setOwner(User owner) {
 		this.owner = owner;
+	}
+
+	public List<OService> getServices() {
+		return services;
 	}
 
 	// --------------- CREATE / MODIFY

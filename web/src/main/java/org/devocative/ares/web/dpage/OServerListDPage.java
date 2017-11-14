@@ -32,8 +32,11 @@ import org.devocative.wickomp.grid.WSortField;
 import org.devocative.wickomp.grid.column.OColumnList;
 import org.devocative.wickomp.grid.column.OPropertyColumn;
 import org.devocative.wickomp.grid.column.link.OAjaxLinkColumn;
+import org.devocative.wickomp.grid.toolbar.OExportExcelButton;
+import org.devocative.wickomp.grid.toolbar.OGridGroupingButton;
 import org.devocative.wickomp.html.WAjaxLink;
 import org.devocative.wickomp.html.WFloatTable;
+import org.devocative.wickomp.html.icon.FontAwesome;
 import org.devocative.wickomp.html.window.WModalWindow;
 import org.devocative.wickomp.opt.IStyler;
 import org.devocative.wickomp.opt.OSize;
@@ -41,6 +44,7 @@ import org.devocative.wickomp.opt.OStyle;
 
 import javax.inject.Inject;
 import java.io.Serializable;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
@@ -59,7 +63,7 @@ public class OServerListDPage extends DPage implements IGridDataSource<OServer> 
 
 	private Boolean gridFit;
 	private boolean gridEnabled = false;
-	private OSize gridHeight = OSize.fixed(500);
+	private OSize gridHeight = OSize.fixed(600);
 	private OSize gridWidth = OSize.percent(100);
 
 	// ------------------------------
@@ -155,6 +159,7 @@ public class OServerListDPage extends DPage implements IGridDataSource<OServer> 
 		OColumnList<OServer> columnList = new OColumnList<>();
 		columnList.add(new OPropertyColumn<>(new ResourceModel("OServer.name"), "name"));
 		columnList.add(new OPropertyColumn<>(new ResourceModel("OServer.address"), "address"));
+		columnList.add(new OPropertyColumn<>(new ResourceModel("OServer.services"), "services"));
 		columnList.add(new OPropertyColumn<>(new ResourceModel("OServer.function"), "function"));
 		columnList.add(new OPropertyColumn<OServer>(new ResourceModel("OServer.counter"), "counter")
 			.setFormatter(ONumberFormatter.integer())
@@ -218,8 +223,11 @@ public class OServerListDPage extends DPage implements IGridDataSource<OServer> 
 		oGrid
 			.setColumns(columnList)
 			.setMultiSort(false)
+			.setPageList(Arrays.asList(20, 40, 100, 200))
 			.setRowStyler((IStyler<OServer> & Serializable) (bean, id) ->
 				OStyle.style(bean.getHypervisorId() == null ? "background-color:#f0e68c" : null))
+			.addToolbarButton(new OGridGroupingButton<>(new FontAwesome("expand"), new FontAwesome("compress")))
+			.addToolbarButton(new OExportExcelButton<>(new FontAwesome("file-excel-o", new Model<>("Export to excel")).setColor("green"), this))
 			.setHeight(gridHeight)
 			.setWidth(gridWidth)
 			.setFit(gridFit);
