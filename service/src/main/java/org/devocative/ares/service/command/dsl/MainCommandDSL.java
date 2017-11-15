@@ -42,7 +42,7 @@ public class MainCommandDSL {
 		String prompt = clsAsMap.containsKey("prompt") ? clsAsMap.get("prompt").toString() : null;
 		String cmd = clsAsMap.containsKey("cmd") ? clsAsMap.get("cmd").toString() : null;
 		Boolean force = clsAsMap.containsKey("force") ? (Boolean) clsAsMap.get("force") : null;
-		String[] stdin = clsAsMap.containsKey("stdin") ? (String[]) clsAsMap.get("stdin") : null;
+		String stdin = clsAsMap.containsKey("stdin") ? clsAsMap.get("stdin").toString() : null;
 		SshResult sshResult = commandCenter.ssh(prompt, cmd, force, stdin);
 		if (clsAsMap.containsKey("result")) {
 			Closure result = (Closure) clsAsMap.get("result");
