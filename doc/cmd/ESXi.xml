@@ -1,0 +1,227 @@
+<operation>
+	<services>
+		<service name="ESXi" adminPort="22">
+
+			<commands>
+
+				<command name="changePassword">
+					<params>
+						<param name="Username" required="true"/>
+						<param name="NewPassword" required="true"/>
+					</params>
+
+					<body><![CDATA[
+ssh{
+	prompt "Change password for '${Username}'"
+	cmd "passwd ${Username} --stdin"
+	stdin NewPassword
+}
+$userPasswordUpdated(Username, NewPassword)
+]]></body>
+				</command>
+
+				<!-- Specific Commands -->
+
+				<command name="vList" listView="true">
+					<params>
+						<param name="Vmid" type="Guest"/>
+						<param name="Name"/>
+						<param name="ShowPowerStat" type="Boolean" defaultValue="false" required="true"/>
+						<param name="ShowIP" type="Boolean" defaultValue="false" required="true"/>
+						<param name="ShowVmx" type="Boolean" defaultValue="false" required="true"/>
+						<param name="UpdateServer" type="Boolean" defaultValue="false" required="true"/>
+					</params>
+
+					<body><![CDATA[
+def filter = $inputs('Vmid', 'Name')
+
+def tab = ssh {
+	prompt 'List of VMs'
+	cmd 'vim-cmd vmsvc/getallvms'
+	result {
+		it.toTabular('\\s{3,}')
+		  .build(filter)
+	}
+}
+
+def listOfServers = []
+
+tab.rows.each {Map vmMap ->
+	$log("vList: Before change ${vmMap}")
+
+	vmMap.DataStore = vmMap.File.find('\\[(.+?)\\]', 1)
+	vmMap.File = vmMap.File.replaceAll('\\[.+?\\] ', '')
+
+	if(ShowIP || UpdateServer)
+		vmMap.IpAddress = vGetIP([Vmid : vmMap.Vmid])
+
+	if(ShowPowerStat)
+		vmMap.PowerStat = vPowerStat([Vmid : vmMap.Vmid])
+
+	if(ShowVmx) {
+		def vmVMX = ssh {
+			prompt "Get VMX: ${vmMap.Vmid}"
+			cmd """ cat "/vmfs/volumes/${vmMap.DataStore}/${vmMap.File}" """
+			result {
+				it.toMap()
+			}
+		}
+		vmMap.INFO = vmVMX
+
+		def vmdkMap = [:]
+		vmVMX.each { String k, String v ->
+			if (v.endsWith('.vmdk')) {
+				if(v.startsWith('/')) {
+					vmdkMap[k] = v
+				} else {
+					vmdkMap[k] = "/vmfs/volumes/${vmMap.DataStore}/${vmMap.Name}/${v}"
+				}
+			}
+		}
+		vmMap.VMDK = vmdkMap
+	}
+
+	$log("vList: After change ${vmMap}")
+
+	if (UpdateServer) {
+		def os = null
+		def guestOS = vmMap["Guest OS"].toLowerCase()
+		if(guestOS.contains("linux"))
+			os = "Linux"
+		else if(guestOS.contains("windows"))
+			os = "Windows"
+		listOfServers.add([name: vmMap.Name, address: vmMap.IpAddress, vmId: vmMap.Vmid, os:os])
+	}
+}
+
+if (UpdateServer)
+	$checkVMServers(listOfServers)
+
+return tab
+]]></body>
+				</command>
+
+				<command name="vPowerStat">
+					<params>
+						<param name="Vmid" type="Guest" required="true"/>
+					</params>
+
+					<body><![CDATA[
+ssh {
+	prompt "Check power status: '${Vmid}'"
+	cmd "vim-cmd vmsvc/power.getstate ${Vmid}"
+	result {
+		it.stdout.contains('Powered on')
+	}
+}
+]]></body>
+				</command>
+
+				<command name="vPowerOn">
+					<params>
+						<param name="Vmid" type="Guest" required="true"/>
+					</params>
+
+					<body><![CDATA[
+if(!vPowerStat([Vmid:Vmid])) {
+	ssh {
+		prompt "Power On: '${Vmid}'"
+		cmd "vim-cmd vmsvc/power.on ${Vmid}"
+	}
+} else {
+	$error("Already On!")
+}
+]]></body>
+				</command>
+
+				<command name="vPowerOff">
+					<params>
+						<param name="Vmid" type="Guest" required="true"/>
+					</params>
+
+					<body><![CDATA[
+if(vPowerStat([Vmid:Vmid])) {
+	ssh {
+		prompt "Power Off: '${Vmid}'"
+		cmd "vim-cmd vmsvc/power.off ${Vmid}"
+	}
+} else {
+	$error("Already Off!")
+}
+]]></body>
+				</command>
+
+				<command name="vReboot">
+					<params>
+						<param name="Vmid" type="Guest" required="true"/>
+					</params>
+
+					<body><![CDATA[
+if(vPowerStat([Vmid:Vmid])) {
+	ssh {
+		prompt "Reboot: '${Vmid}'"
+		cmd "vim-cmd vmsvc/power.reboot ${Vmid}"
+	}
+} else {
+	$error('Already off')
+}
+]]></body>
+				</command>
+
+				<command name="vUnregister">
+					<params>
+						<param name="Vmid" required="true"/>
+					</params>
+
+					<body><![CDATA[
+if(!vPowerStat([Vmid:Vmid])) {
+	ssh {
+		prompt "Unregister VM: '${Vmid}'"
+		cmd "vim-cmd vmsvc/unregister ${Vmid}"
+	}
+} else {
+	$error('Power off before unregister')
+}
+]]></body>
+				</command>
+
+				<command name="vDelete">
+					<params>
+						<param name="Vmid" type="Guest" required="true"/>
+					</params>
+
+					<body><![CDATA[
+if(!vPowerStat([Vmid:Vmid])) {
+	ssh {
+		prompt "Delete: '${Vmid}'"
+		cmd "vim-cmd vmsvc/destroy ${Vmid}"
+	}
+} else {
+	$error('Power off before delete')
+}
+]]></body>
+				</command>
+
+				<command name="vGetIP">
+					<params>
+						<param name="Vmid" type="Guest" required="true"/>
+					</params>
+
+					<body><![CDATA[
+ssh {
+	prompt "Get IP: '${Vmid}'"
+	cmd """ vim-cmd vmsvc/get.guest ${Vmid} | grep -m 1 "ipAddress = \\"" """
+	force true
+	result {
+		it.stdout
+		  .find('\"(.+?)\"', 1)
+	}
+}
+]]></body>
+				</command>
+
+			</commands>
+
+		</service>
+	</services>
+</operation>

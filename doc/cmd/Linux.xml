@@ -3,91 +3,65 @@
 		<service name="Linux" adminPort="22">
 			<commands>
 
-				<command name="checkFile">
-					<params>
-						<param name="file" required="true"/>
-					</params>
-					<body>
-						<![CDATA[
-ssh {
-	prompt "Check file: ${file}"
-	cmd "[ -e '${file}' ] && echo 'true' || echo 'false'"
-	result {
-		it.stdout == 'true'
-	}
-}
-]]></body>
-				</command>
-
 				<command name="changePassword">
 					<params>
-						<param name="username" required="true"/>
-						<param name="newPassword" required="true"/>
+						<param name="Username" required="true"/>
+						<param name="NewPassword" required="true"/>
 					</params>
 
 					<body><![CDATA[
 ssh{
-	prompt "Change password for '${username}'"
-	cmd "passwd ${username} --stdin"
-	stdin newPassword
+	prompt "Change password for '${Username}'"
+	cmd "passwd ${Username} --stdin"
+	stdin NewPassword
 }
-$userPasswordUpdated(username, newPassword)
-]]></body>
-				</command>
-
-				<command name="netstat">
-					<params/>
-
-					<body><![CDATA[
-ssh{
-	prompt "netstat"
-	cmd "netstat -antp"
-	result {
-		it.toTabular()
-		  .setIgnoreStartingLines(1)
-		  .setPossibleColumns("Proto", "Recv-Q", "Send-Q", "Local Address", "Foreign Address", "State", "PID/Program name")
-	}
-}
-
+$userPasswordUpdated(Username, NewPassword)
 ]]></body>
 				</command>
 
 				<command name="fileUpload">
 					<params>
-						<param name="file" type="File" required="true"/>
+						<param name="File" type="File" required="true"/>
 					</params>
 
 					<body><![CDATA[
-$cmd.scpTo(file, '~')
+$cmd.scpTo(binding.variables["File"], '~')
 					]]></body>
 				</command>
 
-				<command name="listOpenFile">
+				<command name="service">
 					<params>
-						<param name="pid" required="true"/>
+						<param name="Name" required="true"/>
+						<param name="Action" required="true" stringLiterals="start|stop|restart|status"/>
 					</params>
 
 					<body><![CDATA[
-def size = ssh {
-	prompt "Total number of open files for '${pid}'"
-	cmd "lsof -p ${pid} | wc -l"
-	result {
-		it.toInteger()
+ssh {
+	prompt "Action for service '${Name}': ${Action}"
+	cmd "service ${Name} ${Action}"
+}
+]]></body>
+				</command>
+
+				<command name="killProcess">
+					<params>
+						<param name="ProcessName" required="true"/>
+						<param name="Username" required="true"/>
+						<param name="Dash9" type="Boolean" required="true" defaultValue="false"/>
+					</params>
+
+					<body><![CDATA[
+def d9 = Dash9 ? '-9' : ''
+def processes = oListProcess([ProcessName: ProcessName, Username: Username])
+processes.rows.each {r ->
+	ssh {
+		prompt "Kill process: pid=${r.pid}"
+		cmd "kill ${d9} ${r.pid}"
+		force true
 	}
 }
 
-if(size > 0)
-	size--;
-
-def tab = ssh {
-	prompt "List open files for '${pid}' (max 200)"
-	cmd "lsof -p ${pid} | head -n 200"
-	result {
-		it.toTabular()
-		  .setSize(size)
-		  .setPossibleColumns("COMMAND", "PID", "TID", "USER", "FD", "TYPE", "DEVICE", "SIZE/OFF", "NODE", "NAME")
-	}
-}
+return null
 ]]></body>
 				</command>
 
@@ -95,18 +69,18 @@ def tab = ssh {
 
 				<command name="oQuery">
 					<params>
-						<param name="prompt" defaultValue="Querying"/>
-						<param name="sql" required="true"/>
-						<param name="lim_start" required="true" defaultValue="0"/>
-						<param name="lim_count" required="true" defaultValue="100"/>
+						<param name="Prompt" defaultValue="Querying"/>
+						<param name="Sql" required="true"/>
+						<param name="LimStart" required="true" defaultValue="0"/>
+						<param name="LimCount" required="true" defaultValue="150"/>
 					</params>
 
 					<body><![CDATA[
-def sql_lim = "${sql} limit ${lim_start}, ${lim_count}"
-def sql_cnt = "select count(*) from (${sql})"
+def sql_lim = "${Sql} limit ${LimStart}, ${LimCount}"
+def sql_cnt = "select count(*) from (${Sql})"
 
 def cnt = ssh {
-	prompt "Counting: ${prompt}"
+	prompt "Counting: ${Prompt}"
 	cmd """ osqueryi "${sql_cnt}" --csv --noheader """
 	result {
 		it.toInteger()
@@ -114,7 +88,7 @@ def cnt = ssh {
 }
 
 ssh {
-	prompt prompt
+	prompt Prompt
 	cmd """ osqueryi "${sql_lim}" --csv """
 	result {
 		it.toTabular("[|]")
@@ -127,50 +101,138 @@ ssh {
 
 				<command name="oListUser">
 					<params>
-						<param name="uid"/>
-						<param name="username"/>
-						<param name="show_normal" type="Boolean" required="true" defaultValue="true"/>
+						<param name="Uid"/>
+						<param name="Username"/>
+						<param name="ShowNormal" type="Boolean" required="true" defaultValue="true"/>
 					</params>
 
 					<body><![CDATA[
 def sql = "select uid, username, description, directory, shell from users where 1=1"
-if(username != null)
-	sql += " and username='${username}'"
-if(uid != null)
-	sql += " and uid='${uid}'"
-if(show_normal)
+
+if(binding.variables["Uid"])
+	sql += " and uid = '${Uid}'"
+
+if(binding.variables["Username"])
+	sql += " and username = '${Username}'"
+
+if(ShowNormal)
 	sql += " and shell='/bin/bash'"
 
-oQuery([prompt: 'List of Users', sql: sql])
+oQuery([Prompt: 'List of Users', Sql: sql])
+]]></body>
+				</command>
+
+				<command name="oListProcess">
+					<params>
+						<param name="ProcessName"/>
+						<param name="Username"/>
+						<param name="ShowProcessPath" type="Boolean" required="true" defaultValue="false"/>
+						<param name="ShowCmdline" type="Boolean" required="true" defaultValue="false"/>
+						<param name="SortBy" defaultValue="resident_size"
+							   stringLiterals="process_name|username|resident_size|threads"/>
+						<param name="SortMod" defaultValue="desc" stringLiterals="desc|asc"/>
+					</params>
+					<body><![CDATA[
+def sql = "select pr.pid, pr.name process_name, us.username, pr.state, pr.resident_size, pr.total_size, pr.threads"
+
+if(ShowProcessPath)
+	sql += ", pr.path process_path"
+
+if(ShowCmdline)
+	sql += ", pr.cmdline"
+
+sql += " from processes pr join users us using(uid) where 1=1"
+
+
+if(binding.variables["ProcessName"])
+	sql += " and pr.name = '${ProcessName}'"
+
+if(binding.variables["Username"])
+	sql += " and us.username = '${Username}'"
+
+if(binding.variables["SortBy"]) {
+	def mod = binding.variables["SortMod"] ? SortMod : 'desc'
+	sql = "select * from (${sql}) order by ${SortBy} ${mod}"
+}
+
+$log("*** SQL: " + sql)
+
+oQuery([Prompt: 'List of Processes', Sql: sql])]]></body>
+				</command>
+
+				<command name="oListOpenSocket">
+					<params>
+						<param name="Pid"/>
+						<param name="ProcessName"/>
+						<param name="Protocol"/>
+						<param name="RemoteAddress"/>
+						<param name="RemotePort"/>
+						<param name="Username"/>
+						<param name="ShowProcessPath" type="Boolean" required="true" defaultValue="false"/>
+						<param name="ShowCmdline" type="Boolean" required="true" defaultValue="false"/>
+					</params>
+					<body><![CDATA[
+def sql = "select pr.pid, pr.name process_name, os.protocol, os.local_address, os.local_port, os.remote_address, os.remote_port, us.username"
+
+if(ShowProcessPath)
+	sql += ", pr.path process_path"
+
+if(ShowCmdline)
+	sql += ", pr.cmdline"
+
+sql += " from process_open_sockets os join processes pr using(pid) join users us using(uid) where 1=1"
+
+if(binding.variables["Pid"])
+	sql += " and pr.pid = '${Pid}'"
+
+if(binding.variables["Protocol"])
+	sql += " and os.protocol = '${Protocol}'"
+
+if(binding.variables["RemoteAddress"])
+	sql += " and os.remote_address = '${RemoteAddress}'"
+
+if(binding.variables["RemotePort"])
+	sql += " and os.remote_port = '${RemotePort}'"
+
+if(binding.variables["ProcessName"])
+	sql += " and pr.name = '${ProcessName}'"
+
+if(binding.variables["Username"])
+	sql += " and us.username = '${Username}'"
+
+oQuery([Prompt: 'List of Opened Sockets', Sql: sql])
 ]]></body>
 				</command>
 
 				<command name="oListOpenFile">
 					<params>
-						<param name="pid"/>
-						<param name="process_name"/>
-						<param name="username"/>
-						<param name="show_process_path" type="Boolean" required="true" defaultValue="false"/>
-						<param name="show_cmdline" type="Boolean" required="true" defaultValue="false"/>
+						<param name="Pid"/>
+						<param name="ProcessName"/>
+						<param name="Username"/>
+						<param name="ShowProcessPath" type="Boolean" required="true" defaultValue="false"/>
+						<param name="ShowCmdline" type="Boolean" required="true" defaultValue="false"/>
 					</params>
 					<body><![CDATA[
 def sql = "select pr.pid, pr.name process_name, of.path file_path, us.username"
 
-if(show_process_path)
+if(ShowProcessPath)
 	sql += ", pr.path process_path"
-if(show_cmdline)
+
+if(ShowCmdline)
 	sql += ", pr.cmdline"
 
 sql += " from process_open_files of join processes pr using(pid) join users us using(uid) where 1=1"
 
-if(pid)
-	sql += " and pr.pid = '${pid}'"
-if(process_name)
-	sql += " and pr.name = '${process_name}'"
-if(username)
-	sql += " and us.username = '${username}'"
+if(binding.variables["Pid"])
+	sql += " and pr.pid = '${Pid}'"
 
-oQuery([prompt: 'List of Opened Files', sql: sql])
+if(binding.variables["ProcessName"])
+	sql += " and pr.name = '${ProcessName}'"
+
+if(binding.variables["Username"])
+	sql += " and us.username = '${Username}'"
+
+oQuery([Prompt: 'List of Opened Files', Sql: sql])
 ]]></body>
 				</command>
 

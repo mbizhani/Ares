@@ -44,10 +44,7 @@ import org.slf4j.LoggerFactory;
 import javax.inject.Inject;
 import java.io.PrintWriter;
 import java.io.StringWriter;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class CommandExecPanel extends DPanel implements IAsyncResponse {
 	private static final long serialVersionUID = 6094381569285095361L;
@@ -252,6 +249,10 @@ public class CommandExecPanel extends DPanel implements IAsyncResponse {
 						if (paramsAsStr.containsKey(xParamName)) {
 							fieldFormItem = new WLabelInput(xParamName);
 							params.put(xParamName, paramsAsStr.get(xParamName));
+						} else if (xParam.getStringLiterals() != null) {
+							List<String> literals = Arrays.asList(xParam.getStringLiterals().split("[|]"));
+							fieldFormItem = new WSelectionInput(xParamName, literals, false);
+							params.put(xParamName, xParam.getDefaultValueObject());
 						} else {
 							fieldFormItem = new WTextInput(xParamName);
 							params.put(xParamName, xParam.getDefaultValueObject());
@@ -301,7 +302,7 @@ public class CommandExecPanel extends DPanel implements IAsyncResponse {
 					if (entry.getValue() instanceof KeyValueVO) {
 						KeyValueVO vo = (KeyValueVO) entry.getValue();
 						cmdParams.put(entry.getKey(), vo.getKey());
-					} else if (entry.getValue() != null)  {
+					} else if (entry.getValue() != null) {
 						cmdParams.put(entry.getKey(), entry.getValue());
 					}
 				}

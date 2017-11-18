@@ -21,6 +21,9 @@ public class XParam implements Serializable {
 	@XStreamAsAttribute
 	private String defaultValue;
 
+	@XStreamAsAttribute
+	private String stringLiterals;
+
 	// ------------------------------
 
 	public String getName() {
@@ -56,6 +59,15 @@ public class XParam implements Serializable {
 
 	public XParam setDefaultValue(String defaultValue) {
 		this.defaultValue = defaultValue;
+		return this;
+	}
+
+	public String getStringLiterals() {
+		return stringLiterals;
+	}
+
+	public XParam setStringLiterals(String stringLiterals) {
+		this.stringLiterals = stringLiterals;
 		return this;
 	}
 

@@ -222,7 +222,7 @@ public class OServerService implements IOServerService {
 
 	@Override
 	public void checkVMServers(Long hypervisorId, List<Map<String, String>> servers) {
-		logger.info("checkVMServers: hypervisor=[{}] servers={}", hypervisorId, servers);
+		logger.info("CheckVMServers: hypervisor=[{}] servers={}", hypervisorId, servers);
 
 		persistorService.createQueryBuilder()
 			.addSelect("update OServer ent set ent.vmId = null where ent.hypervisor.id = :hypervisorId")
@@ -244,13 +244,13 @@ public class OServerService implements IOServerService {
 				.object();
 
 			if (oServer != null) {
-				logger.info("checkVMServers: update server id=[{}] name=[{}]", oServer.getId(), oServer.getName());
+				logger.info("CheckVMServers: update server id=[{}] name=[{}]", oServer.getId(), oServer.getName());
 				oServer.setVmId(vmId);
 				if (address != null) {
 					oServer.setAddress(address);
 				}
 			} else {
-				logger.info("checkVMServers: insert new server name=[{}] vmId=[{}]", name, vmId);
+				logger.info("CheckVMServers: insert new server name=[{}] vmId=[{}]", name, vmId);
 				oServer = new OServer(name, address);
 				oServer.setVmId(vmId);
 				oServer.setHypervisor(new OServer(hypervisorId));
