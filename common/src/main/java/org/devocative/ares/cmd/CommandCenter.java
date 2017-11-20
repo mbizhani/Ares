@@ -198,13 +198,13 @@ public class CommandCenter {
 		throw new CommandException(message);
 	}
 
-	public void warn(String message) {
+	/*public void warn(String message) {
 		resource.onResult(new CommandOutput(CommandOutput.Type.LINE, "Warn: " + message));
 	}
 
 	public void info(String message) {
 		resource.onResult(new CommandOutput(CommandOutput.Type.LINE, "Info: " + message));
-	}
+	}*/
 
 	// ---------------
 

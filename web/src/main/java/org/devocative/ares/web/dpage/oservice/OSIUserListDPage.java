@@ -32,12 +32,18 @@ import org.devocative.wickomp.grid.WDataGrid;
 import org.devocative.wickomp.grid.WSortField;
 import org.devocative.wickomp.grid.column.OColumnList;
 import org.devocative.wickomp.grid.column.OPropertyColumn;
+import org.devocative.wickomp.grid.toolbar.OExportExcelButton;
+import org.devocative.wickomp.grid.toolbar.OGridGroupingButton;
 import org.devocative.wickomp.html.WAjaxLink;
 import org.devocative.wickomp.html.WFloatTable;
+import org.devocative.wickomp.html.icon.FontAwesome;
 import org.devocative.wickomp.html.window.WModalWindow;
+import org.devocative.wickomp.opt.IStyler;
 import org.devocative.wickomp.opt.OSize;
+import org.devocative.wickomp.opt.OStyle;
 
 import javax.inject.Inject;
+import java.io.Serializable;
 import java.util.Collections;
 import java.util.List;
 
@@ -151,9 +157,13 @@ public class OSIUserListDPage extends DPage implements IGridDataSource<OSIUser> 
 		OColumnList<OSIUser> columnList = new OColumnList<>();
 		columnList.add(new OPropertyColumn<>(new ResourceModel("OSIUser.username"), "username"));
 		columnList.add(new OPropertyColumn<OSIUser>(new ResourceModel("OSIUser.executor"), "executor")
-			.setFormatter(OBooleanFormatter.bool()));
+				.setFormatter(OBooleanFormatter.bool())
+				.setCellStyler((IStyler<OSIUser> & Serializable) (bean, id) -> OStyle.style(bean.getExecutor() ? "color: #32cd32" : null))
+		);
 		columnList.add(new OPropertyColumn<OSIUser>(new ResourceModel("OSIUser.enabled"), "enabled")
-			.setFormatter(OBooleanFormatter.bool()));
+				.setFormatter(OBooleanFormatter.bool())
+				.setCellStyler((IStyler<OSIUser> & Serializable) (bean, id) -> OStyle.style(bean.getEnabled() ? "color: #32cd32" : "color: red"))
+		);
 		columnList.add(new OPropertyColumn<>(new ResourceModel("OSIUser.remoteMode"), "remoteMode"));
 		//columnList.add(new OPropertyColumn<>(new ResourceModel("OSIUser.serviceInstance"), "serviceInstance"));
 		columnList.add(new OPropertyColumn<>(new ResourceModel("OSIUser.server"), "server"));
@@ -205,6 +215,8 @@ public class OSIUserListDPage extends DPage implements IGridDataSource<OSIUser> 
 		oGrid
 			.setColumns(columnList)
 			.setMultiSort(false)
+			.addToolbarButton(new OGridGroupingButton<>(new FontAwesome("expand"), new FontAwesome("compress")))
+			.addToolbarButton(new OExportExcelButton<>(new FontAwesome("file-excel-o", new Model<>("Export to excel")).setColor("green"), this))
 			.setHeight(gridHeight)
 			.setWidth(gridWidth)
 			.setFit(gridFit);
