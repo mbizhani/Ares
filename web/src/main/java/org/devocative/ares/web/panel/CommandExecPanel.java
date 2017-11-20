@@ -160,7 +160,7 @@ public class CommandExecPanel extends DPanel implements IAsyncResponse {
 		}
 
 		XCommand xCommand = command.getXCommand();
-		final boolean hasGuest = xCommand.checkHasGuest();
+		boolean hasGuest = xCommand.checkHasGuest();
 
 		List<XParam> xParams = new ArrayList<>();
 		xParams.add(
@@ -177,88 +177,11 @@ public class CommandExecPanel extends DPanel implements IAsyncResponse {
 
 			@Override
 			protected void populateItem(ListItem<XParam> item) {
-				RepeatingView view = new RepeatingView("field");
-
 				XParam xParam = item.getModelObject();
-				String xParamName = xParam.getName();
+				FormComponent fieldFormItem = createFormItem(xParam, hasGuest);
 
-				FormComponent fieldFormItem = null;
-
-				switch (xParam.getType()) {
-					case Guest:
-						if (paramsAsStr.containsKey(xParamName)) {
-							KeyValueVO<String, String> guestOf = serverService.findGuestOf(targetServiceInstances.get(0).getServerId(), paramsAsStr.get(xParamName));
-							params.put(xParamName, guestOf);
-							fieldFormItem = new WLabelInput(xParamName);
-						} else {
-							WSelectionInput guestSelectionInput = new WSelectionInput(xParamName, new ArrayList(), false);
-							guestInputList.add(guestSelectionInput);
-							fieldFormItem = guestSelectionInput;
-						}
-						break;
-
-					case Server:
-						if (paramsAsStr.containsKey(xParamName)) {
-							KeyValueVO<Long, String> serverAsVM = serverService.findServerAsVM(Long.valueOf(paramsAsStr.get(xParamName)));
-							params.put(xParamName, serverAsVM);
-							fieldFormItem = new WLabelInput(xParamName);
-						} else {
-							fieldFormItem = new WSelectionInput(xParamName, serverService.findServersAsVM(), false);
-						}
-						break;
-
-					case Service:
-						if (targetServiceInstanceId == null) {
-							WSelectionInput selectionInput = new WSelectionInput(xParamName, targetServiceInstances, false);
-
-							if (hasGuest) {
-								selectionInput.addToChoices(new WSelectionInputAjaxUpdatingBehavior() {
-									private static final long serialVersionUID = -2226097679754487094L;
-
-									@Override
-									protected void onUpdate(AjaxRequestTarget target) {
-										OServiceInstance serviceInstance = (OServiceInstance) getComponent().getDefaultModelObject();
-										List<KeyValueVO<String, String>> guestsOf = serverService.findGuestsOf(serviceInstance.getServerId());
-										for (WSelectionInput guestInput : guestInputList) {
-											guestInput.updateChoices(target, guestsOf);
-										}
-									}
-								});
-							}
-							fieldFormItem = selectionInput;
-						} else {
-							fieldFormItem = new WLabelInput(xParamName);
-						}
-						break;
-
-					case File:
-						fieldFormItem = new FileStoreUploadPanel(xParamName, false);
-						break;
-
-					case Boolean:
-						if (paramsAsStr.containsKey(xParamName)) {
-							fieldFormItem = new WLabelInput(xParamName);
-							params.put(xParamName, Boolean.valueOf(paramsAsStr.get(xParamName)));
-						} else if (xParam.getDefaultValue() != null) {
-							fieldFormItem = new WBooleanInput(xParamName);
-							params.put(xParamName, xParam.getDefaultValueObject());
-						}
-						break;
-
-					default:
-						if (paramsAsStr.containsKey(xParamName)) {
-							fieldFormItem = new WLabelInput(xParamName);
-							params.put(xParamName, paramsAsStr.get(xParamName));
-						} else if (xParam.getStringLiterals() != null) {
-							List<String> literals = Arrays.asList(xParam.getStringLiterals().split("[|]"));
-							fieldFormItem = new WSelectionInput(xParamName, literals, false);
-							params.put(xParamName, xParam.getDefaultValueObject());
-						} else {
-							fieldFormItem = new WTextInput(xParamName);
-							params.put(xParamName, xParam.getDefaultValueObject());
-						}
-				}
-				view.add(fieldFormItem.setRequired(xParam.getRequired()).setLabel(new Model<>(xParamName)));
+				RepeatingView view = new RepeatingView("field");
+				view.add(fieldFormItem.setRequired(xParam.getRequired()).setLabel(new Model<>(xParam.getName())));
 				item.add(view);
 			}
 		});
@@ -271,12 +194,11 @@ public class CommandExecPanel extends DPanel implements IAsyncResponse {
 
 			@Override
 			protected void onSubmit(AjaxRequestTarget target) {
-				OServiceInstance serviceInstance = (OServiceInstance) params.remove("target");
-				if (serviceInstance == null) {
-					error("'target' is required");
-				}
+				Map<String, Object> paramsClone = new HashMap<>(params);
+				OServiceInstance serviceInstance = (OServiceInstance) paramsClone.remove("target");
+
 				Map<String, Object> cmdParams = new HashMap<>();
-				for (Map.Entry<String, Object> entry : params.entrySet()) {
+				for (Map.Entry<String, Object> entry : paramsClone.entrySet()) {
 					if (entry.getValue() instanceof KeyValueVO) {
 						KeyValueVO vo = (KeyValueVO) entry.getValue();
 						cmdParams.put(entry.getKey(), vo.getKey());
@@ -296,9 +218,11 @@ public class CommandExecPanel extends DPanel implements IAsyncResponse {
 
 			@Override
 			protected void onSubmit(AjaxRequestTarget target) {
-				OServiceInstance serviceInstance = (OServiceInstance) params.remove("target");
+				Map<String, Object> paramsClone = new HashMap<>(params);
+				OServiceInstance serviceInstance = (OServiceInstance) paramsClone.remove("target");
+
 				Map<String, Object> cmdParams = new HashMap<>();
-				for (Map.Entry<String, Object> entry : params.entrySet()) {
+				for (Map.Entry<String, Object> entry : paramsClone.entrySet()) {
 					if (entry.getValue() instanceof KeyValueVO) {
 						KeyValueVO vo = (KeyValueVO) entry.getValue();
 						cmdParams.put(entry.getKey(), vo.getKey());
@@ -335,6 +259,92 @@ public class CommandExecPanel extends DPanel implements IAsyncResponse {
 	}
 
 	// ------------------------------
+
+	private FormComponent createFormItem(XParam xParam, boolean hasGuest) {
+		FormComponent fieldFormItem = null;
+		String xParamName = xParam.getName();
+
+		switch (xParam.getType()) {
+			case Guest:
+				if (paramsAsStr.containsKey(xParamName)) {
+					KeyValueVO<String, String> guestOf = serverService.findGuestOf(targetServiceInstances.get(0).getServerId(), paramsAsStr.get(xParamName));
+					params.put(xParamName, guestOf);
+					fieldFormItem = new WLabelInput(xParamName);
+				} else {
+					WSelectionInput guestSelectionInput = new WSelectionInput(xParamName, new ArrayList(), false);
+					guestInputList.add(guestSelectionInput);
+					fieldFormItem = guestSelectionInput;
+				}
+				break;
+
+			case Server:
+				if (paramsAsStr.containsKey(xParamName)) {
+					KeyValueVO<Long, String> serverAsVM = serverService.findServerAsVM(Long.valueOf(paramsAsStr.get(xParamName)));
+					params.put(xParamName, serverAsVM);
+					fieldFormItem = new WLabelInput(xParamName);
+				} else {
+					fieldFormItem = new WSelectionInput(xParamName, serverService.findServersAsVM(), false);
+				}
+				break;
+
+			case Service:
+				if (targetServiceInstanceId == null) {
+					WSelectionInput selectionInput = new WSelectionInput(xParamName, targetServiceInstances, false);
+
+					if (hasGuest) {
+						selectionInput.addToChoices(new WSelectionInputAjaxUpdatingBehavior() {
+							private static final long serialVersionUID = -2226097679754487094L;
+
+							@Override
+							protected void onUpdate(AjaxRequestTarget target) {
+								OServiceInstance serviceInstance = (OServiceInstance) getComponent().getDefaultModelObject();
+								List<KeyValueVO<String, String>> guestsOf = serverService.findGuestsOf(serviceInstance.getServerId());
+								for (WSelectionInput guestInput : guestInputList) {
+									guestInput.updateChoices(target, guestsOf);
+								}
+							}
+						});
+					}
+					fieldFormItem = selectionInput;
+				} else {
+					fieldFormItem = new WLabelInput(xParamName);
+				}
+				break;
+
+			case File:
+				fieldFormItem = new FileStoreUploadPanel(xParamName, false);
+				break;
+
+			case Boolean:
+				if (paramsAsStr.containsKey(xParamName)) {
+					fieldFormItem = new WLabelInput(xParamName);
+					params.put(xParamName, Boolean.valueOf(paramsAsStr.get(xParamName)));
+				} else if (xParam.getDefaultValue() != null) {
+					fieldFormItem = new WBooleanInput(xParamName);
+					params.put(xParamName, xParam.getDefaultValueObject());
+				}
+				break;
+
+			default:
+				if (paramsAsStr.containsKey(xParamName)) {
+					String[] parts = paramsAsStr.get(xParamName).split("[|]");
+					if (parts.length == 1) {
+						fieldFormItem = new WLabelInput(xParamName);
+					} else {
+						fieldFormItem = new WSelectionInput(xParamName, Arrays.asList(parts), false);
+					}
+					params.put(xParamName, paramsAsStr.get(parts[0]));
+				} else if (xParam.getStringLiterals() != null) {
+					List<String> literals = Arrays.asList(xParam.getStringLiterals().split("[|]"));
+					fieldFormItem = new WSelectionInput(xParamName, literals, false);
+					params.put(xParamName, xParam.getDefaultValueObject());
+				} else {
+					fieldFormItem = new WTextInput(xParamName);
+					params.put(xParamName, xParam.getDefaultValueObject());
+				}
+		}
+		return fieldFormItem;
+	}
 
 	private void renderTabular(TabularVO<?> tabularVO, IPartialPageRequestHandler handler) {
 		String tabId = tabular.getMarkupId() + "-tab";
