@@ -15,6 +15,7 @@ import org.devocative.ares.entity.command.Command;
 import org.devocative.ares.entity.command.CommandCfgLob;
 import org.devocative.ares.entity.oservice.OSIUser;
 import org.devocative.ares.entity.oservice.OService;
+import org.devocative.ares.entity.oservice.OServiceInstance;
 import org.devocative.ares.iservice.IOServerService;
 import org.devocative.ares.iservice.command.ICommandLogService;
 import org.devocative.ares.iservice.command.ICommandService;
@@ -215,11 +216,13 @@ public class CommandService implements ICommandService, IMissedHitHandler<Long, 
 		Long start = System.currentTimeMillis();
 
 		Command command = load(commandQVO.getCommandId());
+		OServiceInstance serviceInstance = serviceInstanceService.load(commandQVO.getServiceInstanceId());
+
 		CommandCenterResource resource = new CommandCenterResource(this, serverService, serviceInstanceService, callBack);
-		Long logId = commandLogService.insertLog(command, commandQVO.getServiceInstance(), commandQVO.getParams(), commandQVO.getPrepCommandId());
+		Long logId = commandLogService.insertLog(command, serviceInstance, commandQVO.getParams(), commandQVO.getPrepCommandId());
 
 		logger.info("Start command execution: cmd=[{}] si=[{}] currentUser=[{}] logId=[{}]",
-			command.getName(), commandQVO.getServiceInstance(), securityService.getCurrentUser(), logId);
+			command.getName(), serviceInstance, securityService.getCurrentUser(), logId);
 
 		Exception error = null;
 		try {
@@ -230,7 +233,7 @@ public class CommandService implements ICommandService, IMissedHitHandler<Long, 
 		} finally {
 			Long dur = ((System.currentTimeMillis() - start) / 1000);
 			logger.info("Finish command execution: cmd=[{}] si=[{}] currentUser=[{}] dur=[{}] logId=[{}]",
-				command.getName(), commandQVO.getServiceInstance(), securityService.getCurrentUser(), dur, logId);
+				command.getName(), serviceInstance, securityService.getCurrentUser(), dur, logId);
 			commandLogService.updateLog(logId, dur, error);
 			resource.closeAll();
 		}
@@ -238,7 +241,8 @@ public class CommandService implements ICommandService, IMissedHitHandler<Long, 
 
 	@Override
 	public Object callCommand(CommandQVO commandQVO, CommandCenterResource resource) throws Exception {
-		Command cmd = loadByNameAndOService(commandQVO.getCommandName(), commandQVO.getServiceInstance().getService().getId());
+		OServiceInstance serviceInstance = serviceInstanceService.load(commandQVO.getServiceInstanceId());
+		Command cmd = loadByNameAndOService(commandQVO.getCommandName(), serviceInstance.getService().getId());
 
 		if (cmd == null) {
 			cmd = loadByName(commandQVO.getCommandName());
@@ -317,12 +321,16 @@ public class CommandService implements ICommandService, IMissedHitHandler<Long, 
 				Object paramValue = params.get(xParam.getName());
 				OServer oServer = serverService.load(Long.valueOf(paramValue.toString()));
 				params.put(xParam.getName(), oServer);
+			} else if (xParam.getType() == XParamType.Service) {
+				Long otherServiceInstanceId = (Long) params.get(xParam.getName());
+				OServiceInstanceTargetVO otherServiceInstance = serviceInstanceService.getTargetVO(otherServiceInstanceId);
+				params.put(xParam.getName(), otherServiceInstance);
 			}
 		}
 
 		OServiceInstanceTargetVO targetVO;
 		if (commandQVO.getOsiUserId() == null) {
-			targetVO = serviceInstanceService.getTargetVO(commandQVO.getServiceInstance().getId());
+			targetVO = serviceInstanceService.getTargetVO(commandQVO.getServiceInstanceId());
 		} else {
 			targetVO = serviceInstanceService.getTargetVOByUser(commandQVO.getOsiUserId());
 		}
@@ -334,7 +342,7 @@ public class CommandService implements ICommandService, IMissedHitHandler<Long, 
 		cmdParams.put("target", targetVO);
 		cmdParams.put("$util", singleInstOfUtil);
 		cmdParams.put("$cmd", commandCenter);
-		cmdParams.put("DELEGATE", new OtherCommandsWrapper(new MainCommandDSL(commandCenter)));
+		cmdParams.put(IStringTemplate.GROOVY_DELEGATE_KEY, new OtherCommandsWrapper(new MainCommandDSL(commandCenter)));
 
 		CmdRunner runner = new CmdRunner(command.getId(), xCommand.getBody(), cmdParams);
 		runner.run();

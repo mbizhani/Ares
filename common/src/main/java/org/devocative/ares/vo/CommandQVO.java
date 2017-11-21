@@ -1,7 +1,5 @@
 package org.devocative.ares.vo;
 
-import org.devocative.ares.entity.oservice.OServiceInstance;
-
 import java.io.Serializable;
 import java.util.Map;
 
@@ -10,7 +8,7 @@ public class CommandQVO implements Serializable {
 
 	private Long commandId;
 	private String commandName;
-	private OServiceInstance serviceInstance;
+	private Long serviceInstanceId;
 	private Map<String, Object> params;
 	private Long osiUserId;
 
@@ -18,17 +16,17 @@ public class CommandQVO implements Serializable {
 
 	// ------------------------------
 
-	public CommandQVO(Long commandId, OServiceInstance serviceInstance, Map<String, Object> params, Long prepCommandId) {
+	public CommandQVO(Long commandId, Long serviceInstanceId, Map<String, Object> params, Long prepCommandId) {
 		this.commandId = commandId;
-		this.serviceInstance = serviceInstance;
+		this.serviceInstanceId = serviceInstanceId;
 		this.params = params;
 
 		this.prepCommandId = prepCommandId;
 	}
 
-	public CommandQVO(String commandName, OServiceInstance serviceInstance, Map<String, Object> params) {
+	public CommandQVO(String commandName, Long serviceInstanceId, Map<String, Object> params) {
 		this.commandName = commandName;
-		this.serviceInstance = serviceInstance;
+		this.serviceInstanceId = serviceInstanceId;
 		this.params = params;
 	}
 
@@ -42,8 +40,8 @@ public class CommandQVO implements Serializable {
 		return commandName;
 	}
 
-	public OServiceInstance getServiceInstance() {
-		return serviceInstance;
+	public Long getServiceInstanceId() {
+		return serviceInstanceId;
 	}
 
 	public Map<String, Object> getParams() {

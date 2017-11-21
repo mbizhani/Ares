@@ -1,5 +1,6 @@
 package org.devocative.ares.iservice.oservice;
 
+import org.devocative.adroit.vo.KeyValueVO;
 import org.devocative.ares.entity.OServer;
 import org.devocative.ares.entity.oservice.ERemoteMode;
 import org.devocative.ares.entity.oservice.OService;
@@ -32,7 +33,7 @@ public interface IOServiceInstanceService extends IEntityService<OServiceInstanc
 
 	// ==============================
 
-	List<OServiceInstance> findListForCommandExecution(Long serviceId);
+	List<KeyValueVO<Long, String>> findListForCommandExecution(Long serviceId);
 
 	void updateProperties(OService oService, OServiceInstance oServiceInstance);
 

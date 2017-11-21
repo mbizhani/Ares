@@ -37,7 +37,7 @@ public class CommandCenter {
 		try {
 			Object result = resource
 				.getCommandService()
-				.callCommand(new CommandQVO(commandName, targetVO.getServiceInstance(), params), resource);
+				.callCommand(new CommandQVO(commandName, targetVO.getServiceInstance().getId(), params), resource);
 			logger.info("CommandCenter.exec: commandName=[{}}", commandName);
 			return result;
 		} catch (Exception e) {

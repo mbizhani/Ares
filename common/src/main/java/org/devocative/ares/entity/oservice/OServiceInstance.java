@@ -42,6 +42,9 @@ public class OServiceInstance implements ICreationDate, ICreatorUser, IModificat
 	@JoinColumn(name = "f_service", nullable = false, foreignKey = @ForeignKey(name = "srvcinst2service"))
 	private OService service;
 
+	@Column(name = "f_service", nullable = false, insertable = false, updatable = false)
+	private Long serviceId;
+
 	@OneToMany(fetch = FetchType.LAZY, mappedBy = "serviceInstance", cascade = CascadeType.ALL)
 	private List<OSIPropertyValue> propertyValues;
 
@@ -127,6 +130,10 @@ public class OServiceInstance implements ICreationDate, ICreatorUser, IModificat
 
 	public void setService(OService service) {
 		this.service = service;
+	}
+
+	public Long getServiceId() {
+		return serviceId;
 	}
 
 	public List<OSIPropertyValue> getPropertyValues() {

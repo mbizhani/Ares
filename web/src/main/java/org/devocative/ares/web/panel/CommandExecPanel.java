@@ -49,12 +49,13 @@ import java.util.*;
 public class CommandExecPanel extends DPanel implements IAsyncResponse {
 	private static final long serialVersionUID = 6094381569285095361L;
 	private static final Logger logger = LoggerFactory.getLogger(CommandExecPanel.class);
+	private static final String TARGET_KEY = "Target";
 
 	private Long commandId;
 	private Long prepCommandId;
 	private Map<String, Object> params = new HashMap<>();
 	private Map<String, String> paramsAsStr = new HashMap<>();
-	private List<OServiceInstance> targetServiceInstances = new ArrayList<>();
+	private List<KeyValueVO<Long, String>> targetServiceInstances = new ArrayList<>();
 
 	private Long targetServiceInstanceId;
 	private Long osiUserId;
@@ -153,8 +154,8 @@ public class CommandExecPanel extends DPanel implements IAsyncResponse {
 
 		if (targetServiceInstanceId != null) {
 			OServiceInstance target = serviceInstanceService.load(targetServiceInstanceId);
-			params.put("target", target);
-			targetServiceInstances.add(target);
+			params.put(TARGET_KEY, target);
+			targetServiceInstances.add(new KeyValueVO<>(target.getId(), target.toString()));
 		} else {
 			targetServiceInstances.addAll(serviceInstanceService.findListForCommandExecution(command.getServiceId()));
 		}
@@ -165,7 +166,7 @@ public class CommandExecPanel extends DPanel implements IAsyncResponse {
 		List<XParam> xParams = new ArrayList<>();
 		xParams.add(
 			new XParam()
-				.setName("target")
+				.setName(TARGET_KEY)
 				.setType(XParamType.Service)
 				.setRequired(true)
 		);
@@ -195,7 +196,7 @@ public class CommandExecPanel extends DPanel implements IAsyncResponse {
 			@Override
 			protected void onSubmit(AjaxRequestTarget target) {
 				Map<String, Object> paramsClone = new HashMap<>(params);
-				OServiceInstance serviceInstance = (OServiceInstance) paramsClone.remove("target");
+				KeyValueVO<Long, String> serviceInstance = (KeyValueVO<Long, String>) paramsClone.remove(TARGET_KEY);
 
 				Map<String, Object> cmdParams = new HashMap<>();
 				for (Map.Entry<String, Object> entry : paramsClone.entrySet()) {
@@ -208,7 +209,7 @@ public class CommandExecPanel extends DPanel implements IAsyncResponse {
 				}
 
 				commandService.executeCommandTask(
-					new CommandQVO(commandId, serviceInstance, cmdParams, prepCommandId).setOsiUserId(osiUserId),
+					new CommandQVO(commandId, serviceInstance.getKey(), cmdParams, prepCommandId).setOsiUserId(osiUserId),
 					taskBehavior);
 			}
 		});
@@ -219,7 +220,7 @@ public class CommandExecPanel extends DPanel implements IAsyncResponse {
 			@Override
 			protected void onSubmit(AjaxRequestTarget target) {
 				Map<String, Object> paramsClone = new HashMap<>(params);
-				OServiceInstance serviceInstance = (OServiceInstance) paramsClone.remove("target");
+				KeyValueVO<Long, String> serviceInstance = (KeyValueVO<Long, String>) paramsClone.remove(TARGET_KEY);
 
 				Map<String, Object> cmdParams = new HashMap<>();
 				for (Map.Entry<String, Object> entry : paramsClone.entrySet()) {
@@ -231,7 +232,7 @@ public class CommandExecPanel extends DPanel implements IAsyncResponse {
 					}
 				}
 
-				window.setContent(new PrepCommandFormDPage(window.getContentId(), commandId, serviceInstance.getId(), cmdParams));
+				window.setContent(new PrepCommandFormDPage(window.getContentId(), commandId, serviceInstance.getKey(), cmdParams));
 				window.show(target);
 			}
 		}.setVisible(hasPermission(AresPrivilegeKey.PrepCommandAdd)));
@@ -267,7 +268,8 @@ public class CommandExecPanel extends DPanel implements IAsyncResponse {
 		switch (xParam.getType()) {
 			case Guest:
 				if (paramsAsStr.containsKey(xParamName)) {
-					KeyValueVO<String, String> guestOf = serverService.findGuestOf(targetServiceInstances.get(0).getServerId(), paramsAsStr.get(xParamName));
+					Long serverId = serviceInstanceService.load(targetServiceInstances.get(0).getKey()).getServerId();
+					KeyValueVO<String, String> guestOf = serverService.findGuestOf(serverId, paramsAsStr.get(xParamName));
 					params.put(xParamName, guestOf);
 					fieldFormItem = new WLabelInput(xParamName);
 				} else {
@@ -288,26 +290,38 @@ public class CommandExecPanel extends DPanel implements IAsyncResponse {
 				break;
 
 			case Service:
-				if (targetServiceInstanceId == null) {
-					WSelectionInput selectionInput = new WSelectionInput(xParamName, targetServiceInstances, false);
+				if (TARGET_KEY.equals(xParamName)) {
+					if (targetServiceInstanceId == null) {
+						WSelectionInput selectionInput = new WSelectionInput(xParamName, targetServiceInstances, false);
 
-					if (hasGuest) {
-						selectionInput.addToChoices(new WSelectionInputAjaxUpdatingBehavior() {
-							private static final long serialVersionUID = -2226097679754487094L;
+						if (hasGuest) {
+							selectionInput.addToChoices(new WSelectionInputAjaxUpdatingBehavior() {
+								private static final long serialVersionUID = -2226097679754487094L;
 
-							@Override
-							protected void onUpdate(AjaxRequestTarget target) {
-								OServiceInstance serviceInstance = (OServiceInstance) getComponent().getDefaultModelObject();
-								List<KeyValueVO<String, String>> guestsOf = serverService.findGuestsOf(serviceInstance.getServerId());
-								for (WSelectionInput guestInput : guestInputList) {
-									guestInput.updateChoices(target, guestsOf);
+								@Override
+								protected void onUpdate(AjaxRequestTarget target) {
+									KeyValueVO<Long, String> serviceInstance = (KeyValueVO<Long, String>) getComponent().getDefaultModelObject();
+									Long serverId = serviceInstanceService.load(serviceInstance.getKey()).getServerId();
+									List<KeyValueVO<String, String>> guestsOf = serverService.findGuestsOf(serverId);
+									for (WSelectionInput guestInput : guestInputList) {
+										guestInput.updateChoices(target, guestsOf);
+									}
 								}
-							}
-						});
+							});
+						}
+						fieldFormItem = selectionInput;
+					} else {
+						fieldFormItem = new WLabelInput(xParamName);
 					}
-					fieldFormItem = selectionInput;
 				} else {
-					fieldFormItem = new WLabelInput(xParamName);
+					if (paramsAsStr.containsKey(xParamName)) {
+						OServiceInstance serviceInstance = serviceInstanceService.load(new Long(paramsAsStr.get(xParamName)));
+						params.put(xParamName, new KeyValueVO<>(serviceInstance.getId(), serviceInstance.toString()));
+						fieldFormItem = new WLabelInput(xParamName);
+					} else {
+						List<KeyValueVO<Long, String>> serviceInstances = serviceInstanceService.findListForCommandExecution(targetServiceInstances.get(0).getKey());
+						fieldFormItem = new WSelectionInput(xParamName, serviceInstances, false);
+					}
 				}
 				break;
 

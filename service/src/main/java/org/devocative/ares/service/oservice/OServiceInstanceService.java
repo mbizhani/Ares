@@ -2,6 +2,7 @@ package org.devocative.ares.service.oservice;
 
 import org.devocative.adroit.cache.ICache;
 import org.devocative.adroit.cache.IMissedHitHandler;
+import org.devocative.adroit.vo.KeyValueVO;
 import org.devocative.ares.AresErrorCode;
 import org.devocative.ares.AresException;
 import org.devocative.ares.entity.OServer;
@@ -123,12 +124,18 @@ public class OServiceInstanceService implements IOServiceInstanceService, IMisse
 	}
 
 	@Override
-	public List<OServiceInstance> findListForCommandExecution(Long serviceId) {
-		return persistorService.createQueryBuilder()
+	public List<KeyValueVO<Long, String>> findListForCommandExecution(Long serviceId) {
+		List<OServiceInstance> list = persistorService.createQueryBuilder()
 			.addFrom(OServiceInstance.class, "ent")
 			.addWhere("and ent.service.id=:serviceId")
 			.addParam("serviceId", serviceId)
 			.list();
+
+		List<KeyValueVO<Long, String>> result = new ArrayList<>();
+		for (OServiceInstance serviceInstance : list) {
+			result.add(new KeyValueVO<>(serviceInstance.getId(), serviceInstance.toString()));
+		}
+		return result;
 	}
 
 	@Override
