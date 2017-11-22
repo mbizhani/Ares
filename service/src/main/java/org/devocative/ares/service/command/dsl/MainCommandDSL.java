@@ -5,6 +5,7 @@ import org.devocative.adroit.CalendarUtil;
 import org.devocative.ares.cmd.CommandCenter;
 import org.devocative.ares.cmd.CommandException;
 import org.devocative.ares.cmd.SshResult;
+import org.devocative.ares.vo.OServiceInstanceTargetVO;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -69,13 +70,20 @@ public class MainCommandDSL {
 		String query = clsAsMap.containsKey("query") ? clsAsMap.get("query").toString() : null;
 		Map<String, Object> params = clsAsMap.containsKey("params") ? (Map<String, Object>) clsAsMap.get("params") : null;
 		Map<String, Object> filters = clsAsMap.containsKey("filters") ? (Map<String, Object>) clsAsMap.get("filters") : null;
-		Object queryResult = commandCenter.sql(prompt, query, params, filters);
+		Boolean force = clsAsMap.containsKey("force") ? (Boolean) clsAsMap.get("force") : null;
+		Object queryResult = commandCenter.sql(prompt, query, params, filters, force);
 		if (clsAsMap.containsKey("result")) {
 			Closure result = (Closure) clsAsMap.get("result");
 			return result.call(queryResult);
 		} else {
 			return queryResult;
 		}
+	}
+
+	public void reTarget(OServiceInstanceTargetVO newTargetVO, Closure closure) {
+		commandCenter.reTarget(newTargetVO);
+		closure.call();
+		commandCenter.resetTarget();
 	}
 
 	// ---------------

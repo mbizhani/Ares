@@ -154,8 +154,9 @@ public class CommandExecPanel extends DPanel implements IAsyncResponse {
 
 		if (targetServiceInstanceId != null) {
 			OServiceInstance target = serviceInstanceService.load(targetServiceInstanceId);
-			params.put(TARGET_KEY, target);
-			targetServiceInstances.add(new KeyValueVO<>(target.getId(), target.toString()));
+			KeyValueVO<Long, String> targetKeyValueVO = new KeyValueVO<>(target.getId(), target.toString());
+			params.put(TARGET_KEY, targetKeyValueVO);
+			targetServiceInstances.add(targetKeyValueVO);
 		} else {
 			targetServiceInstances.addAll(serviceInstanceService.findListForCommandExecution(command.getServiceId()));
 		}

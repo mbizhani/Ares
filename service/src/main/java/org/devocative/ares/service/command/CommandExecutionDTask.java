@@ -49,6 +49,8 @@ public class CommandExecutionDTask extends DTask implements ICommandResultCallBa
 				} else {
 					onResult(new CommandOutput(CommandOutput.Type.PROMPT, String.format("Final Result: %s", result.toString())));
 				}
+			} else {
+				onResult(new CommandOutput(CommandOutput.Type.PROMPT, "Finished"));
 			}
 		} catch (Exception e) {
 			onResult(new CommandOutput(CommandOutput.Type.ERROR, e.getMessage()));

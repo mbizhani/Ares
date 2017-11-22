@@ -12,6 +12,7 @@ public abstract class AbstractExecutor implements Runnable {
 
 	// ---------------
 
+	private boolean force;
 	private Object result;
 	private Exception exception;
 
@@ -31,6 +32,17 @@ public abstract class AbstractExecutor implements Runnable {
 		} catch (Exception e) {
 			exception = e;
 		}
+	}
+
+	// ---------------
+
+	public boolean isForce() {
+		return force;
+	}
+
+	public AbstractExecutor setForce(boolean force) {
+		this.force = force;
+		return this;
 	}
 
 	public final Exception getException() {

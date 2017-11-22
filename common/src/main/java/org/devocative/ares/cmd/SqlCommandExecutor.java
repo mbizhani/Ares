@@ -28,7 +28,7 @@ public class SqlCommandExecutor extends AbstractCommandExecutor {
 
 	@Override
 	protected void execute() throws SQLException, ClassNotFoundException {
-		Object result;
+		Object result = null;
 		Connection connection = resource.createConnection(targetVO);
 
 		logger.info("Execute query: si=[{}] sql=[{}]", targetVO, command);
@@ -43,20 +43,28 @@ public class SqlCommandExecutor extends AbstractCommandExecutor {
 			nps.addPlugin(new FilterPlugin().addAll(filter));
 		}
 
-		if (nps.execute()) {
-			ResultSet rs = nps.getResultSet();
-			QueryVO queryVO = ResultSetProcessor.process(rs, EColumnNameCase.LOWER);
+		try {
+			if (nps.execute()) {
+				ResultSet rs = nps.getResultSet();
+				QueryVO queryVO = ResultSetProcessor.process(rs, EColumnNameCase.LOWER);
 
-			if (queryVO.getHeader().size() == 1 && queryVO.getRows().size() == 1) {
-				result = queryVO.getRows().get(0).get(0);
+				if (queryVO.getHeader().size() == 1 && queryVO.getRows().size() == 1) {
+					result = queryVO.getRows().get(0).get(0);
+				} else {
+					result = new TabularVO<>(queryVO.getHeader(), queryVO.getRows());
+				}
 			} else {
-				result = new TabularVO<>(queryVO.getHeader(), queryVO.getRows());
+				logger.info("Execute non-select query: update count=[{}]", nps.getUpdateCount());
+				result = nps.getUpdateCount();
 			}
-		} else {
-			logger.info("Execute non-select query: update count=[{}]", nps.getUpdateCount());
-			result = nps.getUpdateCount();
+			nps.close();
+		} catch (SQLException e) {
+			if (isForce()) {
+				logger.warn("SqlCommandExecutor", e);
+			} else {
+				throw e;
+			}
 		}
-		nps.close();
 
 		setResult(result);
 	}

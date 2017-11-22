@@ -14,8 +14,8 @@ import java.util.Map;
 public class CommandCenter {
 	private static final Logger logger = LoggerFactory.getLogger(CommandCenter.class);
 
-	private final OServiceInstanceTargetVO targetVO;
 	private final CommandCenterResource resource;
+	private OServiceInstanceTargetVO targetVO, origTargetVO;
 	private Map<String, Object> params;
 	private Exception exception;
 
@@ -50,19 +50,6 @@ public class CommandCenter {
 
 	// ---------------
 
-	public SshResult ssh(String prompt, String cmd) {
-		return ssh(prompt, cmd, false, (String) null);
-	}
-
-	public SshResult ssh(String prompt, String cmd, Boolean force) {
-		return ssh(prompt, cmd, force, (String) null);
-	}
-
-	public SshResult ssh(String prompt, String cmd, String... stdin) {
-		return ssh(prompt, cmd, false, stdin);
-	}
-
-	// Main ssh()
 	public SshResult ssh(String prompt, String cmd, Boolean force, String... stdin) {
 		int exitStatus = -1;
 		String result = null;
@@ -77,7 +64,10 @@ public class CommandCenter {
 		try {
 			resource.getCommandService().assertCurrentUser(cmd);
 
-			ShellCommandExecutor executor = new ShellCommandExecutor(finalTargetVO, resource, prompt, cmd, stdin, force != null ? force : false);
+			ShellCommandExecutor executor = new ShellCommandExecutor(finalTargetVO, resource, prompt, cmd, stdin);
+			if (force != null) {
+				executor.setForce(force);
+			}
 
 			resource.getCommandService().assertCurrentUser(cmd);
 
@@ -132,18 +122,10 @@ public class CommandCenter {
 			setException(e);
 		}
 	}
+
 	// ---------------
 
-	public Object sql(String prompt, String sql) {
-		return sql(prompt, sql, null, null);
-	}
-
-	public Object sql(String prompt, String sql, Map<String, Object> params) {
-		return sql(prompt, sql, params, null);
-	}
-
-	// Main sql()
-	public Object sql(String prompt, String sql, Map<String, Object> params, Map<String, Object> filter) {
+	public Object sql(String prompt, String sql, Map<String, Object> params, Map<String, Object> filter, Boolean force) {
 		Object result = null;
 
 		OServiceInstanceTargetVO finalTargetVO = targetVO;
@@ -153,6 +135,10 @@ public class CommandCenter {
 
 		try {
 			SqlCommandExecutor executor = new SqlCommandExecutor(finalTargetVO, resource, prompt, sql, params, filter);
+			if (force != null) {
+				executor.setForce(force);
+			}
+
 			Thread th = new Thread(executor);
 			th.start();
 			th.join();
@@ -198,13 +184,18 @@ public class CommandCenter {
 		throw new CommandException(message);
 	}
 
-	/*public void warn(String message) {
-		resource.onResult(new CommandOutput(CommandOutput.Type.LINE, "Warn: " + message));
+	public void reTarget(OServiceInstanceTargetVO newTargetVO) {
+		logger.info("ReTarget: from=[{}] to=[{}]", targetVO, newTargetVO);
+
+		origTargetVO = targetVO;
+		targetVO = newTargetVO;
 	}
 
-	public void info(String message) {
-		resource.onResult(new CommandOutput(CommandOutput.Type.LINE, "Info: " + message));
-	}*/
+	public void resetTarget() {
+		logger.info("ResetTarget: from=[{}] to=[{}]", targetVO, origTargetVO);
+		targetVO = origTargetVO;
+		origTargetVO = null;
+	}
 
 	// ---------------
 

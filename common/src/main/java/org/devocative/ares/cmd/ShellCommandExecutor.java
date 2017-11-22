@@ -5,7 +5,9 @@ import com.jcraft.jsch.JSchException;
 import com.jcraft.jsch.Session;
 import org.devocative.ares.vo.OServiceInstanceTargetVO;
 
-import java.io.*;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 
 /**
  * Since in JSch library, when Channel.disconnect() is called,
@@ -14,7 +16,6 @@ import java.io.*;
  */
 public class ShellCommandExecutor extends AbstractCommandExecutor {
 	private final String[] stdin;
-	private final boolean force;
 
 	// ---------------
 
@@ -22,10 +23,9 @@ public class ShellCommandExecutor extends AbstractCommandExecutor {
 
 	// ------------------------------
 
-	public ShellCommandExecutor(OServiceInstanceTargetVO targetVO, CommandCenterResource resource, String prompt, String command, String[] stdin, boolean force) {
+	public ShellCommandExecutor(OServiceInstanceTargetVO targetVO, CommandCenterResource resource, String prompt, String command, String[] stdin) {
 		super(targetVO, resource, prompt, command);
 		this.stdin = stdin;
-		this.force = force;
 	}
 
 	// ------------------------------
@@ -56,14 +56,11 @@ public class ShellCommandExecutor extends AbstractCommandExecutor {
 
 		ChannelExec channelExec = (ChannelExec) session.openChannel("exec");
 		channelExec.setCommand(finalCmd);
-		//channelExec.setInputStream(null);
-		//channelExec.setErrStream(null);
 
+		channelExec.setInputStream(null);
+		channelExec.setErrStream(null);
 		InputStream in = channelExec.getInputStream();
-		BufferedReader br = new BufferedReader(new InputStreamReader(in));
-
 		InputStream err = channelExec.getErrStream();
-		BufferedReader errBr = new BufferedReader(new InputStreamReader(err));
 
 		OutputStream out = channelExec.getOutputStream();
 
@@ -83,11 +80,13 @@ public class ShellCommandExecutor extends AbstractCommandExecutor {
 			}
 		}
 
+		int read;
+		byte[] buff = new byte[64];
 		StringBuilder result = new StringBuilder();
+
 		while (true) {
-			char[] buff = new char[1024];
-			int read;
-			while ((read = br.read(buff)) != -1) {
+			while (in.available() > 0) {
+				read = in.read(buff);
 				String cmdTxtResult = new String(buff, 0, read);
 				resource.onResult(new CommandOutput(CommandOutput.Type.LINE, cmdTxtResult));
 				logger.debug("\tResult = {}", cmdTxtResult);
@@ -99,9 +98,8 @@ public class ShellCommandExecutor extends AbstractCommandExecutor {
 		}
 
 		while (true) {
-			char[] buff = new char[1024];
-			int read;
-			while ((read = errBr.read(buff)) != -1) {
+			while (err.available() > 0) {
+				read = err.read(buff);
 				String line = new String(buff, 0, read);
 				resource.onResult(new CommandOutput(CommandOutput.Type.LINE, line));
 				logger.debug("\tResult = {}", line);
@@ -117,7 +115,7 @@ public class ShellCommandExecutor extends AbstractCommandExecutor {
 		setResult(result.toString());
 
 		if (exitStatus != 0) {
-			if (force) {
+			if (isForce()) {
 				resource.onResult(new CommandOutput(CommandOutput.Type.LINE, "WARNING: exitStatus: " + exitStatus));
 			} else {
 				throw new RuntimeException("Invalid ssh command exitStatus: " + exitStatus);
