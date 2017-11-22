@@ -25,8 +25,8 @@ $userPasswordUpdated(Username, NewPassword)
 					</params>
 
 					<body><![CDATA[
-$cmd.scpTo(binding.variables["File"], '~')
-					]]></body>
+$scpTo($param('File'), '~')
+]]></body>
 				</command>
 
 				<command name="service">
@@ -37,7 +37,7 @@ $cmd.scpTo(binding.variables["File"], '~')
 
 					<body><![CDATA[
 ssh {
-	prompt "Action for Service '${Name}': ${Action}"
+	prompt "Action for service '${Name}': ${Action}"
 	cmd "service ${Name} ${Action}"
 }
 ]]></body>
@@ -72,7 +72,7 @@ return null
 					</params>
 
 					<body><![CDATA[
-def prc = oListProcess([ProcessName: 'java', Username: Username, PID: binding.variables['PID']])
+def prc = oListProcess([ProcessName: 'java', Username: Username, PID: $param('PID')])
 
 if(!prc.rows.empty) {
 	def pid = prc.rows[0].pid
@@ -83,6 +83,31 @@ if(!prc.rows.empty) {
 } else {
 	$error('No java process found!')
 }
+]]></body>
+				</command>
+
+				<command name="pkg">
+					<params>
+						<param name="Name" required="true"/>
+						<param name="Action" required="true"
+							   stringLiterals="Search|Info|DepList|CheckInstall|Install|Remove" defaultValue="Search"/>
+					</params>
+
+					<body><![CDATA[
+ssh {
+	prompt 'Update Repo Info'
+	cmd 'yum makecache'
+}
+
+if(Action == 'Search')
+	ssh {
+		prompt "Search for '${Name}'"
+		cmd "yum list all | grep ${Name}"
+		result {
+			it.toTabular('\\s{1,}')
+			  .prepend("Package Version Repository\n")
+		}
+	}
 ]]></body>
 				</command>
 
@@ -130,10 +155,10 @@ ssh {
 					<body><![CDATA[
 def sql = "select uid, username, description, directory, shell from users where 1=1"
 
-if(binding.variables["Uid"])
+if($param("Uid"))
 	sql += " and uid = '${Uid}'"
 
-if(binding.variables["Username"])
+if($param("Username"))
 	sql += " and username = '${Username}'"
 
 if(ShowNormal)
@@ -163,24 +188,23 @@ if(ShowProcessPath)
 if(ShowCmdline)
 	sql += ", pr.cmdline"
 
+
 sql += " from processes pr join users us using(uid) where 1=1"
 
 
-if(binding.variables["PID"])
+if($param("PID"))
 	sql += " and pr.pid = '${PID}'"
 
-if(binding.variables["ProcessName"])
+if($param("ProcessName"))
 	sql += " and pr.name = '${ProcessName}'"
 
-if(binding.variables["Username"])
+if($param("Username"))
 	sql += " and us.username = '${Username}'"
 
-if(binding.variables["SortBy"]) {
-	def mod = binding.variables["SortMod"] ? SortMod : 'desc'
+if($param("SortBy")) {
+	def mod = $param("SortMod") ? SortMod : 'desc'
 	sql = "select * from (${sql}) order by ${SortBy} ${mod}"
 }
-
-$log("*** SQL: " + sql)
 
 oQuery([Prompt: 'List of Processes', Sql: sql])]]></body>
 				</command>
@@ -196,6 +220,7 @@ oQuery([Prompt: 'List of Processes', Sql: sql])]]></body>
 						<param name="ShowProcessPath" type="Boolean" required="true" defaultValue="false"/>
 						<param name="ShowCmdline" type="Boolean" required="true" defaultValue="false"/>
 					</params>
+
 					<body><![CDATA[
 def sql = "select pr.pid, pr.name process_name, os.protocol, os.local_address, os.local_port, os.remote_address, os.remote_port, us.username"
 
@@ -207,22 +232,22 @@ if(ShowCmdline)
 
 sql += " from process_open_sockets os join processes pr using(pid) join users us using(uid) where 1=1"
 
-if(binding.variables["Pid"])
+if($param("Pid"))
 	sql += " and pr.pid = '${Pid}'"
 
-if(binding.variables["Protocol"])
+if($param("Protocol"))
 	sql += " and os.protocol = '${Protocol}'"
 
-if(binding.variables["RemoteAddress"])
+if($param("RemoteAddress"))
 	sql += " and os.remote_address = '${RemoteAddress}'"
 
-if(binding.variables["RemotePort"])
+if($param("RemotePort"))
 	sql += " and os.remote_port = '${RemotePort}'"
 
-if(binding.variables["ProcessName"])
+if($param("ProcessName"))
 	sql += " and pr.name = '${ProcessName}'"
 
-if(binding.variables["Username"])
+if($param("Username"))
 	sql += " and us.username = '${Username}'"
 
 oQuery([Prompt: 'List of Opened Sockets', Sql: sql])
@@ -237,6 +262,7 @@ oQuery([Prompt: 'List of Opened Sockets', Sql: sql])
 						<param name="ShowProcessPath" type="Boolean" required="true" defaultValue="false"/>
 						<param name="ShowCmdline" type="Boolean" required="true" defaultValue="false"/>
 					</params>
+
 					<body><![CDATA[
 def sql = "select pr.pid, pr.name process_name, of.path file_path, us.username"
 
@@ -248,13 +274,13 @@ if(ShowCmdline)
 
 sql += " from process_open_files of join processes pr using(pid) join users us using(uid) where 1=1"
 
-if(binding.variables["Pid"])
+if($param("Pid"))
 	sql += " and pr.pid = '${Pid}'"
 
-if(binding.variables["ProcessName"])
+if($param("ProcessName"))
 	sql += " and pr.name = '${ProcessName}'"
 
-if(binding.variables["Username"])
+if($param("Username"))
 	sql += " and us.username = '${Username}'"
 
 oQuery([Prompt: 'List of Opened Files', Sql: sql])
