@@ -214,4 +214,12 @@ public class CommandCenter {
 		result.put("target", targetVO);
 		return result;
 	}
+
+	public Object getParam(String param) {
+		return params.get(param);
+	}
+
+	public boolean hasParam(String param) {
+		return params.containsKey(param);
+	}
 }

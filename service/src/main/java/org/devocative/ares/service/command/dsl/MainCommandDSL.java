@@ -6,6 +6,7 @@ import org.devocative.ares.cmd.CommandCenter;
 import org.devocative.ares.cmd.CommandException;
 import org.devocative.ares.cmd.SshResult;
 import org.devocative.ares.vo.OServiceInstanceTargetVO;
+import org.devocative.demeter.entity.FileStore;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -80,24 +81,37 @@ public class MainCommandDSL {
 		}
 	}
 
-	public void reTarget(OServiceInstanceTargetVO newTargetVO, Closure closure) {
+	// ---------------
+
+	public void $reTarget(OServiceInstanceTargetVO newTargetVO, Closure closure) {
 		commandCenter.reTarget(newTargetVO);
 		closure.call();
 		commandCenter.resetTarget();
 	}
-
-	// ---------------
 
 	public Map<CharSequence, Object> $inputs(CharSequence... params) {
 		Map<String, Object> inParams = commandCenter.getParams();
 
 		Map<CharSequence, Object> result = new HashMap<>();
 		for (CharSequence param : params) {
-			if (inParams.containsKey(param.toString())) {
-				result.put(param, inParams.get(param.toString()));
+			String[] split = param.toString().split("[|]");
+			if (inParams.containsKey(split[0])) {
+				if (split.length == 1) {
+					result.put(split[0], inParams.get(split[0]));
+				} else {
+					result.put(split[1], inParams.get(split[0]));
+				}
 			}
 		}
 		return result;
+	}
+
+	public Object $param(CharSequence param) {
+		return commandCenter.getParam(param.toString());
+	}
+
+	public void $scpTo(FileStore fileStore, String destDir) {
+		commandCenter.scpTo(fileStore, destDir);
 	}
 
 	public void $userPasswordUpdated(CharSequence username, CharSequence password) {
