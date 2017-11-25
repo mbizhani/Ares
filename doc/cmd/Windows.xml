@@ -1,0 +1,6 @@
+<operation>
+	<services>
+		<service name="Windows" adminPort="22">
+		</service>
+	</services>
+</operation>

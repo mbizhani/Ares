@@ -20,6 +20,16 @@ $userPasswordUpdated(Username, NewPassword)
 ]]></body>
 				</command>
 
+				<command name="fileUpload">
+					<params>
+						<param name="File" type="File" required="true"/>
+					</params>
+
+					<body><![CDATA[
+$scpTo($param('File'), '~')
+]]></body>
+				</command>
+
 				<!-- Specific Commands -->
 
 				<command name="vList" listView="true">

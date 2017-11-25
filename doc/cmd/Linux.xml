@@ -37,7 +37,7 @@ $scpTo($param('File'), '~')
 
 					<body><![CDATA[
 ssh {
-	prompt "Action for service '${Name}': ${Action}"
+	prompt "Action for Service '${Name}': ${Action}"
 	cmd "service ${Name} ${Action}"
 }
 ]]></body>
@@ -81,7 +81,7 @@ if(!prc.rows.empty) {
 		cmd "su - ${Username} -c 'jstack ${pid}'"
 	}
 } else {
-	$error('No java process found!')
+	$error('No Java Process Found!')
 }
 ]]></body>
 				</command>
