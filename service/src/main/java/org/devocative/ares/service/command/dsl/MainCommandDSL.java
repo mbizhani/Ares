@@ -15,8 +15,12 @@ import java.util.*;
 public class MainCommandDSL {
 	private static final Logger logger = LoggerFactory.getLogger(MainCommandDSL.class);
 
-	private static final List<String> VALID_SSH_PROPERTIES = Arrays.asList("prompt", "cmd", "force", "stdin", "result");
-	private static final List<String> VALID_DB_PROPERTIES = Arrays.asList("prompt", "query", "params", "filters", "result");
+	private static final List<String> VALID_SSH_PROPERTIES = Arrays.asList(
+		"prompt", "cmd", "stdin",
+		"result", "force", "error");
+	private static final List<String> VALID_DB_PROPERTIES = Arrays.asList(
+		"prompt", "query", "params", "filters",
+		"result", "force", "error");
 
 	private CommandCenter commandCenter;
 
@@ -43,13 +47,18 @@ public class MainCommandDSL {
 
 		String prompt = clsAsMap.containsKey("prompt") ? clsAsMap.get("prompt").toString() : null;
 		String cmd = clsAsMap.containsKey("cmd") ? clsAsMap.get("cmd").toString() : null;
-		Boolean force = clsAsMap.containsKey("force") ? (Boolean) clsAsMap.get("force") : null;
+		Boolean force = clsAsMap.containsKey("force") ? (Boolean) clsAsMap.get("force") : clsAsMap.containsKey("error");
 		String stdin = clsAsMap.containsKey("stdin") ? clsAsMap.get("stdin").toString() : null;
 		SshResult sshResult = commandCenter.ssh(prompt, cmd, force, stdin);
-		if (clsAsMap.containsKey("result")) {
+		if (sshResult.getExitStatus() == 0 && clsAsMap.containsKey("result")) {
 			Closure result = (Closure) clsAsMap.get("result");
 			return result.call(sshResult);
 		} else {
+			if (sshResult.getExitStatus() != 0 && clsAsMap.containsKey("error")) {
+				Closure errorHandler = (Closure) clsAsMap.get("error");
+				return errorHandler.rehydrate(new OtherCommandsWrapper(this), commandCenter.getParams(), null)
+					.call(sshResult);
+			}
 			return sshResult;
 		}
 	}

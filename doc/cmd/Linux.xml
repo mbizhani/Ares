@@ -176,8 +176,14 @@ def sql_cnt = "select count(*) from (${Sql})"
 def cnt = ssh {
 	prompt "Counting: ${Prompt}"
 	cmd """ osqueryi "${sql_cnt}" --csv --noheader """
+
 	result {
 		it.toInteger()
+	}
+
+	error {
+		pkg([Name: 'osquery', Action: 'Install'])
+		$error("Package 'osquery' installed! ReRun command!")
 	}
 }
 
