@@ -90,7 +90,8 @@ if(!prc.rows.empty) {
 					<params>
 						<param name="Name" required="true"/>
 						<param name="Action" required="true"
-							   stringLiterals="Search|Info|DepList|CheckInstall|Install|Remove" defaultValue="Search"/>
+							   stringLiterals="Search|Info|DepList|CheckInstall|Install|CheckUnInstall|UnInstall"
+							   defaultValue="Search"/>
 					</params>
 
 					<body><![CDATA[
@@ -99,15 +100,62 @@ ssh {
 	cmd 'yum makecache'
 }
 
-if(Action == 'Search')
-	ssh {
-		prompt "Search for '${Name}'"
-		cmd "yum list all | grep ${Name}"
-		result {
-			it.toTabular('\\s{1,}')
-			  .prepend("Package Version Repository\n")
+switch(Action) {
+	case 'Search':
+		ssh {
+			prompt "Search for '${Name}'"
+			cmd "yum list all | grep ${Name}"
+			result {
+				it.toTabular('\\s{1,}')
+				  .prepend("Package Version Repository\n")
+			}
 		}
-	}
+		break
+
+	case 'Info':
+		ssh {
+			prompt "Info for '${Name}'"
+			cmd "yum info ${Name}"
+		}
+		break
+
+	case 'DepList':
+		ssh {
+			prompt "List Dependency(ies) for '${Name}'"
+			cmd "yum deplist ${Name}"
+		}
+		break
+
+	case 'CheckInstall':
+		ssh {
+			prompt "Check Installation for '${Name}'"
+			cmd "yum --assumeno install ${Name}"
+			force true
+		}
+		break
+
+	case 'Install':
+		ssh {
+			prompt "Installing '${Name}'"
+			cmd "yum -y -q install ${Name}"
+		}
+		break
+
+	case 'CheckUnInstall':
+		ssh {
+			prompt "Check UnInstallation for '${Name}'"
+			cmd "yum --assumeno remove ${Name}"
+			force true
+		}
+		break
+
+	case 'UnInstall':
+		ssh {
+			prompt "UnInstalling '${Name}'"
+			cmd "yum -y remove ${Name}"
+		}
+		break
+}
 ]]></body>
 				</command>
 

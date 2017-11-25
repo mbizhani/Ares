@@ -5,9 +5,7 @@ import com.jcraft.jsch.JSchException;
 import com.jcraft.jsch.Session;
 import org.devocative.ares.vo.OServiceInstanceTargetVO;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
+import java.io.*;
 
 /**
  * Since in JSch library, when Channel.disconnect() is called,
@@ -80,30 +78,26 @@ public class ShellCommandExecutor extends AbstractCommandExecutor {
 			}
 		}
 
-		int read;
-		byte[] buff = new byte[64];
 		StringBuilder result = new StringBuilder();
+		BufferedReader reader = new BufferedReader(new InputStreamReader(in));
 
 		while (true) {
-			while (in.available() > 0) {
-				read = in.read(buff);
-				String cmdTxtResult = new String(buff, 0, read);
-				resource.onResult(new CommandOutput(CommandOutput.Type.LINE, cmdTxtResult));
-				logger.debug("\tResult = {}", cmdTxtResult);
-				result.append(cmdTxtResult);
-			}
+			reader.lines().forEach(line -> {
+				resource.onResult(new CommandOutput(CommandOutput.Type.LINE, line));
+				logger.debug("\tResult = {}", line);
+				result.append(line).append("\n");
+			});
 			if (channelExec.isClosed()) {
 				break;
 			}
 		}
 
+		reader = new BufferedReader(new InputStreamReader(err));
 		while (true) {
-			while (err.available() > 0) {
-				read = err.read(buff);
-				String line = new String(buff, 0, read);
+			reader.lines().forEach(line -> {
 				resource.onResult(new CommandOutput(CommandOutput.Type.LINE, line));
-				logger.debug("\tResult = {}", line);
-			}
+				logger.debug("\tErrResult = {}", line);
+			});
 			if (channelExec.isClosed()) {
 				break;
 			}
