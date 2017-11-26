@@ -50,7 +50,7 @@ public class ConsoleResultProcessing {
 	}
 
 	public ConsoleResultProcessing setPossibleColumns(String... columns) {
-		copyArrToCollection(columns, this.possibleColumns);
+		copyArrToCollection(columns, this.possibleColumns, false);
 		return this;
 	}
 
@@ -89,10 +89,11 @@ public class ConsoleResultProcessing {
 	}
 
 	public TabularVO build(Map<String, String> filter) {
+		text = text.replaceAll("[\r]", "");
 		String[] split = text.split("[\n]");
 
 		List<String> lines = new ArrayList<>();
-		copyArrToCollection(split, lines);
+		copyArrToCollection(split, lines, false);
 
 		for (int i = 0; i < ignoreStartingLines; i++) {
 			lines.remove(0);
@@ -176,12 +177,12 @@ public class ConsoleResultProcessing {
 
 	private void fillBySplit(String header, List<String> lines) {
 		String[] headerParts = header.split(splitBy);
-		copyArrToCollection(headerParts, columns);
+		copyArrToCollection(headerParts, columns, true);
 
 		for (String line : lines) {
 			String[] lineParts = line.split(splitBy);
 			List<String> cells = new ArrayList<>();
-			copyArrToCollection(lineParts, cells);
+			copyArrToCollection(lineParts, cells, true);
 
 			if (lineParts.length < headerParts.length) {
 				int diff = headerParts.length - lineParts.length;
@@ -194,10 +195,10 @@ public class ConsoleResultProcessing {
 		}
 	}
 
-	private void copyArrToCollection(String[] arr, Collection<String> col) {
+	private void copyArrToCollection(String[] arr, Collection<String> col, boolean ignoreEmptyCell) {
 		for (String cell : arr) {
 			cell = cell.trim();
-			if (cell.length() > 0) {
+			if (ignoreEmptyCell || cell.length() > 0) {
 				col.add(cell);
 			}
 		}

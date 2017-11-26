@@ -72,7 +72,7 @@ public class TestConsoleResultProcessing {
 
 		ConsoleResultProcessing crp = new ConsoleResultProcessing(text);
 		crp
-			.setIgnoreStartingLines(3)
+			.setIgnoreStartingLines(1)
 			.setIgnoreLinesAfterHeader(1)
 			.setPossibleColumns("Address", "Port", "Local Address", "ALAKI", "Foreign Address", "State");
 		crp.build();
