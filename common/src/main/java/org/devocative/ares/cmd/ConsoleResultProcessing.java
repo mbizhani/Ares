@@ -196,7 +196,10 @@ public class ConsoleResultProcessing {
 
 	private void copyArrToCollection(String[] arr, Collection<String> col) {
 		for (String cell : arr) {
-			col.add(cell.trim());
+			cell = cell.trim();
+			if (cell.length() > 0) {
+				col.add(cell);
+			}
 		}
 	}
 }

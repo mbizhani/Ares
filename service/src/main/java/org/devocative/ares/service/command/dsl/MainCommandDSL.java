@@ -56,10 +56,11 @@ public class MainCommandDSL {
 		} else {
 			if (sshResult.getExitStatus() != 0 && clsAsMap.containsKey("error")) {
 				Closure errorHandler = (Closure) clsAsMap.get("error");
-				return errorHandler.rehydrate(new OtherCommandsWrapper(this), commandCenter.getParams(), null)
+				return errorHandler
+					.rehydrate(new OtherCommandsWrapper(this), commandCenter.getParams(), null)
 					.call(sshResult);
 			}
-			return sshResult;
+			return "";
 		}
 	}
 
