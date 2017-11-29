@@ -16,7 +16,7 @@
 				<command name="listUser" listView="true">
 					<params>
 						<param name="Username"/>
-						<param name="AccountStatus"/>
+						<param name="AccountStatus" stringLiterals="OPEN|LOCKED|EXPIRED &amp; LOCKED"/>
 					</params>
 
 					<body><![CDATA[
@@ -54,16 +54,23 @@ db {
 				<command name="createUser">
 					<params>
 						<param name="Username" required="true"/>
-						<param name="Password" required="true"/>
+						<param name="Password"/>
 						<param name="ResourceRole" type="Boolean" required="true" defaultValue="true"/>
 						<param name="UnlimitedTBS" type="Boolean" required="true" defaultValue="false"/>
 						<param name="DBARole" type="Boolean" required="true" defaultValue="false"/>
 					</params>
 
 					<body><![CDATA[
+if(checkUser([Username: Username]))
+	$error('User already exists')
+
+def pass = Username
+if($param('Password'))
+	pass = Password
+
 db {
 	prompt "Create User: '${Username}'"
-	query """ create user ${Username} identified by "${Password}" """
+	query """ create user "${Username}" identified by "${pass}" """
 }
 
 db {
@@ -71,11 +78,11 @@ db {
 	query "grant connect to ${Username}"
 }
 
-grant([Username: Username, ResourceRole: ResourceRole, UnlimitedTBS: UnlimitedTBS, DBARole: DBARole])
+grantUser([Username: Username, ResourceRole: ResourceRole, UnlimitedTBS: UnlimitedTBS, DBARole: DBARole])
 ]]></body>
 				</command>
 
-				<command name="grant">
+				<command name="grantUser">
 					<params>
 						<param name="Username" required="true"/>
 						<param name="ResourceRole" type="Boolean" required="true" defaultValue="true"/>
@@ -84,26 +91,23 @@ grant([Username: Username, ResourceRole: ResourceRole, UnlimitedTBS: UnlimitedTB
 					</params>
 
 					<body><![CDATA[
-if(ResourceRole) {
+if(ResourceRole)
 	db {
 		prompt "Grant Resource Role: '${Username}'"
 		query "grant resource to ${Username}"
 	}
-}
 
-if(UnlimitedTBS) {
+if(UnlimitedTBS)
 	db {
 		prompt "Grant Unlimited Tablespace: '${Username}'"
 		query "grant unlimited tablespace to ${Username}"
 	}
-}
 
-if(DBARole) {
+if(DBARole)
 	db {
 		prompt "Grant DBA Role: '${Username}'"
 		query "grant dba to ${Username}"
 	}
-}
 ]]></body>
 				</command>
 
@@ -139,30 +143,315 @@ db {
 ]]></body>
 				</command>
 
-				<command name="backupSchema">
-					<params>
-						<param name="Schema" required="true"/>
-					</params>
-					<body>
-						<![CDATA[
-if(!checkUser([Username: Schema]))
-	$error("Schema '${schema}' does not exist!")
+				<command name="findOsDir">
+					<params/>
 
-def file = "${Schema}_bkUp_${$now()}"
-ssh {
-	prompt "Create Backup from '${Schema}' as '${file}'"
-	cmd "su - oracle -c 'expdp ${target.username}/${target.password} schemas=${Schema} directory=${target.prop.pumpDbDir} dumpfile=${file}.dmp logfile=${file}.log'"
+					<body><![CDATA[
+db {
+	prompt 'Find OS-Directory of DB-Directory'
+	query "select directory_path from all_directories where directory_name='${target.prop.pumpDbDir}'"
 }
 ]]></body>
 				</command>
+
+				<command name="listDump">
+					<params>
+						<param name="Name"/>
+					</params>
+
+					<body><![CDATA[
+def osDir = findOsDir()
+
+def fileName = '*'
+if($param('Name'))
+	fileName = "*${Name}*"
+
+ssh {
+	prompt 'List Dump Files'
+	cmd """ find ${osDir} -maxdepth 1 -iname "${fileName}.dmp" -printf "%TY-%Tm-%Td %TH:%TM|%f\n" | sort -r """
+	result {
+		it.toTabular("[|]")
+		  .prepend("Time|DumpFile\n")
+	}
+}
+]]></body>
+				</command>
+
+				<command name="backupSchema">
+					<params>
+						<param name="Schemas" required="true"/>
+						<param name="Force" type="Boolean" required="true" defaultValue="false"/>
+					</params>
+
+					<body><![CDATA[
+def availSchema = ''
+Schemas.split(',').each {
+	def username = it.trim()
+	if(username.length() > 0) {
+		if(!checkUser([Username: username])) {
+			if(!Force)
+				$error("Schema '${username}' does not exist!")
+		} else {
+			availSchema += ",${username}"
+		}
+	}
+}
+
+if(availSchema.length() > 1) {
+	availSchema = availSchema.substring(1)
+	def file = "exp.${availSchema.replace(',', '.')}.${$now()}"
+	ssh {
+		prompt "Create Export from '${availSchema}' as '${file}.dmp'"
+		cmd "su - oracle -c 'expdp ${target.username}/${target.password} schemas=${availSchema} directory=${target.prop.pumpDbDir} dumpfile=${file}.dmp logfile=${file}.log'"
+	}
+	return file
+}
+]]></body>
+				</command>
+
+				<command name="restoreSchema">
+					<params>
+						<param name="DumpFile" required="true"/>
+						<param name="SourceSchemas" required="true"/>
+						<param name="DestSchemas"/>
+						<param name="DoBackUp" type="Boolean" required="true" defaultValue="false"/>
+					</params>
+
+					<body><![CDATA[
+def users = SourceSchemas
+if($param('DestSchemas'))
+	users = DestSchemas
+dropUser([Usernames: users, DoBackup: DoBackUp, DoKillSession: true])
+
+if(DumpFile.endsWith('.dmp'))
+	DumpFile = DumpFile.substring(0, DumpFile.length() - 4)
+
+if($param('DestSchemas')) {
+	def remap = generateRemap([SourceSchemas: SourceSchemas, DestSchemas: DestSchemas])
+	ssh {
+		prompt "Restoring '${remap}' from '${DumpFile}'"
+		cmd "su - oracle -c 'impdp ${target.username}/${target.password} remap_schema=${remap} directory=${target.prop.pumpDbDir} dumpfile=${DumpFile}.dmp logfile=imp.${DumpFile}.log'"
+		force true
+	}
+} else {
+	ssh {
+		prompt "Restoring '${SourceSchemas}' from '${DumpFile}'"
+		cmd "su - oracle -c 'impdp ${target.username}/${target.password} directory=${target.prop.pumpDbDir} dumpfile=${DumpFile}.dmp logfile=imp.${DumpFile}.log'"
+		force true
+	}
+}
+]]></body>
+				</command>
+
+				<command name="generateRemap">
+					<params>
+						<param name="SourceSchemas" required="true"/>
+						<param name="DestSchemas" required="true"/>
+					</params>
+
+					<body><![CDATA[
+def srcArr = SourceSchemas.split(',')
+def dstArr = DestSchemas.split(',')
+
+if(srcArr.length != dstArr.length)
+	$error('Unequal number of schemas in source and destination')
+else {
+	def remap = "${srcArr[0].trim()}:${dstArr[0].trim()}"
+	for(def i=1; i < srcArr.length; i++) {
+		def srcSchema = srcArr[i].trim()
+		def dstSchema = dstArr[i].trim()
+		if(srcSchema.length() > 0 && dstSchema.length() > 0) {
+			remap += ",${srcSchema}:${dstSchema}"
+		}
+	}
+	return remap
+}
+]]></body>
+				</command>
+
+				<command name="killUserSession">
+					<params>
+						<param name="Usernames" required="true"/>
+					</params>
+
+					<body><![CDATA[
+Usernames.split(',').each{
+	def username = it.trim()
+
+	if(username.length() > 0) {
+		db {
+			prompt "Kill All Sessions for User: '${username}'"
+			query """
+				declare
+					v_schema varchar2(20);
+				begin
+					v_schema := '${username.toUpperCase()}';
+					if v_schema in ('SYS','DBSNMP','SYSMAN', 'SYSTEM') then
+						raise_application_error(-20001, 'Session belongs to illegal user. You can not kill ${username}!');
+					end if;
+
+					for i in (select sid, serial# from v\$session where username = v_schema)
+					loop
+						execute immediate 'alter system kill session '''|| i.sid || ',' || i.serial# || ''' immediate';
+					end loop;
+				end; """
+		}
+	}
+}
+]]></body>
+				</command>
+
+				<command name="dropUser">
+					<params>
+						<param name="Usernames" required="true"/>
+						<param name="DoBackup" type="Boolean" defaultValue="true" required="true"/>
+						<param name="DoKillSession" type="Boolean" defaultValue="false" required="true"/>
+					</params>
+
+					<body><![CDATA[
+if(DoBackup)
+	backupSchema([Schemas: Usernames, Force: true])
+
+Usernames.split(',').each {
+	def username = it.trim()
+
+	if(username.length() > 0) {
+		if(checkUser([Username: username])) {
+			if(DoKillSession)
+				killUserSession([Usernames: username])
+
+			db {
+				prompt "Drop User '${username}'"
+				query "drop user ${username} cascade"
+			}
+		}
+	}
+}
+]]></body>
+				</command>
+
+				<command name="copySchema">
+					<params>
+						<param name="SourceSchemas" required="true"/>
+						<param name="DestSchemas"/>
+						<param name="DestServer" type="Service"/>
+						<param name="DoBackUpDest" type="Boolean" required="true" defaultValue="true"/>
+					</params>
+
+					<body><![CDATA[
+if($param('DestServer'))
+	copyRemoteSchema([SourceSchemas: SourceSchemas, DestSchemas: $param('DestSchemas'), DestServer: DestServer, DoBackUpDest: DoBackUpDest])
+
+else {
+	if(!$param('DestSchemas'))
+		$error('Dest schemas are required in copy local')
+
+	copyLocalSchema([SourceSchemas: SourceSchemas, DestSchemas: $param('DestSchemas'), DoBackUpDest: DoBackUpDest])
+}
+]]></body>
+				</command>
+
+				<command name="copyLocalSchema">
+					<params>
+						<param name="SourceSchemas" required="true"/>
+						<param name="DestSchemas" required="true"/>
+						<param name="DoBackUpDest" type="Boolean" defaultValue="true"/>
+					</params>
+
+					<body><![CDATA[
+if(SourceSchemas == DestSchemas)
+	$error('Source and destination schemas must be different')
+
+def file = backupSchema([Schemas: SourceSchemas])
+restoreSchema([DumpFile: file, SourceSchemas: SourceSchemas, DestSchemas: DestSchemas, DoBackUp: DoBackUpDest])
+
+def osDir = findOsDir()
+ssh {
+	prompt "Delete source dump file: ${file}"
+	cmd "rm -f ${osDir}/${file}.dmp"
+}
+]]></body>
+				</command>
+
+				<command name="copyRemoteSchema">
+					<params>
+						<param name="SourceSchemas" required="true"/>
+						<param name="DestSchemas"/>
+						<param name="DestServer" type="Service" required="true"/>
+						<param name="DoBackUpDest" type="Boolean" required="true" defaultValue="true"/>
+					</params>
+
+					<body><![CDATA[
+SourceSchemas.split(',').each {
+	def username = it.trim()
+	if(username.length() > 0) {
+		if(!checkUser([Username: username])) {
+			$error("Schema '${username}' does not exist!")
+		}
+	}
+}
+
+def srcServer = target
+def dbLinkName = "dbl${srcServer.id}_${DestServer.id}_${$now()}"
+
+def dest = SourceSchemas
+if($param('DestSchemas'))
+	dest = DestSchemas
+
+$reTarget(DestServer, {
+
+	db {
+		prompt "Create Database Link on Dest: ${dbLinkName}"
+		query """
+			create database link ${dbLinkName}
+			connect to ${srcServer.username} identified by "${srcServer.password}"
+			using '
+			(DESCRIPTION=
+				(ADDRESS=
+					(PROTOCOL=TCP)
+					(HOST=${srcServer.address})
+					(PORT=${srcServer.port})
+				)
+				(CONNECT_DATA=
+					(SID=${srcServer.prop.sid})
+				)
+			)' """
+	}
+
+	dropUser([Usernames: dest, DoBackup: DoBackUpDest, DoKillSession: true])
+
+	def file = "net.${dest.replace(',', '.')}.${$now()}"
+	if(SourceSchemas == dest) {
+		ssh {
+			prompt "Import Database from: '${srcServer}', file='${file}', schemas='${SourceSchemas}'"
+			cmd "su - oracle -c 'impdp ${target.username}/${target.password} schemas=${SourceSchemas} directory=${target.prop.pumpDbDir} network_link=${dbLinkName} logfile=${file}.log'"
+			force true
+		}
+
+	} else {
+		def remap = generateRemap([SourceSchemas: SourceSchemas, DestSchemas: dest])
+		ssh {
+			prompt "Import Database from: '${srcServer}', file='${file}', remap=${remap}"
+			cmd "su - oracle -c 'impdp ${target.username}/${target.password} schemas=${SourceSchemas} remap_schema=${remap} directory=${target.prop.pumpDbDir} network_link=${dbLinkName} logfile=${file}.log'"
+			force true
+		}
+	}
+
+	db {
+		prompt "Drop Database Link on Dest: '${target}' - Name=${dbLinkName}"
+		query "drop database link ${dbLinkName}"
+	}
+})
+]]></body>
+				</command>
+
 
 				<command name="truncateSchema">
 					<params>
 						<param name="Schema" required="true"/>
 					</params>
 
-					<body>
-						<![CDATA[
+					<body><![CDATA[
 db {
 	prompt "Truncate Tables/Sequences/Synonyms for '${Schema}'"
 	query """
@@ -186,214 +475,6 @@ db {
 				execute immediate 'drop table '||v_schema||'.'|| i.table_name ||' cascade constraints purge';
 			end loop;
 		end;"""
-}
-]]></body>
-				</command>
-
-				<command name="copySchema">
-					<params>
-						<param name="SourceSchema" required="true"/>
-						<param name="DestSchema" required="true"/>
-						<param name="DestServer" type="Service"/>
-						<param name="DoBackUpDest" type="Boolean" defaultValue="true"/>
-					</params>
-
-					<body><![CDATA[
-if($param('DestServer'))
-	copyRemoteSchema([SourceSchema: SourceSchema, DestSchema: DestSchema, DestServer: DestServer, DoBackUpDest: DoBackUpDest])
-else
-	copyLocalSchema([SourceSchema: SourceSchema, DestSchema: DestSchema, DoBackUpDest: DoBackUpDest])
-]]></body>
-				</command>
-
-				<command name="copyLocalSchema">
-					<params>
-						<param name="SourceSchema" required="true"/>
-						<param name="DestSchema" required="true"/>
-						<param name="DoBackUpDest" type="Boolean" defaultValue="true"/>
-					</params>
-
-					<body>
-						<![CDATA[
-if(!checkUser([Username: SourceSchema]))
-	$error("Schema '${SourceSchema}' does not exist!")
-
-if(DoBackUpDest)
-	backupSchema([Schema: DestSchema])
-
-truncateSchema([Schema: DestSchema])
-
-ssh {
-	prompt "Export Dump from '${SourceSchema}'"
-	cmd "su - oracle -c 'expdp ${target.username}/${target.password} schemas=${SourceSchema} directory=${target.prop.pumpDbDir} dumpfile=${SourceSchema}.dmp logfile=${SourceSchema}.log'"
-}
-
-ssh {
-	prompt "Import Dump to '${DestSchema}'"
-	cmd "su - oracle -c 'impdp ${target.username}/${target.password} remap_schema=${SourceSchema}:${DestSchema} directory=${target.prop.pumpDbDir} dumpfile=${SourceSchema}.dmp logfile=${DestSchema}.log'"
-	force true
-}
-
-def osDir = findOsDir()
-ssh {
-	prompt "Remove Generated Dump File"
-	cmd "rm -f ${osDir}/${SourceSchema}.dmp"
-}
-]]></body>
-				</command>
-
-				<command name="copyRemoteSchema">
-					<params>
-						<param name="SourceSchema" required="true"/>
-						<param name="DestSchema" required="true"/>
-						<param name="DestServer" type="Service" required="true"/>
-						<param name="DoBackUpDest" type="Boolean" defaultValue="true"/>
-					</params>
-
-					<body><![CDATA[
-if(!checkUser([Username: SourceSchema]))
-	$error("Schema '${SourceSchema}' does not exist!")
-
-def srcServer = target
-def dbLinkName = "dbl${target.id}_${DestServer.id}_${$now()}"
-
-reTarget(DestServer, {
-
-	db {
-		prompt "Create Database Link on Dest: ${dbLinkName}"
-		query """
-			create database link ${dbLinkName}
-			connect to ${srcServer.username} identified by "${srcServer.password}"
-			using '
-			(DESCRIPTION=
-				(ADDRESS=
-					(PROTOCOL=TCP)
-					(HOST=${srcServer.address})
-					(PORT=${srcServer.port})
-				)
-				(CONNECT_DATA=
-					(SID=${srcServer.prop.sid})
-				)
-			)' """
-	}
-
-	dropUser([Username: DestSchema, DoBackup: DoBackUpDest, DoKillSessions: true])
-
-	if(SourceSchema == DestSchema)
-		ssh {
-			prompt "Import Database from: '${srcServer}'"
-			cmd "su - oracle -c 'impdp ${target.username}/${target.password} schemas=${SourceSchema} directory=${target.prop.pumpDbDir} network_link=${dbLinkName} logfile=${DestSchema}.log'"
-			force true
-		}
-
-	else
-		ssh {
-			prompt "Import Database from: '${srcServer}'"
-			cmd "su - oracle -c 'impdp ${target.username}/${target.password} schemas=${SourceSchema} remap_schema=${SourceSchema}:${DestSchema} directory=${target.prop.pumpDbDir} network_link=${dbLinkName} logfile=${DestSchema}.log'"
-			force true
-		}
-
-	db {
-		prompt "Drop Database Link on Dest: '${target}' - Name=${dbLinkName}"
-		query "drop database link ${dbLinkName}"
-	}
-})
-]]></body>
-				</command>
-
-				<command name="restoreSchema">
-					<params>
-						<param name="Schema" required="true"/>
-						<param name="DumpFile" required="true"/>
-					</params>
-
-					<body>
-						<![CDATA[
-if(!checkUser([Username: Schema]))
-	$error("Schema '${Schema}' does not exist!")
-
-truncateSchema([Schema: Schema])
-
-ssh {
-	prompt "Restoring '${Schema}' from '${DumpFile}'"
-	cmd "su - oracle -c 'impdp ${target.username}/${target.password} schemas=${Schema} directory=${target.prop.pumpDbDir} dumpfile=${DumpFile}.dmp logfile=${Schema}.log'"
-	force true
-}
-]]></body>
-				</command>
-
-				<command name="findOsDir">
-					<params/>
-					<body><![CDATA[
-db {
-	prompt 'Find OS-Directory of DB-Directory'
-	query "select directory_path from all_directories where directory_name='${target.prop.pumpDbDir}'"
-}
-]]></body>
-				</command>
-
-				<command name="listDump">
-					<params/>
-					<body>
-						<![CDATA[
-def osDir = findOsDir()
-
-ssh {
-	prompt 'List Dump Files'
-	cmd """ find ${osDir} -maxdepth 1 -name "*.dmp" -printf "%TY-%Tm-%Td %TH:%TM|%f\n" | sort -r """
-	result {
-		it.toTabular("[|]")
-		  .prepend("Time|DumpFile\n")
-	}
-}
-]]></body>
-				</command>
-
-				<command name="dropUser">
-					<params>
-						<param name="Username" required="true"/>
-						<param name="DoBackup" type="Boolean" defaultValue="true" required="true"/>
-						<param name="DoKillSessions" type="Boolean" defaultValue="false" required="true"/>
-					</params>
-
-					<body><![CDATA[
-if(checkUser([Username: Username])) {
-	if(DoKillSessions)
-		killUserSession([Username: Username])
-
-	if(DoBackup)
-		backupSchema([Schema: Username])
-
-	db {
-		prompt "Drop user '${Username}'"
-		query "drop user ${Username} cascade"
-	}
-}
-]]></body>
-				</command>
-
-				<command name="killUserSession">
-					<params>
-						<param name="Username" required="true"/>
-					</params>
-
-					<body><![CDATA[
-db {
-	prompt "Kill All Sessions for User: '${Username}'"
-	query """
-		declare
-			v_schema varchar2(20);
-		begin
-			v_schema := '${Username.toUpperCase()}';
-			if v_schema in ('SYS','DBSNMP','SYSMAN', 'SYSTEM') then
-				raise_application_error(-20001, 'Session belongs to illegal user. You can not kill ${Username}!');
-			end if;
-
-			for i in (select sid, serial# from v\$session where username = v_schema)
-			loop
-				execute immediate 'alter system kill session '''|| i.sid || ',' || i.serial# || ''' immediate';
-			end loop;
-		end; """
 }
 ]]></body>
 				</command>
