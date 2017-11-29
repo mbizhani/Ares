@@ -317,14 +317,28 @@ public class CommandService implements ICommandService, IMissedHitHandler<Long, 
 				params.put(xParam.getName(), xParam.getDefaultValueObject());
 			}
 
-			if (xParam.getType() == XParamType.Server) {
+			/*
+			NOTE When a command call another command and pass the parameters such as 'Server' or 'Service, the first command
+			     has loaded the real OServer or OServiceInstanceTargetVO and add them to real params. So the type must be checked!
+			 */
+			if (params.containsKey(xParam.getName())) {
 				Object paramValue = params.get(xParam.getName());
-				OServer oServer = serverService.load(Long.valueOf(paramValue.toString()));
-				params.put(xParam.getName(), oServer);
-			} else if (xParam.getType() == XParamType.Service) {
-				Long otherServiceInstanceId = (Long) params.get(xParam.getName());
-				OServiceInstanceTargetVO otherServiceInstance = serviceInstanceService.getTargetVO(otherServiceInstanceId);
-				params.put(xParam.getName(), otherServiceInstance);
+				if (xParam.getType() == XParamType.Server) {
+					if (paramValue instanceof Long) {
+						OServer oServer = serverService.load((Long) paramValue);
+						params.put(xParam.getName(), oServer);
+					} else if (!(paramValue instanceof OServer)) {
+						throw new RuntimeException("Invalid param type for [" + xParam.getName() + "]: " + paramValue.getClass());
+					}
+				} else if (xParam.getType() == XParamType.Service) {
+					if (paramValue instanceof Long) {
+						Long otherServiceInstanceId = (Long) paramValue;
+						OServiceInstanceTargetVO otherServiceInstance = serviceInstanceService.getTargetVO(otherServiceInstanceId);
+						params.put(xParam.getName(), otherServiceInstance);
+					} else if (!(paramValue instanceof OServiceInstanceTargetVO)) {
+						throw new RuntimeException("Invalid param type for [" + xParam.getName() + "]: " + paramValue.getClass());
+					}
+				}
 			}
 		}
 
