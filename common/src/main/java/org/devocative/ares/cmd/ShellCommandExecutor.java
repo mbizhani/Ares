@@ -52,13 +52,14 @@ public class ShellCommandExecutor extends AbstractCommandExecutor {
 		String p = String.format("[ %s@%s ]$ %s", targetVO.getUsername(), targetVO.getName(), prompt);
 		resource.onResult(new CommandOutput(CommandOutput.Type.PROMPT, p));
 
-		ChannelExec channelExec = (ChannelExec) session.openChannel("exec");
+		final ChannelExec channelExec = (ChannelExec) session.openChannel("exec");
 		channelExec.setCommand(finalCmd);
 
 		channelExec.setInputStream(null);
 		channelExec.setErrStream(null);
-		InputStream in = channelExec.getInputStream();
-		InputStream err = channelExec.getErrStream();
+
+		final InputStream in = channelExec.getInputStream();
+		final InputStream err = channelExec.getErrStream();
 
 		OutputStream out = channelExec.getOutputStream();
 
@@ -81,9 +82,26 @@ public class ShellCommandExecutor extends AbstractCommandExecutor {
 		StringBuilder result = new StringBuilder();
 		BufferedReader reader = new BufferedReader(new InputStreamReader(in));
 
+		Thread th = new Thread(
+			Thread.currentThread().getThreadGroup(),
+			() -> {
+				BufferedReader errReader = new BufferedReader(new InputStreamReader(err));
+				while (true) {
+					errReader.lines().forEach(line -> {
+						resource.onResult(new CommandOutput(CommandOutput.Type.LINE, " - " + line));
+						logger.debug("\tErrResult = {}", line);
+					});
+					if (channelExec.isClosed()) {
+						break;
+					}
+				}
+			},
+			Thread.currentThread().getName() + "-ErrReader");
+		th.start();
+
 		while (true) {
 			reader.lines().forEach(line -> {
-				resource.onResult(new CommandOutput(CommandOutput.Type.LINE, line));
+				resource.onResult(new CommandOutput(CommandOutput.Type.LINE, " . " + line));
 				logger.debug("\tResult = {}", line);
 				result.append(line).append("\n");
 			});
@@ -92,15 +110,10 @@ public class ShellCommandExecutor extends AbstractCommandExecutor {
 			}
 		}
 
-		reader = new BufferedReader(new InputStreamReader(err));
-		while (true) {
-			reader.lines().forEach(line -> {
-				resource.onResult(new CommandOutput(CommandOutput.Type.LINE, line));
-				logger.debug("\tErrResult = {}", line);
-			});
-			if (channelExec.isClosed()) {
-				break;
-			}
+		try {
+			th.join();
+		} catch (InterruptedException e) {
+			logger.warn("ShellCommandExecutor.Thread.Join", e);
 		}
 
 		exitStatus = channelExec.getExitStatus();

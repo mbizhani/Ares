@@ -95,7 +95,9 @@ public class MainCommandDSL {
 
 	public void $reTarget(OServiceInstanceTargetVO newTargetVO, Closure closure) {
 		commandCenter.reTarget(newTargetVO);
-		closure.call();
+		closure
+			.rehydrate(new OtherCommandsWrapper(this), commandCenter.getParams(), null)
+			.call();
 		commandCenter.resetTarget();
 	}
 

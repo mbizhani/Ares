@@ -71,7 +71,10 @@ public class CommandCenter {
 
 			resource.getCommandService().assertCurrentUser(cmd);
 
-			Thread th = new Thread(Thread.currentThread().getThreadGroup(), executor);
+			Thread th = new Thread(
+				Thread.currentThread().getThreadGroup(),
+				executor,
+				Thread.currentThread().getName() + "-ShellCommandExecutor");
 			th.start();
 			th.join();
 
@@ -109,7 +112,10 @@ public class CommandCenter {
 
 		try {
 			ScpToExecutor executor = new ScpToExecutor(finalTargetVO, resource, fileStore, destDir);
-			Thread th = new Thread(Thread.currentThread().getThreadGroup(), executor);
+			Thread th = new Thread(
+				Thread.currentThread().getThreadGroup(),
+				executor,
+				Thread.currentThread().getName() + "-ScpToExecutor");
 			th.start();
 			th.join();
 
@@ -139,7 +145,10 @@ public class CommandCenter {
 				executor.setForce(force);
 			}
 
-			Thread th = new Thread(executor);
+			Thread th = new Thread(
+				Thread.currentThread().getThreadGroup(),
+				executor,
+				Thread.currentThread().getName() + "-SqlCommandExecutor");
 			th.start();
 			th.join();
 
