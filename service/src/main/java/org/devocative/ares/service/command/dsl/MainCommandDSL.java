@@ -101,17 +101,18 @@ public class MainCommandDSL {
 		commandCenter.resetTarget();
 	}
 
-	public Map<CharSequence, Object> $inputs(CharSequence... params) {
+	public Map<CharSequence, Object> $input(CharSequence... params) {
 		Map<String, Object> inParams = commandCenter.getParams();
 
 		Map<CharSequence, Object> result = new HashMap<>();
 		for (CharSequence param : params) {
-			String[] split = param.toString().split("[|]");
-			if (inParams.containsKey(split[0])) {
+			String[] split = param.toString().split("[>]");
+			String input = split[0].trim();
+			if (inParams.containsKey(input)) {
 				if (split.length == 1) {
-					result.put(split[0], inParams.get(split[0]));
+					result.put(input, inParams.get(input));
 				} else {
-					result.put(split[1], inParams.get(split[0]));
+					result.put(split[1].trim(), inParams.get(input));
 				}
 			}
 		}

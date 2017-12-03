@@ -43,7 +43,7 @@ $scpTo($param('File'), '~')
 					</params>
 
 					<body><![CDATA[
-def filter = $inputs('Vmid', 'Name')
+def filter = $input('Vmid', 'Name')
 
 def tab = ssh {
 	prompt 'List of VMs'

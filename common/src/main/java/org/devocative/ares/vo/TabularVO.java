@@ -72,11 +72,17 @@ public class TabularVO<T> implements Serializable {
 
 	// ------------------------------
 
-	private boolean isPassed(Map<String, T> map, Map<String, T> filter) {
+	private boolean isPassed(Map<String, T> row, Map<String, T> filter) {
 		boolean allOk = true;
 
 		for (Map.Entry<String, T> entry : filter.entrySet()) {
-			if (entry.getValue() != null && !entry.getValue().equals(map.get(entry.getKey()))) {
+			T filterValue = entry.getValue();
+			T cellValue = row.get(entry.getKey());
+			if (filterValue != null &&
+				cellValue != null &&
+				!filterValue.equals(cellValue) &&
+				!cellValue.toString().toLowerCase().contains(filterValue.toString().toLowerCase())
+				) {
 				allOk = false;
 				break;
 			}

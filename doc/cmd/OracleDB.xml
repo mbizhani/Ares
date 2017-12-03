@@ -20,7 +20,7 @@
 					</params>
 
 					<body><![CDATA[
-def map = $inputs('Username|username', 'AccountStatus|account_status')
+def map = $input('Username > username', 'AccountStatus > account_status')
 
 db {
 	prompt "Show ${map.empty ? 'All':'Filtered'} Users"
