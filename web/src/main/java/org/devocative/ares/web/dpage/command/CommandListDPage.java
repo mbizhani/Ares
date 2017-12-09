@@ -164,17 +164,17 @@ public class CommandListDPage extends DPage implements IGridDataSource<Command> 
 					window.show(target);
 				}
 			});
+
+			columnList.add(new OAjaxLinkColumn<Command>(new Model<>(), AresIcon.EXECUTE) {
+				private static final long serialVersionUID = 1205302042L;
+
+				@Override
+				public void onClick(AjaxRequestTarget target, IModel<Command> rowData) {
+					window.setContent(new CommandExecPanel(window.getContentId(), rowData.getObject().getId()));
+					window.show(new Model<>("Command Exec: " + rowData.getObject().getName()), target);
+				}
+			}.setField("EXECUTE"));
 		}
-
-		columnList.add(new OAjaxLinkColumn<Command>(new Model<>(), AresIcon.EXECUTE) {
-			private static final long serialVersionUID = 1205302042L;
-
-			@Override
-			public void onClick(AjaxRequestTarget target, IModel<Command> rowData) {
-				window.setContent(new CommandExecPanel(window.getContentId(), rowData.getObject().getId()));
-				window.show(new Model<>("Command Exec: " + rowData.getObject().getName()), target);
-			}
-		}.setField("EXECUTE"));
 
 		OGrid<Command> oGrid = new OGrid<>();
 		oGrid
