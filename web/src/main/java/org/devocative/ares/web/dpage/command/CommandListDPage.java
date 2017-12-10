@@ -91,7 +91,7 @@ public class CommandListDPage extends DPage implements IGridDataSource<Command> 
 		final WModalWindow window = new WModalWindow("window");
 		add(window);
 
-		add(new WAjaxLink("add", AresIcon.ADD) {
+		add(new WAjaxLink("add", AresIcon.EXPORT_IMPORT) {
 			private static final long serialVersionUID = 8369836L;
 
 			@Override

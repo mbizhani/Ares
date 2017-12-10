@@ -36,6 +36,7 @@ import org.devocative.demeter.web.panel.FileStoreUploadPanel;
 import org.devocative.wickomp.WebUtil;
 import org.devocative.wickomp.async.IAsyncResponse;
 import org.devocative.wickomp.form.*;
+import org.devocative.wickomp.form.validator.WPatternValidator;
 import org.devocative.wickomp.html.WFloatTable;
 import org.devocative.wickomp.html.window.WModalWindow;
 import org.slf4j.Logger;
@@ -355,6 +356,9 @@ public class CommandExecPanel extends DPanel implements IAsyncResponse {
 					params.put(xParamName, xParam.getDefaultValueObject());
 				} else {
 					fieldFormItem = new WTextInput(xParamName);
+					if (xParam.getValidRegex() != null) {
+						fieldFormItem.add(new WPatternValidator(xParam.getValidRegex()));
+					}
 					params.put(xParamName, xParam.getDefaultValueObject());
 				}
 		}

@@ -24,6 +24,9 @@ public class XParam implements Serializable {
 	@XStreamAsAttribute
 	private String stringLiterals;
 
+	@XStreamAsAttribute
+	private String validRegex;
+
 	// ------------------------------
 
 	public String getName() {
@@ -68,6 +71,15 @@ public class XParam implements Serializable {
 
 	public XParam setStringLiterals(String stringLiterals) {
 		this.stringLiterals = stringLiterals;
+		return this;
+	}
+
+	public String getValidRegex() {
+		return validRegex;
+	}
+
+	public XParam setValidRegex(String validRegex) {
+		this.validRegex = validRegex;
 		return this;
 	}
 
