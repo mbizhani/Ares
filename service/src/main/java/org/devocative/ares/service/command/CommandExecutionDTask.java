@@ -13,6 +13,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
+import java.util.Arrays;
+
 @Scope("prototype")
 @Component("arsCommandExecutionDTask")
 public class CommandExecutionDTask extends DTask implements ICommandResultCallBack {
@@ -47,14 +49,28 @@ public class CommandExecutionDTask extends DTask implements ICommandResultCallBa
 					TabularVO build = processing.build();
 					onResult(new CommandOutput(CommandOutput.Type.TABULAR, build));
 				} else {
-					onResult(new CommandOutput(CommandOutput.Type.PROMPT, String.format("Final Result: %s", result.toString())));
+					String resultAsStr = result.toString();
+					if (result.getClass().isArray()) {
+						Object[] arr = (Object[]) result;
+						resultAsStr = Arrays.toString(arr);
+					}
+
+					onResult(new CommandOutput(CommandOutput.Type.PROMPT, String.format("Final Return: %s", resultAsStr)));
 				}
 			} else {
 				onResult(new CommandOutput(CommandOutput.Type.PROMPT, "Finished"));
 			}
 		} catch (Exception e) {
-			onResult(new CommandOutput(CommandOutput.Type.ERROR, e.getMessage()));
-			logger.error("CommandExecutionDTask:", e);
+			String msg = null;
+			Throwable th = e;
+
+			while (th != null) {
+				msg = String.format("%s (%s)", th.getMessage().trim(), th.getClass().getSimpleName());
+				th = th.getCause();
+			}
+
+			onResult(new CommandOutput(CommandOutput.Type.ERROR, msg));
+			logger.error("CommandExecutionDTask: ", e);
 		}
 	}
 

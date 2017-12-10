@@ -24,6 +24,8 @@ public class XService implements Serializable {
 
 	private List<XProperty> properties;
 
+	private List<XValidation> validations;
+
 	private List<XCommand> commands;
 
 	// ------------------------------
@@ -66,6 +68,14 @@ public class XService implements Serializable {
 
 	public void setProperties(List<XProperty> properties) {
 		this.properties = properties;
+	}
+
+	public List<XValidation> getValidations() {
+		return validations;
+	}
+
+	public void setValidations(List<XValidation> validations) {
+		this.validations = validations;
 	}
 
 	public List<XCommand> getCommands() {

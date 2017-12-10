@@ -8,11 +8,13 @@ import org.devocative.ares.vo.CommandQVO;
 import org.devocative.ares.vo.OServiceInstanceTargetVO;
 import org.devocative.ares.vo.filter.command.CommandFVO;
 import org.devocative.ares.vo.xml.XCommand;
+import org.devocative.ares.vo.xml.XValidation;
 import org.devocative.demeter.entity.User;
 import org.devocative.demeter.iservice.IEntityService;
 import org.devocative.demeter.iservice.task.ITaskResultCallback;
 
 import java.util.List;
+import java.util.Map;
 
 public interface ICommandService extends IEntityService<Command> {
 	void saveOrUpdate(Command entity);
@@ -33,7 +35,7 @@ public interface ICommandService extends IEntityService<Command> {
 
 	// ==============================
 
-	void checkAndSave(OService oService, XCommand xCommand, Command command);
+	void checkAndSave(OService oService, XCommand xCommand, Command command, Map<String, XValidation> validationMap);
 
 	void executeCommandTask(CommandQVO commandQVO, ITaskResultCallback callback);
 

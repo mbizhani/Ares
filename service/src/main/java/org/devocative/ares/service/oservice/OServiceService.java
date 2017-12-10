@@ -9,10 +9,7 @@ import org.devocative.ares.iservice.command.ICommandService;
 import org.devocative.ares.iservice.oservice.IOServicePropertyService;
 import org.devocative.ares.iservice.oservice.IOServiceService;
 import org.devocative.ares.vo.filter.oservice.OServiceFVO;
-import org.devocative.ares.vo.xml.XCommand;
-import org.devocative.ares.vo.xml.XOperation;
-import org.devocative.ares.vo.xml.XProperty;
-import org.devocative.ares.vo.xml.XService;
+import org.devocative.ares.vo.xml.*;
 import org.devocative.demeter.entity.ERowMod;
 import org.devocative.demeter.entity.User;
 import org.devocative.demeter.iservice.IRoleService;
@@ -145,9 +142,16 @@ public class OServiceService implements IOServiceService {
 				}
 			}
 
+			Map<String, XValidation> validationMap = new HashMap<>();
+			if (xService.getValidations() != null) {
+				for (XValidation xValidation : xService.getValidations()) {
+					validationMap.put(xValidation.getName(), xValidation);
+				}
+			}
+
 			for (XCommand xCommand : xService.getCommands()) {
 				String key = String.format("%s_%s", oService.getId(), xCommand.getName());
-				commandService.checkAndSave(oService, xCommand, commandMap.get(key));
+				commandService.checkAndSave(oService, xCommand, commandMap.get(key), validationMap);
 			}
 		}
 

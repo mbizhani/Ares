@@ -31,6 +31,7 @@ import org.devocative.ares.vo.filter.oservice.OSIUserFVO;
 import org.devocative.ares.vo.xml.XCommand;
 import org.devocative.ares.vo.xml.XParam;
 import org.devocative.ares.vo.xml.XParamType;
+import org.devocative.ares.vo.xml.XValidation;
 import org.devocative.demeter.entity.User;
 import org.devocative.demeter.iservice.ICacheService;
 import org.devocative.demeter.iservice.ISecurityService;
@@ -180,8 +181,32 @@ public class CommandService implements ICommandService, IMissedHitHandler<Long, 
 	// ---------------
 
 	@Override
-	public void checkAndSave(OService oService, XCommand xCommand, Command command) {
+	public void checkAndSave(OService oService, XCommand xCommand, Command command, Map<String, XValidation> validationMap) {
 		//Command command = loadByNameAndOService(oService.getId(), xCommand.getName());
+
+		if (xCommand.getParams() != null) {
+			for (XParam xParam : xCommand.getParams()) {
+
+				if (xParam.getType() != null && xParam.getType() != XParamType.String) {
+					if (xParam.getValidRegex() != null || xParam.getValidRef() != null) {
+						throw new RuntimeException(
+							String.format("Can't use validation for non-string param: cmd=%s param=%s",
+								xCommand.getName(), xParam.getName()));
+					}
+				}
+
+				if (xParam.getValidRef() != null && xParam.getValidRegex() == null) {
+					if (validationMap.containsKey(xParam.getValidRef())) {
+						XValidation xValidation = validationMap.get(xParam.getValidRef());
+						xParam.setValidRegex(xValidation.getRegex());
+					} else {
+						throw new RuntimeException(
+							String.format("Validation reference not found: cmd=%s param=%s ref=%s",
+								xCommand.getName(), xParam.getName(), xParam.getValidRef()));
+					}
+				}
+			}
+		}
 
 		if (command == null) {
 			CommandCfgLob lob = new CommandCfgLob();
@@ -321,14 +346,22 @@ public class CommandService implements ICommandService, IMissedHitHandler<Long, 
 			NOTE When a command call another command and pass the parameters such as 'Server' or 'Service, the first command
 			     has loaded the real OServer or OServiceInstanceTargetVO and add them to real params. So the type must be checked!
 			 */
-			if (params.containsKey(xParam.getName())) {
-				Object paramValue = params.get(xParam.getName());
-				if (xParam.getType() == XParamType.Server) {
+			Object paramValue = params.get(xParam.getName());
+			if (paramValue != null) {
+				if (xParam.getType() == null || xParam.getType() == XParamType.String) {
+					if (xParam.getValidRegex() != null) {
+						String paramValueAsStr = (String) paramValue;
+						if (!paramValueAsStr.matches(xParam.getValidRegex())) {
+							throw new RuntimeException(String.format("Invalid string input: cmd=%s param=%s regex=%s",
+								xCommand.getName(), xParam.getName(), xParam.getValidRegex()));
+						}
+					}
+				} else if (xParam.getType() == XParamType.Server) {
 					if (paramValue instanceof Long) {
 						OServer oServer = serverService.load((Long) paramValue);
 						params.put(xParam.getName(), oServer);
 					} else if (!(paramValue instanceof OServer)) {
-						throw new RuntimeException("Invalid param type for [" + xParam.getName() + "]: " + paramValue.getClass());
+						throw new RuntimeException(String.format("Invalid param 'OServer' type for [%s]: %s", xParam.getName(), paramValue.getClass()));
 					}
 				} else if (xParam.getType() == XParamType.Service) {
 					if (paramValue instanceof Long) {
@@ -336,9 +369,12 @@ public class CommandService implements ICommandService, IMissedHitHandler<Long, 
 						OServiceInstanceTargetVO otherServiceInstance = serviceInstanceService.getTargetVO(otherServiceInstanceId);
 						params.put(xParam.getName(), otherServiceInstance);
 					} else if (!(paramValue instanceof OServiceInstanceTargetVO)) {
-						throw new RuntimeException("Invalid param type for [" + xParam.getName() + "]: " + paramValue.getClass());
+						throw new RuntimeException(String.format("Invalid param 'OServiceInstanceTargetVO' type for [%s]: %s", xParam.getName(), paramValue.getClass()));
 					}
 				}
+			} else if (xParam.getRequired() != null && xParam.getRequired()) {
+				throw new RuntimeException(String.format("Required param value: cmd=%s param=%s",
+					xCommand.getName(), xParam.getName()));
 			}
 		}
 
@@ -354,8 +390,11 @@ public class CommandService implements ICommandService, IMissedHitHandler<Long, 
 
 		CommandCenter commandCenter = new CommandCenter(targetVO, resource, params);
 		cmdParams.put("target", targetVO);
+
+		// TODO DEPRECATED!
 		cmdParams.put("$util", singleInstOfUtil);
 		cmdParams.put("$cmd", commandCenter);
+
 		cmdParams.put(IStringTemplate.GROOVY_DELEGATE_KEY, new OtherCommandsWrapper(new MainCommandDSL(commandCenter)));
 
 		CmdRunner runner = new CmdRunner(command.getId(), xCommand.getBody(), cmdParams);
