@@ -11,11 +11,17 @@
 				<property name="driver" value="oracle.jdbc.driver.OracleDriver"/>
 			</properties>
 
+			<validations>
+				<validation name="OraId" regex="^[a-zA-Z]+?[\w_]*$"/>
+				<validation name="OraIdList" regex="^[a-zA-Z]+?[\w_]*?(,[ ]*?[a-zA-Z]+?[\w_]*?)*?$"/>
+				<validation name="OraPass" regex="[^@'&quot;]+"/>
+			</validations>
+
 			<commands>
 
 				<command name="listUser" listView="true">
 					<params>
-						<param name="Username"/>
+						<param name="Username" validRef="OraId"/>
 						<param name="AccountStatus" stringLiterals="OPEN|LOCKED|EXPIRED &amp; LOCKED"/>
 					</params>
 
@@ -53,8 +59,8 @@ db {
 
 				<command name="createUser">
 					<params>
-						<param name="Username" required="true"/>
-						<param name="Password"/>
+						<param name="Username" required="true" validRef="OraId"/>
+						<param name="Password" validRef="OraPass"/>
 						<param name="ResourceRole" type="Boolean" required="true" defaultValue="true"/>
 						<param name="UnlimitedTBS" type="Boolean" required="true" defaultValue="false"/>
 						<param name="DBARole" type="Boolean" required="true" defaultValue="false"/>
@@ -84,7 +90,7 @@ grantUser([Username: Username, ResourceRole: ResourceRole, UnlimitedTBS: Unlimit
 
 				<command name="grantUser">
 					<params>
-						<param name="Username" required="true"/>
+						<param name="Username" required="true" validRef="OraId"/>
 						<param name="ResourceRole" type="Boolean" required="true" defaultValue="true"/>
 						<param name="UnlimitedTBS" type="Boolean" required="true" defaultValue="false"/>
 						<param name="DBARole" type="Boolean" required="true" defaultValue="false"/>
@@ -113,8 +119,8 @@ if(DBARole)
 
 				<command name="changePassword">
 					<params>
-						<param name="Username" required="true"/>
-						<param name="NewPassword" required="true"/>
+						<param name="Username" required="true" validRef="OraId"/>
+						<param name="NewPassword" required="true" validRef="OraPass"/>
 					</params>
 
 					<body><![CDATA[
@@ -128,7 +134,7 @@ $userPasswordUpdated(Username, NewPassword)
 
 				<command name="checkUser">
 					<params>
-						<param name="Username" required="true"/>
+						<param name="Username" required="true" validRef="OraId"/>
 					</params>
 
 					<body>
@@ -179,7 +185,7 @@ ssh {
 
 				<command name="backupSchema">
 					<params>
-						<param name="Schemas" required="true"/>
+						<param name="Schemas" required="true" validRef="OraIdList"/>
 						<param name="Force" type="Boolean" required="true" defaultValue="false"/>
 					</params>
 
@@ -187,13 +193,11 @@ ssh {
 def availSchema = ''
 Schemas.split(',').each {
 	def username = it.trim()
-	if(username.length() > 0) {
-		if(!checkUser([Username: username])) {
-			if(!Force)
-				$error("Schema '${username}' does not exist!")
-		} else {
-			availSchema += ",${username}"
-		}
+
+	if(checkUser([Username: username])) {
+		availSchema += ",${username}"
+	} else if(!Force) {
+			$error("Schema '${username}' does not exist!")
 	}
 }
 
@@ -212,8 +216,8 @@ if(availSchema.length() > 1) {
 				<command name="restoreSchema">
 					<params>
 						<param name="DumpFile" required="true"/>
-						<param name="SourceSchemas" required="true"/>
-						<param name="DestSchemas"/>
+						<param name="SourceSchemas" required="true" validRef="OraIdList"/>
+						<param name="DestSchemas" validRef="OraIdList"/>
 						<param name="DoBackUp" type="Boolean" required="true" defaultValue="false"/>
 					</params>
 
@@ -271,31 +275,29 @@ else {
 
 				<command name="killUserSession">
 					<params>
-						<param name="Usernames" required="true"/>
+						<param name="Usernames" required="true" validRef="OraIdList"/>
 					</params>
 
 					<body><![CDATA[
-Usernames.split(',').each{
+Usernames.split(',').each {
 	def username = it.trim()
 
-	if(username.length() > 0) {
-		db {
-			prompt "Kill All Sessions for User: '${username}'"
-			query """
-				declare
-					v_schema varchar2(20);
-				begin
-					v_schema := '${username.toUpperCase()}';
-					if v_schema in ('SYS','DBSNMP','SYSMAN', 'SYSTEM') then
-						raise_application_error(-20001, 'Session belongs to illegal user. You can not kill ${username}!');
-					end if;
+	db {
+		prompt "Kill All Sessions for User: '${username}'"
+		query """
+			declare
+				v_schema varchar2(20);
+			begin
+				v_schema := '${username.toUpperCase()}';
+				if v_schema in ('SYS','DBSNMP','SYSMAN', 'SYSTEM') then
+					raise_application_error(-20001, 'Session belongs to illegal user. You can not kill ${username}!');
+				end if;
 
-					for i in (select sid, serial# from v\$session where username = v_schema)
-					loop
-						execute immediate 'alter system kill session '''|| i.sid || ',' || i.serial# || ''' immediate';
-					end loop;
-				end; """
-		}
+				for i in (select sid, serial# from v\$session where username = v_schema)
+				loop
+					execute immediate 'alter system kill session '''|| i.sid || ',' || i.serial# || ''' immediate';
+				end loop;
+			end; """
 	}
 }
 ]]></body>
@@ -303,7 +305,7 @@ Usernames.split(',').each{
 
 				<command name="dropUser">
 					<params>
-						<param name="Usernames" required="true"/>
+						<param name="Usernames" required="true" validRef="OraIdList"/>
 						<param name="DoBackup" type="Boolean" defaultValue="true" required="true"/>
 						<param name="DoKillSession" type="Boolean" defaultValue="false" required="true"/>
 					</params>
@@ -315,15 +317,13 @@ if(DoBackup)
 Usernames.split(',').each {
 	def username = it.trim()
 
-	if(username.length() > 0) {
-		if(checkUser([Username: username])) {
-			if(DoKillSession)
-				killUserSession([Usernames: username])
+	if(checkUser([Username: username])) {
+		if(DoKillSession)
+			killUserSession([Usernames: username])
 
-			db {
-				prompt "Drop User '${username}'"
-				query "drop user ${username} cascade"
-			}
+		db {
+			prompt "Drop User '${username}'"
+			query "drop user ${username} cascade"
 		}
 	}
 }
@@ -332,8 +332,8 @@ Usernames.split(',').each {
 
 				<command name="copySchema">
 					<params>
-						<param name="SourceSchemas" required="true"/>
-						<param name="DestSchemas"/>
+						<param name="SourceSchemas" required="true" validRef="OraIdList"/>
+						<param name="DestSchemas" validRef="OraIdList"/>
 						<param name="DestServer" type="Service"/>
 						<param name="DoBackUpDest" type="Boolean" required="true" defaultValue="true"/>
 					</params>
@@ -353,8 +353,8 @@ else {
 
 				<command name="copyLocalSchema">
 					<params>
-						<param name="SourceSchemas" required="true"/>
-						<param name="DestSchemas" required="true"/>
+						<param name="SourceSchemas" required="true" validRef="OraIdList"/>
+						<param name="DestSchemas" required="true" validRef="OraIdList"/>
 						<param name="DoBackUpDest" type="Boolean" defaultValue="true"/>
 					</params>
 
@@ -375,8 +375,8 @@ ssh {
 
 				<command name="copyRemoteSchema">
 					<params>
-						<param name="SourceSchemas" required="true"/>
-						<param name="DestSchemas"/>
+						<param name="SourceSchemas" required="true" validRef="OraIdList"/>
+						<param name="DestSchemas" validRef="OraIdList"/>
 						<param name="DestServer" type="Service" required="true"/>
 						<param name="DoBackUpDest" type="Boolean" required="true" defaultValue="true"/>
 					</params>
@@ -384,10 +384,9 @@ ssh {
 					<body><![CDATA[
 SourceSchemas.split(',').each {
 	def username = it.trim()
-	if(username.length() > 0) {
-		if(!checkUser([Username: username])) {
-			$error("Schema '${username}' does not exist!")
-		}
+
+	if(!checkUser([Username: username])) {
+		$error("Schema '${username}' does not exist!")
 	}
 }
 
@@ -445,40 +444,40 @@ $reTarget(DestServer, {
 ]]></body>
 				</command>
 
+				<!--
+								<command name="truncateSchema">
+									<params>
+										<param name="Schema" required="true"/>
+									</params>
 
-				<command name="truncateSchema">
-					<params>
-						<param name="Schema" required="true"/>
-					</params>
+									<body><![CDATA[
+				db {
+					prompt "Truncate Tables/Sequences/Synonyms for '${Schema}'"
+					query """
+						declare
+							v_schema varchar2(20);
+						begin
+							v_schema := '${Schema.toUpperCase()}';
 
-					<body><![CDATA[
-db {
-	prompt "Truncate Tables/Sequences/Synonyms for '${Schema}'"
-	query """
-		declare
-			v_schema varchar2(20);
-		begin
-			v_schema := '${Schema.toUpperCase()}';
+							- -Bye Sequences!
+							for i in (select us.sequence_name from all_sequences us where us.sequence_owner = v_schema) loop
+								execute immediate 'drop sequence '||v_schema||'.'|| i.sequence_name;
+							end loop;
 
-			--Bye Sequences!
-			for i in (select us.sequence_name from all_sequences us where us.sequence_owner = v_schema) loop
-				execute immediate 'drop sequence '||v_schema||'.'|| i.sequence_name;
-			end loop;
+							- -Bye Synonyms!
+							for i in (select us.synonym_name from all_synonyms us where us.owner = v_schema) loop
+								execute immediate 'drop synonym '||v_schema||'.'|| i.synonym_name;
+							end loop;
 
-			--Bye Synonyms!
-			for i in (select us.synonym_name from all_synonyms us where us.owner = v_schema) loop
-				execute immediate 'drop synonym '||v_schema||'.'|| i.synonym_name;
-			end loop;
-
-			--Bye Tables!
-			for i in (select ut.table_name from all_tables ut where ut.owner = v_schema) loop
-				execute immediate 'drop table '||v_schema||'.'|| i.table_name ||' cascade constraints purge';
-			end loop;
-		end;"""
-}
-]]></body>
-				</command>
-
+							- -Bye Tables!
+							for i in (select ut.table_name from all_tables ut where ut.owner = v_schema) loop
+								execute immediate 'drop table '||v_schema||'.'|| i.table_name ||' cascade constraints purge';
+							end loop;
+						end;"""
+				}
+				]]></body>
+								</command>
+				-->
 			</commands>
 
 		</service>
