@@ -17,6 +17,7 @@ import org.devocative.demeter.web.DPage;
 import org.devocative.demeter.web.component.DAjaxButton;
 import org.devocative.demeter.web.component.grid.OEditAjaxColumn;
 import org.devocative.demeter.web.component.grid.ORowModAjaxColumn;
+import org.devocative.demeter.web.component.grid.ORowModChangeAjaxColumn;
 import org.devocative.demeter.web.model.DEntityLazyLoadModel;
 import org.devocative.wickomp.WebUtil;
 import org.devocative.wickomp.form.WBooleanInput;
@@ -197,6 +198,8 @@ public class OSIUserListDPage extends DPage implements IGridDataSource<OSIUser> 
 					window.show(target);
 				}
 			});
+
+			columnList.add(new ORowModChangeAjaxColumn<>(window));
 		}
 
 		if (hasPermission(AresPrivilegeKey.OSIUserShowPassword)) {

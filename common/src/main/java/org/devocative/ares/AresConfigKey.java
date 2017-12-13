@@ -2,10 +2,11 @@ package org.devocative.ares;
 
 import org.devocative.adroit.IConfigKey;
 
+import java.util.Arrays;
 import java.util.List;
 
 public enum AresConfigKey implements IConfigKey {
-	//UseEqualOnUpperBound("mts.range.equal.upper", false, Arrays.asList(true, false)),
+	ShellResponseResetExpiration("ars.shell.response.reset.expiration", false, Arrays.asList(true, false))
 	;
 	// ------------------------------
 

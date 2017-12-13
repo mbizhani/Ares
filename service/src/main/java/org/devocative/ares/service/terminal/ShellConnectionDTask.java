@@ -3,6 +3,8 @@ package org.devocative.ares.service.terminal;
 import com.jcraft.jsch.ChannelShell;
 import com.jcraft.jsch.JSch;
 import com.jcraft.jsch.Session;
+import org.devocative.adroit.ConfigUtil;
+import org.devocative.ares.AresConfigKey;
 import org.devocative.ares.iservice.ITerminalConnectionService;
 import org.devocative.ares.vo.OServiceInstanceTargetVO;
 import org.devocative.ares.vo.SshMessageVO;
@@ -15,7 +17,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
-import java.io.*;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.io.PrintStream;
 
 @Scope("prototype")
 @Component("arsShellConnectionDTask")
@@ -154,15 +159,16 @@ public class ShellConnectionDTask extends DTask implements ITerminalProcess {
 
 		@Override
 		public void run() {
-			BufferedReader br = new BufferedReader(new InputStreamReader(in));
-
 			try {
 				while (true) {
-					char[] buff = new char[1024];
 					int read;
-					while ((read = br.read(buff)) != -1) {
+					byte[] buff = new byte[1024];
+					while ((read = in.read(buff)) != -1) {
+						if (ConfigUtil.getBoolean(AresConfigKey.ShellResponseResetExpiration)) {
+							lastActivityTime = System.currentTimeMillis();
+						}
+
 						String line = new String(buff, 0, read);
-						//logger.debug("Ssh Server Res: {}", line);
 						processor.onServerText(line);
 						sendResult(line);
 
