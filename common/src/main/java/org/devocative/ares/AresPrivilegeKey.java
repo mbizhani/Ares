@@ -11,7 +11,8 @@ public enum AresPrivilegeKey implements IPrivilegeKey {
 	OSIUserAdd, OSIUserEdit, OSIUserShowPassword,
 	OServerAdd, OServerEdit,
 	OBasicDataAdd, OBasicDataEdit,
-	PrepCommandAdd, PrepCommandEdit;
+	PrepCommandAdd, PrepCommandEdit,
+	StopTerminalConnection;
 
 	private String name;
 

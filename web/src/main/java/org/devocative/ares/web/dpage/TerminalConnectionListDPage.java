@@ -6,6 +6,7 @@ import org.apache.wicket.model.CompoundPropertyModel;
 import org.apache.wicket.model.IModel;
 import org.apache.wicket.model.Model;
 import org.apache.wicket.model.ResourceModel;
+import org.devocative.ares.AresPrivilegeKey;
 import org.devocative.ares.entity.TerminalConnection;
 import org.devocative.ares.iservice.ITerminalConnectionService;
 import org.devocative.ares.vo.filter.TerminalConnectionFVO;
@@ -24,6 +25,7 @@ import org.devocative.wickomp.grid.WDataGrid;
 import org.devocative.wickomp.grid.WSortField;
 import org.devocative.wickomp.grid.column.OColumnList;
 import org.devocative.wickomp.grid.column.OPropertyColumn;
+import org.devocative.wickomp.grid.column.link.OAjaxLinkColumn;
 import org.devocative.wickomp.html.WFloatTable;
 import org.devocative.wickomp.opt.OSize;
 
@@ -107,17 +109,35 @@ public class TerminalConnectionListDPage extends DPage implements IGridDataSourc
 		add(form);
 
 		OColumnList<TerminalConnection> columnList = new OColumnList<>();
-		columnList.add(new OPropertyColumn<TerminalConnection>(new Model<>("ID"), "id"));
+		columnList.add(new OPropertyColumn<>(new Model<>("ID"), "id"));
 		columnList.add(new OPropertyColumn<TerminalConnection>(new ResourceModel("TerminalConnection.active"), "active")
 			.setFormatter(OBooleanFormatter.bool()));
 		columnList.add(new OPropertyColumn<TerminalConnection>(new ResourceModel("TerminalConnection.disconnection"), "disconnection")
 			.setFormatter(ODateFormatter.getDateTimeByUserPreference())
 			.setStyle("direction:ltr"));
-		columnList.add(new OPropertyColumn<TerminalConnection>(new ResourceModel("TerminalConnection.target"), "target"));
+		columnList.add(new OPropertyColumn<>(new ResourceModel("TerminalConnection.target"), "target"));
 		columnList.add(new OPropertyColumn<TerminalConnection>(new ResourceModel("entity.creationDate"), "creationDate")
 			.setFormatter(ODateFormatter.getDateTimeByUserPreference())
 			.setStyle("direction:ltr"));
-		columnList.add(new OPropertyColumn<TerminalConnection>(new ResourceModel("entity.creatorUser"), "creatorUser"));
+		columnList.add(new OPropertyColumn<>(new ResourceModel("entity.creatorUser"), "creatorUser"));
+
+		if (hasPermission(AresPrivilegeKey.StopTerminalConnection)) {
+			columnList.add(new OAjaxLinkColumn<TerminalConnection>(new Model<>(), AresIcon.STOP_CIRCLE) {
+					private static final long serialVersionUID = -2270296993745682208L;
+
+					@Override
+					public void onClick(AjaxRequestTarget target, IModel<TerminalConnection> rowData) {
+						terminalConnectionService.closeConnection(rowData.getObject().getId());
+					}
+
+					@Override
+					public boolean onCellRender(TerminalConnection bean, String id) {
+						return bean.getActive();
+					}
+				}.setConfirmMessage(getString("label.confirm"))
+					.setField("STOP_CONN")
+			);
+		}
 
 		OGrid<TerminalConnection> oGrid = new OGrid<>();
 		oGrid

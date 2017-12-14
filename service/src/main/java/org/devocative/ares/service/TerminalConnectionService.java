@@ -15,6 +15,9 @@ import org.devocative.ares.vo.OServiceInstanceTargetVO;
 import org.devocative.ares.vo.TerminalConnectionVO;
 import org.devocative.ares.vo.filter.TerminalConnectionFVO;
 import org.devocative.demeter.entity.User;
+import org.devocative.demeter.iservice.ApplicationLifecyclePriority;
+import org.devocative.demeter.iservice.IApplicationLifecycle;
+import org.devocative.demeter.iservice.ISecurityService;
 import org.devocative.demeter.iservice.persistor.IPersistorService;
 import org.devocative.demeter.iservice.task.DTaskResult;
 import org.devocative.demeter.iservice.task.ITaskResultCallback;
@@ -31,7 +34,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 @Service("arsTerminalConnectionService")
-public class TerminalConnectionService implements ITerminalConnectionService {
+public class TerminalConnectionService implements ITerminalConnectionService, IApplicationLifecycle {
 	private static final Logger logger = LoggerFactory.getLogger(TerminalConnectionService.class);
 
 	private static final Map<Long, ITerminalProcess> CONNECTIONS = new ConcurrentHashMap<>();
@@ -49,6 +52,9 @@ public class TerminalConnectionService implements ITerminalConnectionService {
 
 	@Autowired
 	private IOSIUserService osiUserService;
+
+	@Autowired
+	private ISecurityService securityService;
 
 	// ------------------------------
 
@@ -100,6 +106,31 @@ public class TerminalConnectionService implements ITerminalConnectionService {
 
 	// ==============================
 
+	// --------------- IApplicationLifecycle
+
+	@Override
+	public void init() {
+		//TODO define close reason
+		persistorService.executeUpdate("update TerminalConnection ent set ent.active=false, ent.disconnection=current_date where ent.active=true");
+		persistorService.commitOrRollback();
+	}
+
+	@Override
+	public void shutdown() {
+		List<ITerminalProcess> processes = new ArrayList<>(CONNECTIONS.values());
+
+		for (ITerminalProcess process : processes) {
+			closeConnection(process.getConnectionId());
+		}
+	}
+
+	@Override
+	public ApplicationLifecyclePriority getLifecyclePriority() {
+		return ApplicationLifecyclePriority.Third;
+	}
+
+	// ---------------
+
 	@Override
 	public Long createTerminal(Long osiUserId, Object initConfig, ITaskResultCallback callback) {
 		if (!osiUserService.isOSIUserAllowed(osiUserId)) {
@@ -139,14 +170,14 @@ public class TerminalConnectionService implements ITerminalConnectionService {
 			process.send(message);
 		} else {
 			logger.warn("Sending message to invalid connection: connId=[{}]", connId);
+			throw new RuntimeException("Invalid connection!");
 		}
 	}
 
 	@Override
+	//TODO define close reason
 	public synchronized void closeConnection(Long connId) {
 		if (connId != null && CONNECTIONS.containsKey(connId)) {
-			logger.info("Closing Terminal Connection: {}", connId);
-
 			CONNECTIONS.get(connId).close();
 			CONNECTIONS.remove(connId);
 
@@ -155,6 +186,9 @@ public class TerminalConnectionService implements ITerminalConnectionService {
 			connection.setDisconnection(new Date());
 			saveOrUpdate(connection);
 			persistorService.commitOrRollback();
+
+			logger.info("Terminal Connection Closed: id=[{}], user=[{}], conn=[{}]",
+				connId, securityService.getCurrentUser(), connection.getTarget());
 		}
 	}
 
