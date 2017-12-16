@@ -3,17 +3,64 @@
 <wicket:panel xmlns:wicket="http://wicket.apache.org">
 	<div class="easyui-layout" data-options="fit:true">
 		<div data-options="region:'west',title:'Commands',split:true" style="width:220px;">
+
+			<div style="width:100%">
+				<input id="searchTxt" type="text" style="padding:0;width:calc(100% - 43px)"/>
+				<button id="searchBut" type="button" style="margin:0"><i class="fa fa-search"></i></button>
+			</div>
+
 			<div wicket:id="services" class="easyui-panel" style="border: 0; padding: 10px; width:100%"
 				 data-options="collapsible:true">
 				<wicket:container wicket:id="commands">
-					<button style="margin-bottom: 5px;" wicket:id="command"></button>
+					<button class="act" style="margin-bottom: 5px;" wicket:id="command"></button>
 				</wicket:container>
 			</div>
 		</div>
+
 		<div data-options="region:'center',title:'Outputs'">
 			<div wicket:id="tabPanel"></div>
 		</div>
 	</div>
+
+	<script type="text/javascript">
+		$("#searchTxt").keydown(function (event) {
+			if (event.keyCode == 13) {
+				filter(event.target.value);
+				event.preventDefault();
+			}
+		});
+
+		$("#searchBut").click(function () {
+			filter($("#searchTxt").val());
+		});
+
+		function filter(txt) {
+			if (txt && txt != "") {
+				var filter = txt.toUpperCase().split("&");
+				$("button.act").each(function () {
+					var hide = false;
+					var cap = $(this).text().toUpperCase();
+
+					for (var i = 0; i < filter.length; i++) {
+						if (cap.indexOf(filter[i].trim()) < 0) {
+							hide = true;
+							break;
+						}
+					}
+
+					if (hide) {
+						$(this).hide();
+					} else {
+						$(this).show();
+					}
+
+				});
+			} else {
+				$("button.act").show();
+			}
+		}
+	</script>
+
 </wicket:panel>
 
 </html>
