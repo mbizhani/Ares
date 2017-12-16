@@ -219,6 +219,7 @@ if(availSchema.length() > 1) {
 						<param name="SourceSchemas" required="true" validRef="OraIdList"/>
 						<param name="DestSchemas" validRef="OraIdList"/>
 						<param name="DoBackUp" type="Boolean" required="true" defaultValue="false"/>
+						<param name="IgnoreTrigger" type="Boolean" required="true" defaultValue="true"/>
 					</params>
 
 					<body><![CDATA[
@@ -230,17 +231,21 @@ dropUser([Usernames: users, DoBackup: DoBackUp, DoKillSession: true])
 if(DumpFile.endsWith('.dmp'))
 	DumpFile = DumpFile.substring(0, DumpFile.length() - 4)
 
+def genParams = "directory=${target.prop.pumpDbDir} dumpfile=${DumpFile}.dmp logfile=imp.${DumpFile}.log' transform=OID:n"
+if(IgnoreTrigger)
+	genParams += " exclude=trigger"
+
 if($param('DestSchemas')) {
 	def remap = generateRemap([SourceSchemas: SourceSchemas, DestSchemas: DestSchemas])
 	ssh {
 		prompt "Restoring '${remap}' from '${DumpFile}'"
-		cmd "su - oracle -c 'impdp ${target.username}/${target.password} remap_schema=${remap} directory=${target.prop.pumpDbDir} dumpfile=${DumpFile}.dmp logfile=imp.${DumpFile}.log'"
+		cmd "su - oracle -c 'impdp ${target.username}/${target.password} remap_schema=${remap} ${genParams}"
 		force true
 	}
 } else {
 	ssh {
 		prompt "Restoring '${SourceSchemas}' from '${DumpFile}'"
-		cmd "su - oracle -c 'impdp ${target.username}/${target.password} directory=${target.prop.pumpDbDir} dumpfile=${DumpFile}.dmp logfile=imp.${DumpFile}.log'"
+		cmd "su - oracle -c 'impdp ${target.username}/${target.password} ${genParams}"
 		force true
 	}
 }
@@ -336,17 +341,18 @@ Usernames.split(',').each {
 						<param name="DestSchemas" validRef="OraIdList"/>
 						<param name="DestServer" type="Service"/>
 						<param name="DoBackUpDest" type="Boolean" required="true" defaultValue="true"/>
+						<param name="IgnoreTrigger" type="Boolean" required="true" defaultValue="true"/>
 					</params>
 
 					<body><![CDATA[
 if($param('DestServer'))
-	copyRemoteSchema([SourceSchemas: SourceSchemas, DestSchemas: $param('DestSchemas'), DestServer: DestServer, DoBackUpDest: DoBackUpDest])
+	copyRemoteSchema([SourceSchemas: SourceSchemas, DestSchemas: $param('DestSchemas'), DestServer: DestServer, DoBackUpDest: DoBackUpDest, IgnoreTrigger: IgnoreTrigger])
 
 else {
 	if(!$param('DestSchemas'))
 		$error('Dest schemas are required in copy local')
 
-	copyLocalSchema([SourceSchemas: SourceSchemas, DestSchemas: $param('DestSchemas'), DoBackUpDest: DoBackUpDest])
+	copyLocalSchema([SourceSchemas: SourceSchemas, DestSchemas: $param('DestSchemas'), DoBackUpDest: DoBackUpDest, IgnoreTrigger: IgnoreTrigger])
 }
 ]]></body>
 				</command>
@@ -356,6 +362,7 @@ else {
 						<param name="SourceSchemas" required="true" validRef="OraIdList"/>
 						<param name="DestSchemas" required="true" validRef="OraIdList"/>
 						<param name="DoBackUpDest" type="Boolean" defaultValue="true"/>
+						<param name="IgnoreTrigger" type="Boolean" defaultValue="true"/>
 					</params>
 
 					<body><![CDATA[
@@ -363,7 +370,7 @@ if(SourceSchemas == DestSchemas)
 	$error('Source and destination schemas must be different')
 
 def file = backupSchema([Schemas: SourceSchemas])
-restoreSchema([DumpFile: file, SourceSchemas: SourceSchemas, DestSchemas: DestSchemas, DoBackUp: DoBackUpDest])
+restoreSchema([DumpFile: file, SourceSchemas: SourceSchemas, DestSchemas: DestSchemas, DoBackUp: DoBackUpDest, IgnoreTrigger: IgnoreTrigger])
 
 def osDir = findOsDir()
 ssh {
@@ -379,6 +386,7 @@ ssh {
 						<param name="DestSchemas" validRef="OraIdList"/>
 						<param name="DestServer" type="Service" required="true"/>
 						<param name="DoBackUpDest" type="Boolean" required="true" defaultValue="true"/>
+						<param name="IgnoreTrigger" type="Boolean" required="true" defaultValue="true"/>
 					</params>
 
 					<body><![CDATA[
@@ -420,10 +428,14 @@ $reTarget(DestServer, {
 	dropUser([Usernames: dest, DoBackup: DoBackUpDest, DoKillSession: true])
 
 	def file = "net.${dest.replace(',', '.')}.${$now()}"
+	def genParams = "schemas=${SourceSchemas} directory=${target.prop.pumpDbDir} network_link=${dbLinkName} logfile=${file}.log' transform=OID:n"
+	if(IgnoreTrigger)
+		genParams += " exclude=trigger"
+
 	if(SourceSchemas == dest) {
 		ssh {
 			prompt "Import Database from: '${srcServer}', file='${file}', schemas='${SourceSchemas}'"
-			cmd "su - oracle -c 'impdp ${target.username}/${target.password} schemas=${SourceSchemas} directory=${target.prop.pumpDbDir} network_link=${dbLinkName} logfile=${file}.log'"
+			cmd "su - oracle -c 'impdp ${target.username}/${target.password} ${genParams}"
 			force true
 		}
 
@@ -431,7 +443,7 @@ $reTarget(DestServer, {
 		def remap = generateRemap([SourceSchemas: SourceSchemas, DestSchemas: dest])
 		ssh {
 			prompt "Import Database from: '${srcServer}', file='${file}', remap=${remap}"
-			cmd "su - oracle -c 'impdp ${target.username}/${target.password} schemas=${SourceSchemas} remap_schema=${remap} directory=${target.prop.pumpDbDir} network_link=${dbLinkName} logfile=${file}.log'"
+			cmd "su - oracle -c 'impdp ${target.username}/${target.password} remap_schema=${remap} ${genParams}"
 			force true
 		}
 	}
