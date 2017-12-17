@@ -60,6 +60,7 @@ public class CommandExecPanel extends DPanel implements IAsyncResponse {
 
 	private Long targetServiceInstanceId;
 	private Long osiUserId;
+	private Long serviceId;
 
 	private DTaskBehavior taskBehavior;
 	private WebMarkupContainer tabs, log, tabular;
@@ -152,6 +153,7 @@ public class CommandExecPanel extends DPanel implements IAsyncResponse {
 		add(taskBehavior);
 
 		Command command = commandService.load(commandId);
+		serviceId = command.getServiceId();
 
 		if (targetServiceInstanceId != null) {
 			OServiceInstance target = serviceInstanceService.load(targetServiceInstanceId);
@@ -159,7 +161,7 @@ public class CommandExecPanel extends DPanel implements IAsyncResponse {
 			params.put(TARGET_KEY, targetKeyValueVO);
 			targetServiceInstances.add(targetKeyValueVO);
 		} else {
-			targetServiceInstances.addAll(serviceInstanceService.findListForCommandExecution(command.getServiceId()));
+			targetServiceInstances.addAll(serviceInstanceService.findListForCommandExecution(serviceId));
 		}
 
 		XCommand xCommand = command.getXCommand();
@@ -321,7 +323,10 @@ public class CommandExecPanel extends DPanel implements IAsyncResponse {
 						params.put(xParamName, new KeyValueVO<>(serviceInstance.getId(), serviceInstance.toString()));
 						fieldFormItem = new WLabelInput(xParamName);
 					} else {
-						List<KeyValueVO<Long, String>> serviceInstances = serviceInstanceService.findListForCommandExecution(targetServiceInstances.get(0).getKey());
+						List<KeyValueVO<Long, String>> serviceInstances = targetServiceInstances;
+						if (serviceInstances.isEmpty()) {
+							serviceInstances = serviceInstanceService.findListForCommandExecution(serviceId);
+						}
 						fieldFormItem = new WSelectionInput(xParamName, serviceInstances, false);
 					}
 				}
