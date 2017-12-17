@@ -90,34 +90,38 @@ public class ConsoleResultProcessing {
 
 	public TabularVO build(Map<String, String> filter) {
 		text = text.replaceAll("[\r]", "");
-		String[] split = text.split("[\n]");
+		if (text.length() > 0) {
+			String[] split = text.split("[\n]");
 
-		List<String> lines = new ArrayList<>();
-		copyArrToCollection(split, lines, false);
+			List<String> lines = new ArrayList<>();
+			copyArrToCollection(split, lines, false);
 
-		for (int i = 0; i < ignoreStartingLines; i++) {
-			lines.remove(0);
-		}
+			for (int i = 0; i < ignoreStartingLines; i++) {
+				lines.remove(0);
+			}
 
-		for (int i = 0; i < ignoreLinesAfterHeader; i++) {
-			lines.remove(1);
-		}
+			for (int i = 0; i < ignoreLinesAfterHeader; i++) {
+				lines.remove(1);
+			}
 
-		String header = lines.remove(0);
+			String header = lines.remove(0);
 
-		if (!possibleColumns.isEmpty()) {
-			findByColumnNames(header);
-			fillRowsByIndex(lines);
-		} else if (splitBy != null) {
-			fillBySplit(header, lines);
+			if (!possibleColumns.isEmpty()) {
+				findByColumnNames(header);
+				fillRowsByIndex(lines);
+			} else if (splitBy != null) {
+				fillBySplit(header, lines);
+			} else {
+				throw new RuntimeException("Auto-find is not implemented!");
+			}
+
+			logger.debug("Final Columns: {}", columns);
+			logger.debug("Rows: {}", rows);
+
+			return new TabularVO<>(columns, rows, filter).setSize(size);
 		} else {
-			throw new RuntimeException("Auto-find is not implemented!");
+			return new TabularVO<>(Collections.singletonList("No Shell Result!"), Collections.emptyList(), null);
 		}
-
-		logger.debug("Final Columns: {}", columns);
-		logger.debug("Rows: {}", rows);
-
-		return new TabularVO<>(columns, rows, filter).setSize(size);
 	}
 
 	// ------------------------------
