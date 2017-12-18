@@ -14,6 +14,7 @@ import org.devocative.ares.iservice.oservice.IOServiceService;
 import org.devocative.ares.vo.filter.OServerFVO;
 import org.devocative.demeter.entity.User;
 import org.devocative.demeter.iservice.persistor.IPersistorService;
+import org.devocative.demeter.iservice.persistor.IQueryBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -224,33 +225,53 @@ public class OServerService implements IOServerService {
 	public void checkVMServers(Long hypervisorId, List<Map<String, String>> servers) {
 		logger.info("CheckVMServers: hypervisor=[{}] servers={}", hypervisorId, servers);
 
-		persistorService.createQueryBuilder()
-			.addSelect("update OServer ent set ent.vmId = null where ent.hypervisor.id = :hypervisorId")
-			.addParam("hypervisorId", hypervisorId)
-			.update();
+		List<String> validVmId = new ArrayList<>();
 
 		for (Map<String, String> server : servers) {
-			String name = server.get("name");
-			String address = server.get("address");
-			String vmId = server.get("vmId");
-			String os = server.get("os");
+			String name = server.get("name").trim();
+			String vmId = server.get("vmId").trim();
+			String address = server.get("address") != null ? server.get("address").trim() : null;
+			String os = server.get("os") != null ? server.get("os").trim() : null;
 
-			OServer oServer = persistorService.createQueryBuilder()
+			validVmId.add(vmId);
+
+			IQueryBuilder oServerBuilder = persistorService.createQueryBuilder()
 				.addFrom(OServer.class, "ent")
-				.addWhere("and ent.name = :name")
-				.addParam("name", name)
 				.addWhere("and ent.hypervisor.id = :hypervisorId")
 				.addParam("hypervisorId", hypervisorId)
-				.object();
+
+				.addWhere("and (ent.name = :name")
+				.addParam("name", name)
+				.addWhere("or ent.vmId = :vmId")
+				.addParam("vmId", vmId);
+
+			if (address != null && !address.isEmpty()) {
+				oServerBuilder
+					.addWhere("or ent.address = :address")
+					.addParam("address", address);
+			}
+
+			oServerBuilder.addWhere(")");
+
+			List<OServer> oServerList = oServerBuilder.list();
+
+			OServer oServer;
+			if (oServerList.size() == 1) {
+				oServer = oServerList.get(0);
+			} else {
+				oServer = findProperOServer(oServerList, vmId, name, address);
+			}
 
 			if (oServer != null) {
 				logger.info("CheckVMServers: update server id=[{}] name=[{}]", oServer.getId(), oServer.getName());
 				oServer.setVmId(vmId);
-				if (address != null) {
+				oServer.setName(name);
+				if (address != null && !address.isEmpty()) {
 					oServer.setAddress(address);
 				}
 			} else {
-				logger.info("CheckVMServers: insert new server name=[{}] vmId=[{}]", name, vmId);
+				logger.info("CheckVMServers: insert new server hypervisor=[{}] name=[{}] vmId=[{}]",
+					hypervisorId, name, vmId);
 				oServer = new OServer(name, address);
 				oServer.setVmId(vmId);
 				oServer.setHypervisor(new OServer(hypervisorId));
@@ -269,6 +290,14 @@ public class OServerService implements IOServerService {
 
 			saveOrUpdate(oServer);
 		}
+
+		int noOfInvalidVmId = persistorService.createQueryBuilder()
+			.addSelect("update OServer ent set ent.vmId = null where ent.hypervisor.id = :hypervisorId and ent.vmId not in (:validVmId)")
+			.addParam("hypervisorId", hypervisorId)
+			.addParam("validVmId", validVmId)
+			.update();
+
+		logger.info("Update hypervisor's VM: hypervisorId=[{}] no of invalid vmId = [{}]", hypervisorId, noOfInvalidVmId);
 
 		persistorService.commitOrRollback();
 	}
@@ -291,5 +320,21 @@ public class OServerService implements IOServerService {
 		} else {
 			throw new RuntimeException(String.format("UpdateServer: VM not found hypervisorId=[%s] vmId=[%s]", hypervisorId, oldVmId));
 		}
+	}
+
+	// ------------------------------
+
+	private OServer findProperOServer(List<OServer> oServerList, String vmId, String name, String address) {
+		for (OServer oServer : oServerList) {
+			if (oServer.getVmId().equals(vmId)) {
+				return oServer;
+			} else if (oServer.getAddress() != null && oServer.getAddress().equals(address)) {
+				return oServer;
+			} else if (oServer.getName() != null && oServer.getName().equals(name)) {
+				return oServer;
+			}
+		}
+
+		return null;
 	}
 }
