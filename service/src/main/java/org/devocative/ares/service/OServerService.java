@@ -256,21 +256,25 @@ public class OServerService implements IOServerService {
 			List<OServer> oServerList = oServerBuilder.list();
 
 			OServer oServer;
-			if (oServerList.size() == 1) {
+			if (oServerList.isEmpty()) {
+				oServer = null;
+			} else if (oServerList.size() == 1) {
 				oServer = oServerList.get(0);
 			} else {
 				oServer = findProperOServer(oServerList, vmId, name, address);
 			}
 
 			if (oServer != null) {
-				logger.info("CheckVMServers: update server id=[{}] name=[{}]", oServer.getId(), oServer.getName());
+				logger.info("CheckVMServers: update server hypervisor=[{}] vmId=[{}]  name=[{}] <-[{}]  address=[{}] <-[{}] id=[{}] ",
+					hypervisorId, vmId, name, oServer.getName(), address, oServer.getAddress(), oServer.getId());
+
 				oServer.setVmId(vmId);
 				oServer.setName(name);
 				if (address != null && !address.isEmpty()) {
 					oServer.setAddress(address);
 				}
 			} else {
-				logger.info("CheckVMServers: insert new server hypervisor=[{}] name=[{}] vmId=[{}]",
+				logger.info("CheckVMServers: insert new server hypervisor=[{}] vmId=[{}] name=[{}] ",
 					hypervisorId, name, vmId);
 				oServer = new OServer(name, address);
 				oServer.setVmId(vmId);
@@ -328,9 +332,17 @@ public class OServerService implements IOServerService {
 		for (OServer oServer : oServerList) {
 			if (oServer.getVmId().equals(vmId)) {
 				return oServer;
-			} else if (oServer.getAddress() != null && oServer.getAddress().equals(address)) {
+			}
+		}
+
+		for (OServer oServer : oServerList) {
+			if (oServer.getAddress() != null && oServer.getAddress().equals(address)) {
 				return oServer;
-			} else if (oServer.getName() != null && oServer.getName().equals(name)) {
+			}
+		}
+
+		for (OServer oServer : oServerList) {
+			if (oServer.getName().equals(name)) {
 				return oServer;
 			}
 		}
