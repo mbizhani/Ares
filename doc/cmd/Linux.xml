@@ -159,6 +159,36 @@ switch(Action) {
 ]]></body>
 				</command>
 
+				<command name="storageInfo">
+					<params>
+						<param name="LocalOnly" type="Boolean" required="true" defaultValue="true"/>
+						<param name="ShowTotal" type="Boolean" required="true" defaultValue="false"/>
+					</params>
+
+					<body><![CDATA[
+/*
+	P: use the POSIX output format
+	T: print file system type
+	h: print size in human readable format
+	l: limit listing to local file systems
+	--total: produce a grant total
+*/
+def opt = "-PTh"
+if(LocalOnly)
+	opt += "l"
+if(ShowTotal)
+	opt += " --total"
+
+ssh {
+	prompt 'File System Disk Space Usage'
+	cmd "df ${opt} | column -t"
+	result {
+		it.toTabular('[ ]{2,}')
+	}
+}
+]]></body>
+				</command>
+
 				<!-- ============= OS QUERY ============= -->
 
 				<command name="oQuery">
@@ -204,21 +234,82 @@ ssh {
 						<param name="Uid"/>
 						<param name="Username"/>
 						<param name="ShowNormal" type="Boolean" required="true" defaultValue="true"/>
+						<param name="LoggedIn" type="Boolean" required="true" defaultValue="false"/>
 					</params>
 
 					<body><![CDATA[
-def sql = "select uid, username, description, directory, shell from users where 1=1"
+def sql = """
+select
+	us.uid,
+	us.username,
+	us.description,
+	us.directory,
+	us.shell,
+	liu.type login_type,
+	liu.tty  login_tty,
+	liu.host login_remote_host,
+	datetime(liu.time, 'unixepoch', 'localtime') login_time,
+	liu.pid  login_pid
+from
+	users us
+	left join logged_in_users liu on us.username=liu.user
+where 1=1"""
 
 if($param("Uid"))
-	sql += " and uid = '${Uid}'"
+	sql += " and us.uid = '${Uid}'"
 
 if($param("Username"))
-	sql += " and username = '${Username}'"
+	sql += " and us.username = '${Username}'"
 
 if(ShowNormal)
-	sql += " and shell='/bin/bash'"
+	sql += " and us.shell='/bin/bash'"
+
+if(LoggedIn)
+	sql += " and liu.type is not null"
 
 oQuery([Prompt: 'List of Users', Sql: sql])
+]]></body>
+				</command>
+
+				<command name="oListLoginHistory">
+					<params>
+						<param name="Username"/>
+						<param name="Type"
+							   stringLiterals="BOOT_TIME|INIT_PROCESS|LOGIN_PROCESS|USER_PROCESS|DEAD_PROCESS"
+							   defaultValue="USER_PROCESS"/>
+					</params>
+
+					<body><![CDATA[
+def typeMap = ['BOOT_TIME':2, 'INIT_PROCESS':5, 'LOGIN_PROCESS':6, 'USER_PROCESS':7, 'DEAD_PROCESS':8]
+
+def sql = """
+select
+	username,
+	tty,
+	pid,
+	case type
+		when 2 then 'BOOT_TIME'
+		when 5 then 'INIT_PROCESS'
+		when 6 then 'LOGIN_PROCESS'
+		when 7 then 'USER_PROCESS'
+		when 8 then 'DEAD_PROCESS'
+		else type
+	end type,
+	datetime(time, 'unixepoch', 'localtime') time,
+	host
+from
+	last
+where 1=1"""
+
+if($param('Username'))
+	sql += " and username = '${Username}'"
+
+if($param('Type'))
+	sql += " and type = ${typeMap[Type]}"
+
+sql += " order by time desc"
+
+oQuery([Prompt: 'List Login History', Sql: sql])
 ]]></body>
 				</command>
 
@@ -338,6 +429,42 @@ if($param("Username"))
 	sql += " and us.username = '${Username}'"
 
 oQuery([Prompt: 'List of Opened Files', Sql: sql])
+]]></body>
+				</command>
+
+				<command name="oListInterface">
+					<params/>
+
+					<body><![CDATA[
+def sql = "select * from interface_addresses"
+oQuery([Prompt: 'List Network Interface(s)', Sql: sql])
+]]></body>
+				</command>
+
+				<command name="oOsInfo">
+					<params/>
+
+					<body><![CDATA[
+def sql = "select * from os_version"
+oQuery([Prompt: 'OS Info', Sql: sql])
+]]></body>
+				</command>
+
+				<command name="oSystemInfo">
+					<params/>
+
+					<body><![CDATA[
+def sql = "select hostname,cpu_physical_cores,cpu_logical_cores,physical_memory,computer_name from system_info"
+oQuery([Prompt: 'System Info', Sql: sql])
+]]></body>
+				</command>
+
+				<command name="oTime">
+					<params/>
+
+					<body><![CDATA[
+def sql = "select * from time"
+oQuery([Prompt: 'System Time', Sql: sql])
 ]]></body>
 				</command>
 

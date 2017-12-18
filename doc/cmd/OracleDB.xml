@@ -231,7 +231,7 @@ dropUser([Usernames: users, DoBackup: DoBackUp, DoKillSession: true])
 if(DumpFile.endsWith('.dmp'))
 	DumpFile = DumpFile.substring(0, DumpFile.length() - 4)
 
-def genParams = "directory=${target.prop.pumpDbDir} dumpfile=${DumpFile}.dmp logfile=imp.${DumpFile}.log' transform=OID:n"
+def genParams = "directory=${target.prop.pumpDbDir} dumpfile=${DumpFile}.dmp logfile=imp.${DumpFile}.log transform=OID:n"
 if(IgnoreTrigger)
 	genParams += " exclude=trigger"
 
@@ -239,13 +239,13 @@ if($param('DestSchemas')) {
 	def remap = generateRemap([SourceSchemas: SourceSchemas, DestSchemas: DestSchemas])
 	ssh {
 		prompt "Restoring '${remap}' from '${DumpFile}'"
-		cmd "su - oracle -c 'impdp ${target.username}/${target.password} remap_schema=${remap} ${genParams}"
+		cmd "su - oracle -c 'impdp ${target.username}/${target.password} remap_schema=${remap} ${genParams}'"
 		force true
 	}
 } else {
 	ssh {
 		prompt "Restoring '${SourceSchemas}' from '${DumpFile}'"
-		cmd "su - oracle -c 'impdp ${target.username}/${target.password} ${genParams}"
+		cmd "su - oracle -c 'impdp ${target.username}/${target.password} ${genParams}'"
 		force true
 	}
 }
@@ -428,14 +428,14 @@ $reTarget(DestServer, {
 	dropUser([Usernames: dest, DoBackup: DoBackUpDest, DoKillSession: true])
 
 	def file = "net.${dest.replace(',', '.')}.${$now()}"
-	def genParams = "schemas=${SourceSchemas} directory=${target.prop.pumpDbDir} network_link=${dbLinkName} logfile=${file}.log' transform=OID:n"
+	def genParams = "schemas=${SourceSchemas} directory=${target.prop.pumpDbDir} network_link=${dbLinkName} logfile=${file}.log transform=OID:n"
 	if(IgnoreTrigger)
 		genParams += " exclude=trigger"
 
 	if(SourceSchemas == dest) {
 		ssh {
 			prompt "Import Database from: '${srcServer}', file='${file}', schemas='${SourceSchemas}'"
-			cmd "su - oracle -c 'impdp ${target.username}/${target.password} ${genParams}"
+			cmd "su - oracle -c 'impdp ${target.username}/${target.password} ${genParams}'"
 			force true
 		}
 
@@ -443,7 +443,7 @@ $reTarget(DestServer, {
 		def remap = generateRemap([SourceSchemas: SourceSchemas, DestSchemas: dest])
 		ssh {
 			prompt "Import Database from: '${srcServer}', file='${file}', remap=${remap}"
-			cmd "su - oracle -c 'impdp ${target.username}/${target.password} remap_schema=${remap} ${genParams}"
+			cmd "su - oracle -c 'impdp ${target.username}/${target.password} remap_schema=${remap} ${genParams}'"
 			force true
 		}
 	}
