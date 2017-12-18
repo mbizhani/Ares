@@ -1,11 +1,18 @@
 <operation>
 	<services>
 		<service name="Linux" adminPort="22">
+
+			<validations>
+				<validation name="LinId" regex="^[.\-_\w\d]+$"/>
+				<validation name="LinIP" regex="^[.\-_\w\d:]+$"/>
+				<validation name="LinNum" regex="^\d+$"/>
+			</validations>
+
 			<commands>
 
 				<command name="changePassword">
 					<params>
-						<param name="Username" required="true"/>
+						<param name="Username" required="true" validRef="LinId"/>
 						<param name="NewPassword" required="true"/>
 					</params>
 
@@ -31,7 +38,7 @@ $scpTo($param('File'), '~')
 
 				<command name="service">
 					<params>
-						<param name="Name" required="true"/>
+						<param name="Name" required="true" validRef="LinId"/>
 						<param name="Action" required="true" stringLiterals="start|stop|restart|status"/>
 					</params>
 
@@ -45,8 +52,8 @@ ssh {
 
 				<command name="killProcess">
 					<params>
-						<param name="ProcessName" required="true"/>
-						<param name="Username" required="true"/>
+						<param name="ProcessName" required="true" validRef="LinId"/>
+						<param name="Username" required="true" validRef="LinId"/>
 						<param name="Dash9" type="Boolean" required="true" defaultValue="false"/>
 					</params>
 
@@ -67,8 +74,8 @@ return null
 
 				<command name="jStack">
 					<params>
-						<param name="Username" required="true"/>
-						<param name="PID"/>
+						<param name="Username" required="true" validRef="LinId"/>
+						<param name="PID" validRef="LinNum"/>
 					</params>
 
 					<body><![CDATA[
@@ -88,7 +95,7 @@ if(!prc.rows.empty) {
 
 				<command name="pkg">
 					<params>
-						<param name="Name" required="true"/>
+						<param name="Name" required="true" validRef="LinId"/>
 						<param name="Action" required="true"
 							   stringLiterals="Search|Info|DepList|CheckInstall|Install|CheckUnInstall|UnInstall"
 							   defaultValue="Search"/>
@@ -231,8 +238,8 @@ ssh {
 
 				<command name="oListUser">
 					<params>
-						<param name="Uid"/>
-						<param name="Username"/>
+						<param name="Uid" validRef="LinNum"/>
+						<param name="Username" validRef="LinId"/>
 						<param name="ShowNormal" type="Boolean" required="true" defaultValue="true"/>
 						<param name="LoggedIn" type="Boolean" required="true" defaultValue="false"/>
 					</params>
@@ -273,7 +280,7 @@ oQuery([Prompt: 'List of Users', Sql: sql])
 
 				<command name="oListLoginHistory">
 					<params>
-						<param name="Username"/>
+						<param name="Username" validRef="LinId"/>
 						<param name="Type"
 							   stringLiterals="BOOT_TIME|INIT_PROCESS|LOGIN_PROCESS|USER_PROCESS|DEAD_PROCESS"
 							   defaultValue="USER_PROCESS"/>
@@ -315,8 +322,8 @@ oQuery([Prompt: 'List Login History', Sql: sql])
 
 				<command name="oListProcess">
 					<params>
-						<param name="ProcessName"/>
-						<param name="Username"/>
+						<param name="ProcessName" validRef="LinId"/>
+						<param name="Username" validRef="LinId"/>
 						<param name="ShowProcessPath" type="Boolean" required="true" defaultValue="false"/>
 						<param name="ShowCmdline" type="Boolean" required="true" defaultValue="false"/>
 						<param name="SortBy" defaultValue="resident_size"
@@ -356,12 +363,12 @@ oQuery([Prompt: 'List of Processes', Sql: sql])]]></body>
 
 				<command name="oListOpenSocket">
 					<params>
-						<param name="Pid"/>
-						<param name="ProcessName"/>
-						<param name="Protocol"/>
-						<param name="RemoteAddress"/>
-						<param name="RemotePort"/>
-						<param name="Username"/>
+						<param name="Pid" validRef="LinNum"/>
+						<param name="ProcessName" validRef="LinId"/>
+						<param name="Protocol" validRef="LinId"/>
+						<param name="RemoteAddress" validRef="LinIP"/>
+						<param name="RemotePort" validRef="LinNum"/>
+						<param name="Username" validRef="LinId"/>
 						<param name="ShowProcessPath" type="Boolean" required="true" defaultValue="false"/>
 						<param name="ShowCmdline" type="Boolean" required="true" defaultValue="false"/>
 					</params>
@@ -401,9 +408,9 @@ oQuery([Prompt: 'List of Opened Sockets', Sql: sql])
 
 				<command name="oListOpenFile">
 					<params>
-						<param name="Pid"/>
-						<param name="ProcessName"/>
-						<param name="Username"/>
+						<param name="Pid" validRef="LinNum"/>
+						<param name="ProcessName" validRef="LinId"/>
+						<param name="Username" validRef="LinId"/>
 						<param name="ShowProcessPath" type="Boolean" required="true" defaultValue="false"/>
 						<param name="ShowCmdline" type="Boolean" required="true" defaultValue="false"/>
 					</params>
