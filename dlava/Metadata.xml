@@ -239,6 +239,9 @@
 				<field name="owner">
 					<finfo/>
 				</field>
+				<field name="services">
+					<finfo hasForm="false"/>
+				</field>
 				<field name="creationDate">
 					<finfo hasForm="false" hasTimePart="true"/>
 				</field>
@@ -326,11 +329,20 @@
 				<field name="service">
 					<finfo/>
 				</field>
+				<field name="serviceId">
+					<finfo ignore="true"/>
+				</field>
 				<field name="related">
 					<finfo/>
 				</field>
 				<field name="propertyValues">
 					<finfo hasForm="false" hasFVO="false"/>
+				</field>
+				<field name="allowedUsers">
+					<finfo/>
+				</field>
+				<field name="allowedRoles">
+					<finfo/>
 				</field>
 				<field name="creationDate">
 					<finfo hasForm="false" hasTimePart="true"/>

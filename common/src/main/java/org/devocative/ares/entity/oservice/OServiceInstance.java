@@ -48,6 +48,24 @@ public class OServiceInstance implements ICreationDate, ICreatorUser, IModificat
 	@OneToMany(fetch = FetchType.LAZY, mappedBy = "serviceInstance", cascade = CascadeType.ALL)
 	private List<OSIPropertyValue> propertyValues;
 
+	@ManyToMany(fetch = FetchType.LAZY)
+	@JoinTable(name = "mt_ars_srvcinst_user",
+		joinColumns = {@JoinColumn(name = "f_srvcinst", nullable = false)},
+		inverseJoinColumns = {@JoinColumn(name = "f_user", nullable = false)},
+		foreignKey = @ForeignKey(name = "srvcinstUser2srvcinst"),
+		inverseForeignKey = @ForeignKey(name = "srvcinstUser2user")
+	)
+	private List<User> allowedUsers;
+
+	@ManyToMany(fetch = FetchType.LAZY)
+	@JoinTable(name = "mt_ars_srvcinst_role",
+		joinColumns = {@JoinColumn(name = "f_srvcinst", nullable = false)},
+		inverseJoinColumns = {@JoinColumn(name = "f_role", nullable = false)},
+		foreignKey = @ForeignKey(name = "srvcinstRole2srvcinst"),
+		inverseForeignKey = @ForeignKey(name = "srvcinstRole2role")
+	)
+	private List<Role> allowedRoles;
+
 	// --------------- CREATE / MODIFY
 
 	@NotAudited
@@ -142,6 +160,22 @@ public class OServiceInstance implements ICreationDate, ICreatorUser, IModificat
 
 	public void setPropertyValues(List<OSIPropertyValue> propertyValues) {
 		this.propertyValues = propertyValues;
+	}
+
+	public List<User> getAllowedUsers() {
+		return allowedUsers;
+	}
+
+	public void setAllowedUsers(List<User> allowedUsers) {
+		this.allowedUsers = allowedUsers;
+	}
+
+	public List<Role> getAllowedRoles() {
+		return allowedRoles;
+	}
+
+	public void setAllowedRoles(List<Role> allowedRoles) {
+		this.allowedRoles = allowedRoles;
 	}
 
 	// --------------- CREATE / MODIFY

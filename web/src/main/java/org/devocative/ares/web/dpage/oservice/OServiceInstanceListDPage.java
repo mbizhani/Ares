@@ -105,6 +105,10 @@ public class OServiceInstanceListDPage extends DPage implements IGridDataSource<
 			.setLabel(new ResourceModel("OServiceInstance.server")));
 		floatTable.add(new WSelectionInput("service", oServiceInstanceService.getServiceList(), true)
 			.setLabel(new ResourceModel("OServiceInstance.service")));
+		floatTable.add(new WSelectionInput("allowedUsers", oServiceInstanceService.getAllowedUsersList(), true)
+			.setLabel(new ResourceModel("OServiceInstance.allowedUsers")));
+		floatTable.add(new WSelectionInput("allowedRoles", oServiceInstanceService.getAllowedRolesList(), true)
+			.setLabel(new ResourceModel("OServiceInstance.allowedRoles")));
 		floatTable.add(new WDateRangeInput("creationDate")
 			.setTimePartVisible(true)
 			.setLabel(new ResourceModel("entity.creationDate")));
@@ -136,7 +140,11 @@ public class OServiceInstanceListDPage extends DPage implements IGridDataSource<
 		columnList.add(new OPropertyColumn<>(new ResourceModel("OServiceInstance.server"), "server"));
 		columnList.add(new OPropertyColumn<>(new ResourceModel("OServiceInstance.service"), "service"));
 		columnList.add(new OPropertyColumn<OServiceInstance>(new ResourceModel("OServiceInstance.propertyValues"), "propertyValues")
-			.setWidth(OSize.fixed(400)));
+			.setWidth(OSize.fixed(300)));
+		columnList.add(new OPropertyColumn<OServiceInstance>(new ResourceModel("OServiceInstance.allowedUsers"), "allowedUsers")
+			.setWidth(OSize.fixed(200)));
+		columnList.add(new OPropertyColumn<OServiceInstance>(new ResourceModel("OServiceInstance.allowedRoles"), "allowedRoles")
+			.setWidth(OSize.fixed(200)));
 		columnList.add(new OPropertyColumn<OServiceInstance>(new ResourceModel("entity.creationDate"), "creationDate")
 			.setFormatter(ODateFormatter.getDateTimeByUserPreference())
 			.setStyle("direction:ltr"));

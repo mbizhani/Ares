@@ -11,6 +11,7 @@ import org.devocative.ares.iservice.oservice.IOSIUserService;
 import org.devocative.ares.iservice.oservice.IOServiceInstanceService;
 import org.devocative.ares.vo.OServiceInstanceTargetVO;
 import org.devocative.ares.vo.filter.oservice.OServiceInstanceFVO;
+import org.devocative.demeter.entity.Role;
 import org.devocative.demeter.entity.User;
 import org.devocative.demeter.iservice.ICacheService;
 import org.devocative.demeter.iservice.persistor.IPersistorService;
@@ -92,6 +93,16 @@ public class OServiceInstanceService implements IOServiceInstanceService, IMisse
 	@Override
 	public List<OService> getServiceList() {
 		return persistorService.list(OService.class);
+	}
+
+	@Override
+	public List<User> getAllowedUsersList() {
+		return persistorService.list(User.class);
+	}
+
+	@Override
+	public List<Role> getAllowedRolesList() {
+		return persistorService.list(Role.class);
 	}
 
 	@Override

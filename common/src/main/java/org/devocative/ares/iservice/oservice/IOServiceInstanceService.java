@@ -7,6 +7,7 @@ import org.devocative.ares.entity.oservice.OService;
 import org.devocative.ares.entity.oservice.OServiceInstance;
 import org.devocative.ares.vo.OServiceInstanceTargetVO;
 import org.devocative.ares.vo.filter.oservice.OServiceInstanceFVO;
+import org.devocative.demeter.entity.Role;
 import org.devocative.demeter.entity.User;
 import org.devocative.demeter.iservice.IEntityService;
 
@@ -26,6 +27,10 @@ public interface IOServiceInstanceService extends IEntityService<OServiceInstanc
 	List<OServer> getServerList();
 
 	List<OService> getServiceList();
+
+	List<User> getAllowedUsersList();
+
+	List<Role> getAllowedRolesList();
 
 	List<User> getCreatorUserList();
 

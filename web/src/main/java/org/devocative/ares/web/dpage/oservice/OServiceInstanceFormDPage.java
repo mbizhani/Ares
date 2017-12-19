@@ -82,6 +82,10 @@ public class OServiceInstanceFormDPage extends DPage {
 		floatTable.add(service
 			.setRequired(true)
 			.setLabel(new ResourceModel("OServiceInstance.service")));
+		floatTable.add(new WSelectionInput("allowedUsers", oServiceInstanceService.getAllowedUsersList(), true)
+			.setLabel(new ResourceModel("OServiceInstance.allowedUsers")));
+		floatTable.add(new WSelectionInput("allowedRoles", oServiceInstanceService.getAllowedRolesList(), true)
+			.setLabel(new ResourceModel("OServiceInstance.allowedRoles")));
 
 		if (entity.getService() != null) {
 			oServiceInstanceService.updateProperties(entity.getService(), entity);
