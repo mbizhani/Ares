@@ -155,22 +155,24 @@ public class OServerService implements IOServerService {
 
 	@Override
 	public List<KeyValueVO<String, String>> findGuestsOf(Long hypervisorId) {
-		List<OServer> servers = persistorService.createQueryBuilder()
+		List<Object[]> servers = persistorService.createQueryBuilder()
+			.addSelect("select ent.vmId, ent.name")
 			.addFrom(OServer.class, "ent")
 			.addWhere("and ent.hypervisor.id = :hypervisorId")
 			.addParam("hypervisorId", hypervisorId)
 			.list();
 
 		List<KeyValueVO<String, String>> result = new ArrayList<>();
-		for (OServer oServer : servers) {
-			result.add(new KeyValueVO<>(oServer.getVmId(), oServer.getName()));
+		for (Object[] oServer : servers) {
+			result.add(new KeyValueVO<>((String) oServer[0], (String) oServer[1]));
 		}
 		return result;
 	}
 
 	@Override
 	public KeyValueVO<String, String> findGuestOf(Long hypervisorId, String vmId) {
-		OServer oServer = persistorService.createQueryBuilder()
+		Object[] oServer = persistorService.createQueryBuilder()
+			.addSelect("select ent.vmId, ent.name")
 			.addFrom(OServer.class, "ent")
 			.addWhere("and ent.hypervisorId = :hypervisorId")
 			.addWhere("and ent.vmId = :vmId")
@@ -179,7 +181,7 @@ public class OServerService implements IOServerService {
 			.object();
 
 		if (oServer != null) {
-			return new KeyValueVO<>(oServer.getVmId(), oServer.getName());
+			return new KeyValueVO<>((String) oServer[0], (String) oServer[1]);
 		}
 
 		return null;
@@ -187,28 +189,30 @@ public class OServerService implements IOServerService {
 
 	@Override
 	public List<KeyValueVO<Long, String>> findServersAsVM() {
-		List<OServer> servers = persistorService.createQueryBuilder()
+		List<Object[]> servers = persistorService.createQueryBuilder()
+			.addSelect("select ent.id, ent.name")
 			.addFrom(OServer.class, "ent")
 			.addWhere("and ent.hypervisor is not null")
 			.list();
 
 		List<KeyValueVO<Long, String>> result = new ArrayList<>();
-		for (OServer oServer : servers) {
-			result.add(new KeyValueVO<>(oServer.getId(), oServer.getName()));
+		for (Object[] oServer : servers) {
+			result.add(new KeyValueVO<>((Long) oServer[0], (String) oServer[1]));
 		}
 		return result;
 	}
 
 	@Override
 	public KeyValueVO<Long, String> findServerAsVM(Long id) {
-		OServer oServer = persistorService.createQueryBuilder()
+		Object[] oServer = persistorService.createQueryBuilder()
+			.addSelect("select ent.id, ent.name")
 			.addFrom(OServer.class, "ent")
 			.addWhere("and ent.hypervisor is not null")
 			.addWhere("and ent.id = :id")
 			.addParam("id", id)
 			.object();
 
-		return new KeyValueVO<>(oServer.getId(), oServer.getName());
+		return new KeyValueVO<>((Long) oServer[0], (String) oServer[1]);
 	}
 
 	@Override

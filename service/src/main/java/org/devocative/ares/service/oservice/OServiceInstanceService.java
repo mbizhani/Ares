@@ -14,10 +14,14 @@ import org.devocative.ares.vo.filter.oservice.OServiceInstanceFVO;
 import org.devocative.demeter.entity.Role;
 import org.devocative.demeter.entity.User;
 import org.devocative.demeter.iservice.ICacheService;
+import org.devocative.demeter.iservice.ISecurityService;
+import org.devocative.demeter.iservice.persistor.EJoinMode;
 import org.devocative.demeter.iservice.persistor.IPersistorService;
+import org.devocative.demeter.iservice.persistor.IQueryBuilder;
 import org.devocative.demeter.iservice.template.IStringTemplate;
 import org.devocative.demeter.iservice.template.IStringTemplateService;
 import org.devocative.demeter.iservice.template.TemplateEngineType;
+import org.devocative.demeter.vo.UserVO;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -46,6 +50,9 @@ public class OServiceInstanceService implements IOServiceInstanceService, IMisse
 
 	@Autowired
 	private ICacheService cacheService;
+
+	@Autowired
+	private ISecurityService securityService;
 
 	// ------------------------------
 
@@ -136,15 +143,28 @@ public class OServiceInstanceService implements IOServiceInstanceService, IMisse
 
 	@Override
 	public List<KeyValueVO<Long, String>> findListForCommandExecution(Long serviceId) {
-		List<OServiceInstance> list = persistorService.createQueryBuilder()
+		IQueryBuilder queryBuilder = persistorService.createQueryBuilder()
+			.addSelect("select ent.id, concat(ent.server.name, '(', ent.service.name, ')')")
 			.addFrom(OServiceInstance.class, "ent")
 			.addWhere("and ent.service.id=:serviceId")
-			.addParam("serviceId", serviceId)
-			.list();
+			.addParam("serviceId", serviceId);
+
+		UserVO currentUser = securityService.getCurrentUser();
+		if (!currentUser.isAdmin()) {
+			queryBuilder
+				.addJoin("usr", "ent.allowedUsers", EJoinMode.Left)
+				.addJoin("role", "ent.allowedRoles", EJoinMode.Left)
+
+				.addWhere("and (usr.id = :userId or role in (:roles))")
+				.addParam("userId", currentUser.getUserId())
+				.addParam("roles", currentUser.getRoles());
+		}
+
+		List<Object[]> list = queryBuilder.list();
 
 		List<KeyValueVO<Long, String>> result = new ArrayList<>();
-		for (OServiceInstance serviceInstance : list) {
-			result.add(new KeyValueVO<>(serviceInstance.getId(), serviceInstance.toString()));
+		for (Object[] serviceInstance : list) {
+			result.add(new KeyValueVO<>((Long) serviceInstance[0], (String) serviceInstance[1]));
 		}
 		return result;
 	}

@@ -34,7 +34,7 @@ public class OServer implements ICreationDate, ICreatorUser, IModificationDate, 
 	@Column(name = "c_address")
 	private String address;
 
-	@ManyToOne(fetch = FetchType.EAGER)
+	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "f_func",
 		foreignKey = @ForeignKey(name = "server_func2basic"))
 	private OBasicData function;
@@ -42,17 +42,17 @@ public class OServer implements ICreationDate, ICreatorUser, IModificationDate, 
 	@Column(name = "n_counter")
 	private Integer counter;
 
-	@ManyToOne(fetch = FetchType.EAGER)
+	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "f_env",
 		foreignKey = @ForeignKey(name = "server_env2basic"))
 	private OBasicData environment;
 
-	@ManyToOne(fetch = FetchType.EAGER)
+	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "f_loc",
 		foreignKey = @ForeignKey(name = "server_loc2basic"))
 	private OBasicData location;
 
-	@ManyToOne(fetch = FetchType.EAGER)
+	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "f_comp",
 		foreignKey = @ForeignKey(name = "server_comp2basic"))
 	private OBasicData company;
