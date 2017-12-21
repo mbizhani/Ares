@@ -108,11 +108,12 @@ public class MainCommandDSL {
 		for (CharSequence param : params) {
 			String[] split = param.toString().split("[>]");
 			String input = split[0].trim();
-			if (inParams.containsKey(input)) {
+			if (inParams.get(input) != null) {
+				//TODO: as a bug in NamedParameterStatement, the key set as lower case
 				if (split.length == 1) {
-					result.put(input, inParams.get(input));
+					result.put(input.toLowerCase(), inParams.get(input));
 				} else {
-					result.put(split[1].trim(), inParams.get(input));
+					result.put(split[1].trim().toLowerCase(), inParams.get(input));
 				}
 			}
 		}
@@ -149,6 +150,14 @@ public class MainCommandDSL {
 
 	public void $log(CharSequence log) {
 		logger.debug(log.toString());
+	}
+
+	public void $sleep(long seconds) {
+		try {
+			Thread.sleep(seconds * 1000);
+		} catch (InterruptedException e) {
+			throw new RuntimeException(e);
+		}
 	}
 
 	// other

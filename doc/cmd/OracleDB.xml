@@ -26,10 +26,10 @@
 					</params>
 
 					<body><![CDATA[
-def map = $input('Username > username', 'AccountStatus > account_status')
+def map = $input('Username', 'AccountStatus > account_status')
 
 db {
-	prompt "Show ${map.empty ? 'All':'Filtered'} Users"
+	prompt "Show ${map.isEmpty() ? 'All' : 'Filtered'} Users"
 	query """
 		select
 			us.user_id,
@@ -326,6 +326,8 @@ Usernames.split(',').each {
 		if(DoKillSession)
 			killUserSession([Usernames: username])
 
+		$sleep(10000)
+
 		db {
 			prompt "Drop User '${username}'"
 			query "drop user ${username} cascade"
@@ -453,6 +455,25 @@ $reTarget(DestServer, {
 		query "drop database link ${dbLinkName}"
 	}
 })
+]]></body>
+				</command>
+
+				<command name="listSession">
+					<params>
+						<param name="Username"/>
+						<param name="OSUser"/>
+						<param name="Machine"/>
+						<param name="Program"/>
+					</params>
+
+					<body><![CDATA[
+def map = $input('Username', 'OSUser', 'Machine', 'Program')
+
+db {
+	prompt "List ${map.isEmpty() ? 'All' : 'Filtered'} Sessions"
+	query "select sid, serial# as serial, username, status, schemaname, osuser, machine, program from v\$session where 1=1 %FILTER%"
+	filters map
+}
 ]]></body>
 				</command>
 
