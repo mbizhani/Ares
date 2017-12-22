@@ -35,6 +35,7 @@ public class SqlConnectionDTask extends DTask implements ITerminalProcess {
 
 	private Connection connection;
 	private EDatabaseType databaseType;
+	private NamedParameterStatement currentNps;
 
 	@Autowired
 	private ITerminalConnectionService terminalConnectionService;
@@ -64,7 +65,7 @@ public class SqlConnectionDTask extends DTask implements ITerminalProcess {
 
 		while (true) {
 			SqlMessageVO msg = queue.take();
-			if (msg.getPageIndex() < 0) { //TODO
+			if (msg.getType() == SqlMessageVO.MsgType.TERMINATE) {
 				break;
 			}
 
@@ -72,16 +73,23 @@ public class SqlConnectionDTask extends DTask implements ITerminalProcess {
 
 			try {
 				if (msg.getSql() != null) {
-					NamedParameterStatement nps = new NamedParameterStatement(connection, msg.getSql());
-					nps.addPlugin(new PaginationPlugin(msg.getPageIndex(), msg.getPageSize(), databaseType));
-					ResultSet resultSet = nps.executeQuery();
+					currentNps = new NamedParameterStatement(connection, msg.getSql());
+					currentNps.addPlugin(new PaginationPlugin(msg.getPageIndex(), msg.getPageSize(), databaseType));
+					ResultSet resultSet = currentNps.executeQuery();
 					QueryVO process = ResultSetProcessor.process(resultSet, EColumnNameCase.LOWER);
 					sendResult(process.toListOfMap());
-					nps.close();
 				}
 			} catch (SQLException e) {
 				logger.error("SqlConnectionDTask: Exec Sql", e);
 				sendError(e);
+			} finally {
+				if (currentNps != null) {
+					try {
+						currentNps.close();
+					} catch (SQLException e) {
+						logger.warn("Current NPS Close", e);
+					}
+				}
 			}
 		}
 
@@ -107,12 +115,24 @@ public class SqlConnectionDTask extends DTask implements ITerminalProcess {
 	@Override
 	public void send(Object message) {
 		SqlMessageVO msg = (SqlMessageVO) message;
-		queue.offer(msg);
+
+		if (msg.getType() == SqlMessageVO.MsgType.EXEC) {
+			queue.offer(msg);
+		} else if (msg.getType() == SqlMessageVO.MsgType.CANCEL) {
+			if (currentNps != null) {
+				try {
+					currentNps.cancel();
+				} catch (SQLException e) {
+					logger.warn("Current NPS Cancel", e);
+					throw new RuntimeException(e);
+				}
+			}
+		}
 	}
 
 	@Override
 	public void close() {
-		queue.offer(new SqlMessageVO(null, -1, -1));
+		queue.offer(new SqlMessageVO(SqlMessageVO.MsgType.TERMINATE));
 	}
 
 	@Override

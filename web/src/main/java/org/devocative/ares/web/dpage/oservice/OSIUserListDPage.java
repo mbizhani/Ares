@@ -203,7 +203,7 @@ public class OSIUserListDPage extends DPage implements IGridDataSource<OSIUser> 
 		}
 
 		if (hasPermission(AresPrivilegeKey.OSIUserShowPassword)) {
-			columnList.add(new ORowModAjaxColumn<OSIUser>(new Model<>(), AresIcon.SHOW.setTooltip(new ResourceModel("OSIUser.showPassword", "Show Password"))) {
+			columnList.add(new ORowModAjaxColumn<OSIUser>(new Model<>(), AresIcon.EYE.setTooltip(new ResourceModel("OSIUser.showPassword", "Show Password"))) {
 				private static final long serialVersionUID = 635615474L;
 
 				@Override
