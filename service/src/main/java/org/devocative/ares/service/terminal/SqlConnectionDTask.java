@@ -23,6 +23,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 @Scope("prototype")
 @Component("arsSqlConnectionDTask")
@@ -36,6 +37,8 @@ public class SqlConnectionDTask extends DTask implements ITerminalProcess {
 	private Connection connection;
 	private EDatabaseType databaseType;
 	private NamedParameterStatement currentNps;
+
+	private AtomicBoolean running = new AtomicBoolean(false);
 
 	@Autowired
 	private ITerminalConnectionService terminalConnectionService;
@@ -61,13 +64,15 @@ public class SqlConnectionDTask extends DTask implements ITerminalProcess {
 		logger.info("SqlConnectionDTask: connecting to DB currentUser=[{}] connId=[{}} osiUser=[{}]",
 			securityService.getCurrentUser(), trmConnVO.getConnectionId(), trmConnVO.getTargetVO().getUser().getUsername());
 
-		queue = new ArrayBlockingQueue<>(10);
+		queue = new ArrayBlockingQueue<>(1);
 
 		while (true) {
 			SqlMessageVO msg = queue.take();
 			if (msg.getType() == SqlMessageVO.MsgType.TERMINATE) {
 				break;
 			}
+
+			running.set(true);
 
 			createConnection();
 
@@ -89,6 +94,9 @@ public class SqlConnectionDTask extends DTask implements ITerminalProcess {
 					} catch (SQLException e) {
 						logger.warn("Current NPS Close", e);
 					}
+					currentNps = null;
+
+					running.set(false);
 				}
 			}
 		}
@@ -117,9 +125,13 @@ public class SqlConnectionDTask extends DTask implements ITerminalProcess {
 		SqlMessageVO msg = (SqlMessageVO) message;
 
 		if (msg.getType() == SqlMessageVO.MsgType.EXEC) {
-			queue.offer(msg);
+			if (running.get()) {
+				throw new RuntimeException("There is a running query!");
+			} else {
+				queue.offer(msg);
+			}
 		} else if (msg.getType() == SqlMessageVO.MsgType.CANCEL) {
-			if (currentNps != null) {
+			if (running.get() && currentNps != null) {
 				try {
 					currentNps.cancel();
 				} catch (SQLException e) {
@@ -138,6 +150,11 @@ public class SqlConnectionDTask extends DTask implements ITerminalProcess {
 	@Override
 	public long getLastActivityTime() {
 		return lastActivityTime;
+	}
+
+	@Override
+	public boolean isBusy() {
+		return running.get();
 	}
 
 	// ------------------------------

@@ -109,11 +109,10 @@ public class MainCommandDSL {
 			String[] split = param.toString().split("[>]");
 			String input = split[0].trim();
 			if (inParams.get(input) != null) {
-				//TODO: as a bug in NamedParameterStatement, the key set as lower case
 				if (split.length == 1) {
-					result.put(input.toLowerCase(), inParams.get(input));
+					result.put(input, inParams.get(input));
 				} else {
-					result.put(split[1].trim().toLowerCase(), inParams.get(input));
+					result.put(split[1].trim(), inParams.get(input));
 				}
 			}
 		}

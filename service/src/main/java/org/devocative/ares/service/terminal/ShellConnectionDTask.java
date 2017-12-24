@@ -148,6 +148,11 @@ public class ShellConnectionDTask extends DTask implements ITerminalProcess {
 		return lastActivityTime;
 	}
 
+	@Override
+	public boolean isBusy() {
+		return false;
+	}
+
 	// ------------------------------
 
 	private class SshServerReader implements Runnable {

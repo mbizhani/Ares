@@ -45,7 +45,6 @@ public class SqlTerminalPanel extends DPanel implements IGridAsyncDataSource<Row
 	private WCodeInput sql;
 	private WDataGrid<RowVO> grid;
 	private DAjaxButton exec;
-	private WAjaxLink cancel;
 
 	@Inject
 	private ITerminalConnectionService terminalConnectionService;
@@ -81,30 +80,24 @@ public class SqlTerminalPanel extends DPanel implements IGridAsyncDataSource<Row
 
 			@Override
 			protected void onSubmit(AjaxRequestTarget target) {
-				grid.setEnabled(true);
-				grid.loadData(target);
-
-				exec.setEnabled(false);
-				target.add(exec);
-
-				cancel.setEnabled(true);
-				target.add(cancel);
+				if (!terminalConnectionService.isBusy(connectionId)) {
+					grid.setEnabled(true);
+					grid.loadData(target);
+				} else {
+					throw new RuntimeException("There is a running query!");
+				}
 			}
 		});
 		exec.setOutputMarkupId(true);
 
-		form.add(cancel = new WAjaxLink("cancel", AresIcon.STOP_CIRCLE) {
+		form.add(new WAjaxLink("cancel", AresIcon.STOP_CIRCLE) {
 			private static final long serialVersionUID = 599873897224508537L;
 
 			@Override
 			public void onClick(AjaxRequestTarget target) {
 				terminalConnectionService.sendMessage(connectionId, new SqlMessageVO(SqlMessageVO.MsgType.CANCEL));
-
-				exec.setEnabled(true);
-				target.add(exec);
 			}
 		});
-		cancel.setEnabled(false);
 
 		form.add(new WebMarkupContainer("clear").add(new AttributeModifier("onclick", sql.getClearJSCall())));
 
@@ -113,6 +106,7 @@ public class SqlTerminalPanel extends DPanel implements IGridAsyncDataSource<Row
 		OGrid<RowVO> oGrid = new OGrid<>();
 		oGrid
 			.setPagingBarLayout(Arrays.asList(OPagingButtons.list, OPagingButtons.first, OPagingButtons.prev, OPagingButtons.next))
+			.setPageList(Arrays.asList(50, 75, 100, 200))
 			.setFit(true)
 		;
 
@@ -159,24 +153,12 @@ public class SqlTerminalPanel extends DPanel implements IGridAsyncDataSource<Row
 
 	@Override
 	public void onAsyncResult(IPartialPageRequestHandler handler, Object result) {
-		cancel.setEnabled(false);
-		handler.add(cancel);
-
-		exec.setEnabled(true);
-		handler.add(exec);
-
 		List<RowVO> list = (List<RowVO>) result;
 		grid.pushData(handler, list, 1000);
 	}
 
 	@Override
 	public void onAsyncError(IPartialPageRequestHandler handler, Exception e) {
-		cancel.setEnabled(false);
-		handler.add(cancel);
-
-		exec.setEnabled(true);
-		handler.add(exec);
-
 		grid.pushError(handler, e);
 	}
 }

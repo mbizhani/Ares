@@ -8,4 +8,6 @@ public interface ITerminalProcess {
 	void close();
 
 	long getLastActivityTime();
+
+	boolean isBusy();
 }

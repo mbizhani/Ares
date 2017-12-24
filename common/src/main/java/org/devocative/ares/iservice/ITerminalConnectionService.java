@@ -31,5 +31,7 @@ public interface ITerminalConnectionService {
 
 	void closeConnection(Long connId);
 
+	boolean isBusy(Long connId);
+
 	void closeIdleConnections();
 }

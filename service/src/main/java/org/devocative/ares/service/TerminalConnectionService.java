@@ -193,6 +193,15 @@ public class TerminalConnectionService implements ITerminalConnectionService, IA
 	}
 
 	@Override
+	public boolean isBusy(Long connId) {
+		if (connId != null && CONNECTIONS.containsKey(connId)) {
+			ITerminalProcess process = CONNECTIONS.get(connId);
+			return process.isBusy();
+		}
+		return false;
+	}
+
+	@Override
 	public void closeIdleConnections() {
 		if (lastIdleCheck == null) {
 			lastIdleCheck = System.currentTimeMillis();
