@@ -151,9 +151,9 @@ public class MainCommandDSL {
 		logger.debug(log.toString());
 	}
 
-	public void $sleep(long seconds) {
+	public void $sleep(Number millis) {
 		try {
-			Thread.sleep(seconds * 1000);
+			Thread.sleep(millis.longValue());
 		} catch (InterruptedException e) {
 			throw new RuntimeException(e);
 		}

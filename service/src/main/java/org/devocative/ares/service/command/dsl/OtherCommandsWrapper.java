@@ -47,7 +47,11 @@ public class OtherCommandsWrapper extends Proxy {
 
 		Object result;
 		if (argsArr.length == 1) {
-			result = dsl.getCommandCenter().exec(name, (Map<String, Object>) argsArr[0]);
+			if (argsArr[0] instanceof Map) {
+				result = dsl.getCommandCenter().exec(name, (Map<String, Object>) argsArr[0]);
+			} else {
+				throw new RuntimeException("Invalid User Defined Command: " + name + " (input param is not Map)");
+			}
 		} else {
 			result = dsl.getCommandCenter().exec(name);
 		}
