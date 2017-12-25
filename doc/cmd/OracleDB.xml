@@ -186,6 +186,8 @@ ssh {
 				<command name="backupSchema">
 					<params>
 						<param name="Schemas" required="true" validRef="OraIdList"/>
+						<param name="Content" stringLiterals="ALL|DATA_ONLY|METADATA_ONLY" defaultValue="ALL"
+							   required="true"/>
 						<param name="Force" type="Boolean" required="true" defaultValue="false"/>
 					</params>
 
@@ -206,7 +208,7 @@ if(availSchema.length() > 1) {
 	def file = "exp.${availSchema.replace(',', '.')}.${$now()}"
 	ssh {
 		prompt "Create Export from '${availSchema}' as '${file}.dmp'"
-		cmd "su - oracle -c 'expdp ${target.username}/${target.password} schemas=${availSchema} directory=${target.prop.pumpDbDir} dumpfile=${file}.dmp logfile=${file}.log'"
+		cmd "su - oracle -c 'expdp ${target.username}/${target.password} schemas=${availSchema} directory=${target.prop.pumpDbDir} dumpfile=${file}.dmp logfile=${file}.log content=${Content}'"
 	}
 	return file
 }
@@ -218,20 +220,22 @@ if(availSchema.length() > 1) {
 						<param name="DumpFile" required="true"/>
 						<param name="SourceSchemas" required="true" validRef="OraIdList"/>
 						<param name="DestSchemas" validRef="OraIdList"/>
+						<param name="Content" stringLiterals="ALL|DATA_ONLY|METADATA_ONLY" defaultValue="ALL"
+							   required="true"/>
 						<param name="DoBackUp" type="Boolean" required="true" defaultValue="false"/>
 						<param name="IgnoreTrigger" type="Boolean" required="true" defaultValue="true"/>
 					</params>
 
 					<body><![CDATA[
-def users = SourceSchemas
-if($param('DestSchemas'))
-	users = DestSchemas
-dropUser([Usernames: users, DoBackup: DoBackUp, DoKillSession: true])
+def users = $param('DestSchemas') ? DestSchemas : SourceSchemas
+
+if(Content != 'DATA_ONLY')
+	dropUser([Usernames: users, DoBackup: DoBackUp, DoKillSession: true])
 
 if(DumpFile.endsWith('.dmp'))
 	DumpFile = DumpFile.substring(0, DumpFile.length() - 4)
 
-def genParams = "directory=${target.prop.pumpDbDir} dumpfile=${DumpFile}.dmp logfile=imp.${DumpFile}.log transform=OID:n"
+def genParams = "directory=${target.prop.pumpDbDir} dumpfile=${DumpFile}.dmp logfile=imp.${DumpFile}.log transform=OID:n content=${Content}"
 if(IgnoreTrigger)
 	genParams += " exclude=trigger"
 
@@ -241,6 +245,11 @@ if($param('DestSchemas')) {
 		prompt "Restoring '${remap}' from '${DumpFile}'"
 		cmd "su - oracle -c 'impdp ${target.username}/${target.password} remap_schema=${remap} ${genParams}'"
 		force true
+	}
+
+	DestSchemas.split(',').each {
+		def username = it.trim()
+		changePassword([Username: username, NewPassword: username.toLowerCase()])
 	}
 } else {
 	ssh {
@@ -291,7 +300,7 @@ Usernames.split(',').each {
 		prompt "Kill All Sessions for User: '${username}'"
 		query """
 			declare
-				v_schema varchar2(20);
+				v_schema varchar2(128);
 			begin
 				v_schema := '${username.toUpperCase()}';
 				if v_schema in ('SYS','DBSNMP','SYSMAN', 'SYSTEM') then
@@ -342,19 +351,21 @@ Usernames.split(',').each {
 						<param name="SourceSchemas" required="true" validRef="OraIdList"/>
 						<param name="DestSchemas" validRef="OraIdList"/>
 						<param name="DestServer" type="Service"/>
+						<param name="Content" stringLiterals="ALL|DATA_ONLY|METADATA_ONLY" defaultValue="ALL"
+							   required="true"/>
 						<param name="DoBackUpDest" type="Boolean" required="true" defaultValue="true"/>
 						<param name="IgnoreTrigger" type="Boolean" required="true" defaultValue="true"/>
 					</params>
 
 					<body><![CDATA[
 if($param('DestServer'))
-	copyRemoteSchema([SourceSchemas: SourceSchemas, DestSchemas: $param('DestSchemas'), DestServer: DestServer, DoBackUpDest: DoBackUpDest, IgnoreTrigger: IgnoreTrigger])
+	copyRemoteSchema([SourceSchemas: SourceSchemas, DestSchemas: $param('DestSchemas'), DestServer: DestServer, DoBackUpDest: DoBackUpDest, IgnoreTrigger: IgnoreTrigger, Content: Content])
 
 else {
 	if(!$param('DestSchemas'))
 		$error('Dest schemas are required in copy local')
 
-	copyLocalSchema([SourceSchemas: SourceSchemas, DestSchemas: $param('DestSchemas'), DoBackUpDest: DoBackUpDest, IgnoreTrigger: IgnoreTrigger])
+	copyLocalSchema([SourceSchemas: SourceSchemas, DestSchemas: $param('DestSchemas'), DoBackUpDest: DoBackUpDest, IgnoreTrigger: IgnoreTrigger, Content: Content])
 }
 ]]></body>
 				</command>
@@ -363,6 +374,8 @@ else {
 					<params>
 						<param name="SourceSchemas" required="true" validRef="OraIdList"/>
 						<param name="DestSchemas" required="true" validRef="OraIdList"/>
+						<param name="Content" stringLiterals="ALL|DATA_ONLY|METADATA_ONLY" defaultValue="ALL"
+							   required="true"/>
 						<param name="DoBackUpDest" type="Boolean" defaultValue="true"/>
 						<param name="IgnoreTrigger" type="Boolean" defaultValue="true"/>
 					</params>
@@ -371,8 +384,8 @@ else {
 if(SourceSchemas == DestSchemas)
 	$error('Source and destination schemas must be different')
 
-def file = backupSchema([Schemas: SourceSchemas])
-restoreSchema([DumpFile: file, SourceSchemas: SourceSchemas, DestSchemas: DestSchemas, DoBackUp: DoBackUpDest, IgnoreTrigger: IgnoreTrigger])
+def file = backupSchema([Schemas: SourceSchemas, Content: Content])
+restoreSchema([DumpFile: file, SourceSchemas: SourceSchemas, DestSchemas: DestSchemas, DoBackUp: DoBackUpDest, IgnoreTrigger: IgnoreTrigger, Content: Content])
 
 def osDir = findOsDir()
 ssh {
@@ -387,6 +400,8 @@ ssh {
 						<param name="SourceSchemas" required="true" validRef="OraIdList"/>
 						<param name="DestSchemas" validRef="OraIdList"/>
 						<param name="DestServer" type="Service" required="true"/>
+						<param name="Content" stringLiterals="ALL|DATA_ONLY|METADATA_ONLY" defaultValue="ALL"
+							   required="true"/>
 						<param name="DoBackUpDest" type="Boolean" required="true" defaultValue="true"/>
 						<param name="IgnoreTrigger" type="Boolean" required="true" defaultValue="true"/>
 					</params>
@@ -430,7 +445,7 @@ $reTarget(DestServer, {
 	dropUser([Usernames: dest, DoBackup: DoBackUpDest, DoKillSession: true])
 
 	def file = "net.${dest.replace(',', '.')}.${$now()}"
-	def genParams = "schemas=${SourceSchemas} directory=${target.prop.pumpDbDir} network_link=${dbLinkName} logfile=${file}.log transform=OID:n"
+	def genParams = "schemas=${SourceSchemas} directory=${target.prop.pumpDbDir} network_link=${dbLinkName} logfile=${file}.log transform=OID:n content=${Content}"
 	if(IgnoreTrigger)
 		genParams += " exclude=trigger"
 
