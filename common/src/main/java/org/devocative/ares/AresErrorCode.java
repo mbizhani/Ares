@@ -6,7 +6,8 @@ public enum AresErrorCode implements DErrorCode {
 	DuplicateExecutor("Duplicate Executor"),
 	CommandNotFound("Command not found"),
 	TerminalConnectionAccessViolation("Terminal Connection Access Violation"),
-	ExecutorUserNotFound("Executor User Not Found")
+	ExecutorUserNotFound("Executor User Not Found"),
+	DuplicateServiceInstance("Duplicate Service Instance")
 	//SQLExecution("SQL Execution"),
 	;
 

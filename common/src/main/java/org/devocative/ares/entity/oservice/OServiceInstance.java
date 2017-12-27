@@ -12,7 +12,7 @@ import java.util.List;
 @Audited
 @Entity
 @Table(name = "t_ars_service_inst", uniqueConstraints = {
-	@UniqueConstraint(name = "uk_ars_serviceInst", columnNames = {"f_server", "f_service"})
+	@UniqueConstraint(name = "uk_ars_serviceInst", columnNames = {"f_server", "f_service", "c_name"})
 })
 public class OServiceInstance implements ICreationDate, ICreatorUser, IModificationDate, IModifierUser {
 	private static final long serialVersionUID = 2007755808784442971L;
@@ -27,6 +27,9 @@ public class OServiceInstance implements ICreationDate, ICreatorUser, IModificat
 			@org.hibernate.annotations.Parameter(name = "sequence_name", value = "ars_service_inst")
 		})
 	private Long id;
+
+	@Column(name = "c_name")
+	private String name;
 
 	@Column(name = "n_port")
 	private Integer port;
@@ -116,6 +119,14 @@ public class OServiceInstance implements ICreationDate, ICreatorUser, IModificat
 
 	public void setId(Long id) {
 		this.id = id;
+	}
+
+	public String getName() {
+		return name;
+	}
+
+	public void setName(String name) {
+		this.name = name;
 	}
 
 	public Integer getPort() {
@@ -258,6 +269,8 @@ public class OServiceInstance implements ICreationDate, ICreatorUser, IModificat
 
 	@Override
 	public String toString() {
-		return String.format("%s(%s)", getServer(), getService());
+		return getName() == null ?
+			String.format("%s(%s)", getServer(), getService()) :
+			String.format("%s@%s(%s)", getName(), getServer(), getService());
 	}
 }

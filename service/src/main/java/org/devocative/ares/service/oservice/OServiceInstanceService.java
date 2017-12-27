@@ -11,6 +11,7 @@ import org.devocative.ares.iservice.oservice.IOSIUserService;
 import org.devocative.ares.iservice.oservice.IOServiceInstanceService;
 import org.devocative.ares.vo.OServiceInstanceTargetVO;
 import org.devocative.ares.vo.filter.oservice.OServiceInstanceFVO;
+import org.devocative.demeter.DBConstraintViolationException;
 import org.devocative.demeter.entity.Role;
 import org.devocative.demeter.entity.User;
 import org.devocative.demeter.iservice.ICacheService;
@@ -58,8 +59,14 @@ public class OServiceInstanceService implements IOServiceInstanceService, IMisse
 
 	@Override
 	public void saveOrUpdate(OServiceInstance entity) {
-		persistorService.saveOrUpdate(entity);
-		serviceInstanceCache.remove(entity.getId());
+		try {
+			entity = persistorService.merge(entity);
+			serviceInstanceCache.remove(entity.getId());
+		} catch (DBConstraintViolationException e) {
+			if (e.isConstraint("uk_ars_serviceInst")) {
+				throw new AresException(AresErrorCode.DuplicateServiceInstance, entity.getName());
+			}
+		}
 	}
 
 	@Override
@@ -144,7 +151,7 @@ public class OServiceInstanceService implements IOServiceInstanceService, IMisse
 	@Override
 	public List<KeyValueVO<Long, String>> findListForCommandExecution(Long serviceId) {
 		IQueryBuilder queryBuilder = persistorService.createQueryBuilder()
-			.addSelect("select ent.id, concat(ent.server.name, '(', ent.service.name, ')')")
+			.addSelect("select ent.id, ent.name, ent.server.name, ent.service.name")
 			.addFrom(OServiceInstance.class, "ent")
 			.addWhere("and ent.service.id=:serviceId")
 			.addParam("serviceId", serviceId);
@@ -164,7 +171,13 @@ public class OServiceInstanceService implements IOServiceInstanceService, IMisse
 
 		List<KeyValueVO<Long, String>> result = new ArrayList<>();
 		for (Object[] serviceInstance : list) {
-			result.add(new KeyValueVO<>((Long) serviceInstance[0], (String) serviceInstance[1]));
+			String siName = (String) serviceInstance[1];
+			String siServerName = (String) serviceInstance[2];
+			String siServiceName = (String) serviceInstance[3];
+			String caption = siName == null ?
+				String.format("%s(%s)", siServerName, siServiceName) :
+				String.format("%s@%s(%s)", siName, siServerName, siServiceName);
+			result.add(new KeyValueVO<>((Long) serviceInstance[0], caption));
 		}
 		return result;
 	}

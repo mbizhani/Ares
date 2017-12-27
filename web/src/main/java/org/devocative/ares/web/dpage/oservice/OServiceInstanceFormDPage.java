@@ -22,6 +22,7 @@ import org.devocative.demeter.web.component.DAjaxButton;
 import org.devocative.wickomp.form.WNumberInput;
 import org.devocative.wickomp.form.WSelectionInput;
 import org.devocative.wickomp.form.WSelectionInputAjaxUpdatingBehavior;
+import org.devocative.wickomp.form.WTextInput;
 import org.devocative.wickomp.html.WFloatTable;
 import org.devocative.wickomp.html.window.WModalWindow;
 
@@ -74,6 +75,8 @@ public class OServiceInstanceFormDPage extends DPage {
 		WSelectionInput service = new WSelectionInput("service", oServiceInstanceService.getServiceList(), false);
 
 		WFloatTable floatTable = new WFloatTable("floatTable");
+		floatTable.add(new WTextInput("name")
+			.setLabel(new ResourceModel("OServiceInstance.name")));
 		floatTable.add(new WNumberInput("port", Integer.class)
 			.setLabel(new ResourceModel("OServiceInstance.port")));
 		floatTable.add(new WSelectionInput("server", oServiceInstanceService.getServerList(), false)
@@ -103,7 +106,7 @@ public class OServiceInstanceFormDPage extends DPage {
 				OSIPropertyValue propertyValue = item.getModelObject();
 
 				item.add(new Label("key", propertyValue.getProperty().getName()));
-				item.add(new TextField<>("value", new PropertyModel<String>(propertyValue, "value"))
+				item.add(new TextField<>("value", new PropertyModel<>(propertyValue, "value"))
 					.setLabel(new Model<>(propertyValue.getProperty().getName()))
 					.setRequired(propertyValue.getProperty().getRequired()));
 			}

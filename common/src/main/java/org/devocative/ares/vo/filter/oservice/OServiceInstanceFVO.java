@@ -16,6 +16,7 @@ import java.util.List;
 public class OServiceInstanceFVO implements Serializable {
 	private static final long serialVersionUID = -385193660L;
 
+	private String name;
 	private RangeVO<Integer> port;
 	private List<OServer> server;
 	private List<OService> service;
@@ -27,6 +28,14 @@ public class OServiceInstanceFVO implements Serializable {
 	private List<User> modifierUser;
 
 	// ------------------------------
+
+	public String getName() {
+		return name;
+	}
+
+	public void setName(String name) {
+		this.name = name;
+	}
 
 	public RangeVO<Integer> getPort() {
 		return port;

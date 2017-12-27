@@ -317,6 +317,9 @@
 				<field name="id">
 					<finfo/>
 				</field>
+				<field name="name">
+					<finfo/>
+				</field>
 				<field name="port">
 					<finfo/>
 				</field>

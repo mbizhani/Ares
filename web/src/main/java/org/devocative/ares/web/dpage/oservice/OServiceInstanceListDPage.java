@@ -17,6 +17,7 @@ import org.devocative.demeter.web.component.DAjaxButton;
 import org.devocative.demeter.web.component.grid.OEditAjaxColumn;
 import org.devocative.demeter.web.model.DEntityLazyLoadModel;
 import org.devocative.wickomp.form.WSelectionInput;
+import org.devocative.wickomp.form.WTextInput;
 import org.devocative.wickomp.form.range.WDateRangeInput;
 import org.devocative.wickomp.form.range.WNumberRangeInput;
 import org.devocative.wickomp.formatter.ODateFormatter;
@@ -99,6 +100,8 @@ public class OServiceInstanceListDPage extends DPage implements IGridDataSource<
 		}.setVisible(hasPermission(AresPrivilegeKey.OServiceInstanceAdd)));
 
 		WFloatTable floatTable = new WFloatTable("floatTable");
+		floatTable.add(new WTextInput("name")
+			.setLabel(new ResourceModel("OServiceInstance.name")));
 		floatTable.add(new WNumberRangeInput("port", Integer.class)
 			.setLabel(new ResourceModel("OServiceInstance.port")));
 		floatTable.add(new WSelectionInput("server", oServiceInstanceService.getServerList(), true)
@@ -134,6 +137,7 @@ public class OServiceInstanceListDPage extends DPage implements IGridDataSource<
 		add(form);
 
 		OColumnList<OServiceInstance> columnList = new OColumnList<>();
+		columnList.add(new OPropertyColumn<>(new ResourceModel("OServiceInstance.name"), "name"));
 		columnList.add(new OPropertyColumn<OServiceInstance>(new ResourceModel("OServiceInstance.port"), "port")
 			.setFormatter(ONumberFormatter.integer())
 			.setStyle("direction:ltr"));
