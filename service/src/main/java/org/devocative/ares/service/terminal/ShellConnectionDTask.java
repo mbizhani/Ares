@@ -94,6 +94,17 @@ public class ShellConnectionDTask extends DTask implements ITerminalProcess {
 		}
 	}
 
+	@Override
+	public void cancel() throws Exception {
+		if (channel != null && channel.isConnected()) {
+			channel.disconnect();
+		}
+		if (session != null && session.isConnected()) {
+			session.disconnect();
+		}
+		sendResult("\n\nTerminal Closed!");
+	}
+
 	// ---------------
 
 	@Override
@@ -130,17 +141,6 @@ public class ShellConnectionDTask extends DTask implements ITerminalProcess {
 				terminalConnectionService.closeConnection(connId);
 			}
 		}
-	}
-
-	@Override
-	public void close() {
-		if (channel != null && channel.isConnected()) {
-			channel.disconnect();
-		}
-		if (session != null && session.isConnected()) {
-			session.disconnect();
-		}
-		sendResult("\n\nTerminal Closed!");
 	}
 
 	@Override

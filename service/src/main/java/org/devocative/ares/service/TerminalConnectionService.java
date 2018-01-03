@@ -178,7 +178,11 @@ public class TerminalConnectionService implements ITerminalConnectionService, IA
 	//TODO define close reason
 	public synchronized void closeConnection(Long connId) {
 		if (connId != null && CONNECTIONS.containsKey(connId)) {
-			CONNECTIONS.get(connId).close();
+			try {
+				CONNECTIONS.get(connId).cancel();
+			} catch (Exception e) {
+				logger.error("TerminalConnectionService.closeConnection", e);
+			}
 			CONNECTIONS.remove(connId);
 
 			TerminalConnection connection = load(connId);

@@ -113,6 +113,11 @@ public class SqlConnectionDTask extends DTask implements ITerminalProcess {
 		logger.info("SqlConnectionDTask: closed connection", databaseType);
 	}
 
+	@Override
+	public void cancel() throws Exception {
+		queue.offer(new SqlMessageVO(SqlMessageVO.MsgType.TERMINATE));
+	}
+
 	// ---------------
 
 	@Override
@@ -140,11 +145,6 @@ public class SqlConnectionDTask extends DTask implements ITerminalProcess {
 				}
 			}
 		}
-	}
-
-	@Override
-	public void close() {
-		queue.offer(new SqlMessageVO(SqlMessageVO.MsgType.TERMINATE));
 	}
 
 	@Override

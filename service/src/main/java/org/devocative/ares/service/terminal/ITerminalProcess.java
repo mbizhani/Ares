@@ -5,7 +5,7 @@ public interface ITerminalProcess {
 
 	void send(Object message);
 
-	void close();
+	void cancel() throws Exception;
 
 	long getLastActivityTime();
 
