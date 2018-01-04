@@ -31,7 +31,7 @@ public interface ICommandLogService {
 
 	// ==============================
 
-	Long insertLog(Command command, OServiceInstance serviceInstance, Map<String, ?> params, Long prepCommandId);
+	Long insertLog(Long commandId, Long serviceInstanceId, Map<String, ?> params, Long prepCommandId);
 
 	void updateLog(Long logId, Long duration, Exception error);
 }

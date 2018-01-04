@@ -1,5 +1,6 @@
 package org.devocative.ares.iservice.command;
 
+import org.devocative.ares.cmd.AbstractExecutor;
 import org.devocative.ares.cmd.CommandCenterResource;
 import org.devocative.ares.cmd.ICommandResultCallBack;
 import org.devocative.ares.entity.command.Command;
@@ -37,11 +38,19 @@ public interface ICommandService extends IEntityService<Command> {
 
 	void checkAndSave(OService oService, XCommand xCommand, Command command, Map<String, XValidation> validationMap);
 
-	void executeCommandTask(CommandQVO commandQVO, ITaskResultCallback callback);
+	String executeCommandTask(CommandQVO commandQVO, ITaskResultCallback callback);
 
 	Object executeCommand(CommandQVO commandQVO, ICommandResultCallBack callBack) throws Exception;
 
 	Object callCommand(CommandQVO commandQVO, CommandCenterResource resource) throws Exception;
+
+	void cancelCommandTask(String key);
+
+	void cancelCommand(Long logId);
+
+	boolean isOkToContinue(Long logId);
+
+	void setCurrentExecutor(Long logId, AbstractExecutor current);
 
 	void userPasswordUpdated(OServiceInstanceTargetVO targetVO, String username, String password);
 

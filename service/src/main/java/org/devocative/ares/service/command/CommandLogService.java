@@ -89,10 +89,10 @@ public class CommandLogService implements ICommandLogService {
 	// ==============================
 
 	@Override
-	public Long insertLog(Command command, OServiceInstance serviceInstance, Map<String, ?> params, Long prepCommandId) {
+	public Long insertLog(Long commandId, Long serviceInstanceId, Map<String, ?> params, Long prepCommandId) {
 		CommandLog log = new CommandLog();
-		log.setCommand(command);
-		log.setServiceInstance(serviceInstance);
+		log.setCommandId(commandId);
+		log.setServiceInstanceId(serviceInstanceId);
 		log.setParams(prepCommandService.convertParamsToString(params));
 		log.setResult(ECommandResult.RUNNING);
 		log.setPrepCommandId(prepCommandId);

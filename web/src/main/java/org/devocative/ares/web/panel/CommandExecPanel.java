@@ -37,7 +37,9 @@ import org.devocative.wickomp.WebUtil;
 import org.devocative.wickomp.async.IAsyncResponse;
 import org.devocative.wickomp.form.*;
 import org.devocative.wickomp.form.validator.WPatternValidator;
+import org.devocative.wickomp.html.WAjaxLink;
 import org.devocative.wickomp.html.WFloatTable;
+import org.devocative.wickomp.html.WMessager;
 import org.devocative.wickomp.html.window.WModalWindow;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -65,6 +67,8 @@ public class CommandExecPanel extends DPanel implements IAsyncResponse {
 	private DTaskBehavior taskBehavior;
 	private WebMarkupContainer tabs, log, tabular;
 	private List<WSelectionInput> guestInputList = new ArrayList<>();
+
+	private String commandDTaskKey;
 
 	@Inject
 	private ICommandService commandService;
@@ -212,9 +216,26 @@ public class CommandExecPanel extends DPanel implements IAsyncResponse {
 					}
 				}
 
-				commandService.executeCommandTask(
+				commandDTaskKey = commandService.executeCommandTask(
 					new CommandQVO(commandId, serviceInstance.getKey(), cmdParams, prepCommandId).setOsiUserId(osiUserId),
 					taskBehavior);
+
+				target.appendJavaScript(String.format("$('#%s').tabs('select', 'Console');", tabs.getMarkupId()));
+			}
+		});
+
+		form.add(new WAjaxLink("cancel", new ResourceModel("label.fa.stop", "Cancel"), AresIcon.STOP_CIRCLE) {
+			private static final long serialVersionUID = 3211013451452565219L;
+
+			@Override
+			public void onClick(AjaxRequestTarget target) {
+				try {
+					if (commandDTaskKey != null) {
+						commandService.cancelCommandTask(commandDTaskKey);
+					}
+				} catch (Exception e) {
+					WMessager.show(e, target);
+				}
 			}
 		});
 

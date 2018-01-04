@@ -16,6 +16,8 @@ import java.util.Map;
 public class SqlCommandExecutor extends AbstractCommandExecutor {
 	private Map<String, Object> params, filter;
 
+	private NamedParameterStatement currentNps;
+
 	public SqlCommandExecutor(OServiceInstanceTargetVO targetVO, CommandCenterResource resource, String prompt,
 							  String command, Map<String, Object> params, Map<String, Object> filter) {
 		super(targetVO, resource, prompt, command);
@@ -35,17 +37,16 @@ public class SqlCommandExecutor extends AbstractCommandExecutor {
 		String p = String.format("[ %s@%s ]$ %s", targetVO.getUsername(), targetVO.getName(), prompt);
 		resource.onResult(new CommandOutput(CommandOutput.Type.PROMPT, p));
 
-		NamedParameterStatement nps =
-			new NamedParameterStatement(connection, command)
-				.setParameters(params);
+		currentNps = new NamedParameterStatement(connection, command)
+			.setParameters(params);
 
 		if (filter != null) {
-			nps.addPlugin(new FilterPlugin().addAll(filter));
+			currentNps.addPlugin(new FilterPlugin().addAll(filter));
 		}
 
 		try {
-			if (nps.execute()) {
-				ResultSet rs = nps.getResultSet();
+			if (currentNps.execute()) {
+				ResultSet rs = currentNps.getResultSet();
 				QueryVO queryVO = ResultSetProcessor.process(rs, EColumnNameCase.LOWER);
 
 				if (queryVO.getHeader().size() == 1 && queryVO.getRows().size() == 1) {
@@ -54,10 +55,10 @@ public class SqlCommandExecutor extends AbstractCommandExecutor {
 					result = new TabularVO<>(queryVO.getHeader(), queryVO.getRows());
 				}
 			} else {
-				logger.info("Execute non-select query: update count=[{}]", nps.getUpdateCount());
-				result = nps.getUpdateCount();
+				logger.info("Execute non-select query: update count=[{}]", currentNps.getUpdateCount());
+				result = currentNps.getUpdateCount();
 			}
-			nps.close();
+			currentNps.close();
 		} catch (SQLException e) {
 			if (isForce()) {
 				logger.warn("SqlCommandExecutor", e);
@@ -67,5 +68,12 @@ public class SqlCommandExecutor extends AbstractCommandExecutor {
 		}
 
 		setResult(result);
+	}
+
+	@Override
+	public void cancel() throws Exception {
+		if (currentNps != null) {
+			currentNps.cancel();
+		}
 	}
 }

@@ -38,12 +38,20 @@ public class CommandLog implements ICreationDate, ICreatorUser {
 	private String error;
 
 	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "f_command", nullable = false, foreignKey = @ForeignKey(name = "commandLog2command"))
+	@JoinColumn(name = "f_command", nullable = false, insertable = false, updatable = false,
+		foreignKey = @ForeignKey(name = "commandLog2command"))
 	private Command command;
 
+	@Column(name = "f_command")
+	private Long commandId;
+
 	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "f_service_instance", nullable = false, foreignKey = @ForeignKey(name = "commandLog2serviceInstance"))
+	@JoinColumn(name = "f_service_instance", nullable = false, insertable = false, updatable = false,
+		foreignKey = @ForeignKey(name = "commandLog2serviceInstance"))
 	private OServiceInstance serviceInstance;
+
+	@Column(name = "f_service_instance")
+	private Long serviceInstanceId;
 
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "f_prep_command", insertable = false, updatable = false, foreignKey = @ForeignKey(name = "commandLog2prepCommand"))
@@ -114,16 +122,24 @@ public class CommandLog implements ICreationDate, ICreatorUser {
 		return command;
 	}
 
-	public void setCommand(Command command) {
-		this.command = command;
+	public Long getCommandId() {
+		return commandId;
+	}
+
+	public void setCommandId(Long commandId) {
+		this.commandId = commandId;
 	}
 
 	public OServiceInstance getServiceInstance() {
 		return serviceInstance;
 	}
 
-	public void setServiceInstance(OServiceInstance serviceInstance) {
-		this.serviceInstance = serviceInstance;
+	public Long getServiceInstanceId() {
+		return serviceInstanceId;
+	}
+
+	public void setServiceInstanceId(Long serviceInstanceId) {
+		this.serviceInstanceId = serviceInstanceId;
 	}
 
 	public PrepCommand getPrepCommand() {

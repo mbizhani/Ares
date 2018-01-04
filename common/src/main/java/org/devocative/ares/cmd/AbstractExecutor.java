@@ -57,9 +57,15 @@ public abstract class AbstractExecutor implements Runnable {
 		return result;
 	}
 
+	// ------------------------------
+
 	protected final void setResult(Object result) {
 		this.result = result;
 	}
+
+	// ------------------------------
+
+	public abstract void cancel() throws Exception;
 
 	// ------------------------------
 

@@ -26,4 +26,8 @@ public class CloseIdleConnectionsDTask extends DTask {
 	public void execute() {
 		terminalConnectionService.closeIdleConnections();
 	}
+
+	@Override
+	public void cancel() throws Exception {
+	}
 }

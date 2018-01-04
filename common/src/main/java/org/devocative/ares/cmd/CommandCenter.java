@@ -51,6 +51,8 @@ public class CommandCenter {
 	// ---------------
 
 	public SshResult ssh(String prompt, String cmd, Boolean force, String... stdin) {
+		assertToContinue();
+
 		int exitStatus = -1;
 		String result = null;
 
@@ -70,6 +72,7 @@ public class CommandCenter {
 			}
 
 			resource.getCommandService().assertCurrentUser(cmd);
+			resource.setCurrentExecutor(executor);
 
 			Thread th = new Thread(
 				Thread.currentThread().getThreadGroup(),
@@ -103,6 +106,8 @@ public class CommandCenter {
 	// ---------------
 
 	public void scpTo(FileStore fileStore, String destDir) {
+		assertToContinue();
+
 		OServiceInstanceTargetVO finalTargetVO = targetVO;
 		if (!ERemoteMode.SSH.equals(finalTargetVO.getUser().getRemoteMode())) {
 			finalTargetVO = resource
@@ -112,6 +117,7 @@ public class CommandCenter {
 
 		try {
 			ScpToExecutor executor = new ScpToExecutor(finalTargetVO, resource, fileStore, destDir);
+			resource.setCurrentExecutor(executor);
 			Thread th = new Thread(
 				Thread.currentThread().getThreadGroup(),
 				executor,
@@ -132,6 +138,8 @@ public class CommandCenter {
 	// ---------------
 
 	public Object sql(String prompt, String sql, Map<String, Object> params, Map<String, Object> filter, Boolean force) {
+		assertToContinue();
+
 		Object result = null;
 
 		OServiceInstanceTargetVO finalTargetVO = targetVO;
@@ -144,6 +152,8 @@ public class CommandCenter {
 			if (force != null) {
 				executor.setForce(force);
 			}
+
+			resource.setCurrentExecutor(executor);
 
 			Thread th = new Thread(
 				Thread.currentThread().getThreadGroup(),
@@ -210,6 +220,12 @@ public class CommandCenter {
 
 	public Exception getException() {
 		return exception;
+	}
+
+	public void assertToContinue() {
+		if (!resource.isOkToContinue()) {
+			error("Canceled");
+		}
 	}
 
 	public void setException(Exception exception) {

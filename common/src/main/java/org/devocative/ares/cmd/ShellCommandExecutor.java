@@ -15,6 +15,9 @@ import java.io.*;
 public class ShellCommandExecutor extends AbstractCommandExecutor {
 	private final String[] stdin;
 
+	private ChannelExec channelExec;
+	private Session session;
+
 	// ---------------
 
 	private int exitStatus = -1;
@@ -36,7 +39,7 @@ public class ShellCommandExecutor extends AbstractCommandExecutor {
 
 	@Override
 	protected void execute() throws JSchException, IOException {
-		Session session = resource.createSession(targetVO);
+		session = resource.createSession(targetVO);
 
 		String finalCmd = command;
 		if (targetVO.isSudoer() && !command.startsWith("sudo -S")) {
@@ -52,7 +55,7 @@ public class ShellCommandExecutor extends AbstractCommandExecutor {
 		String p = String.format("[ %s@%s ]$ %s", targetVO.getUsername(), targetVO.getName(), prompt);
 		resource.onResult(new CommandOutput(CommandOutput.Type.PROMPT, p));
 
-		final ChannelExec channelExec = (ChannelExec) session.openChannel("exec");
+		channelExec = (ChannelExec) session.openChannel("exec");
 		channelExec.setCommand(finalCmd);
 
 		channelExec.setInputStream(null);
@@ -127,6 +130,17 @@ public class ShellCommandExecutor extends AbstractCommandExecutor {
 			} else {
 				throw new RuntimeException("Invalid ssh command exitStatus: " + exitStatus);
 			}
+		}
+	}
+
+	@Override
+	public void cancel() throws Exception {
+		if (channelExec != null && channelExec.isConnected()) {
+			channelExec.disconnect();
+		}
+
+		if (session != null && session.isConnected()) {
+			session.disconnect();
 		}
 	}
 }

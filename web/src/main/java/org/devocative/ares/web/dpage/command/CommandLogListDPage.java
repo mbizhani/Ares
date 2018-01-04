@@ -4,10 +4,13 @@ import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.markup.html.form.Form;
 import org.apache.wicket.model.CompoundPropertyModel;
 import org.apache.wicket.model.IModel;
+import org.apache.wicket.model.Model;
 import org.apache.wicket.model.ResourceModel;
+import org.devocative.ares.AresPrivilegeKey;
 import org.devocative.ares.entity.command.CommandLog;
 import org.devocative.ares.entity.command.ECommandResult;
 import org.devocative.ares.iservice.command.ICommandLogService;
+import org.devocative.ares.iservice.command.ICommandService;
 import org.devocative.ares.vo.filter.command.CommandLogFVO;
 import org.devocative.ares.web.AresIcon;
 import org.devocative.demeter.web.DPage;
@@ -25,6 +28,7 @@ import org.devocative.wickomp.grid.WDataGrid;
 import org.devocative.wickomp.grid.WSortField;
 import org.devocative.wickomp.grid.column.OColumnList;
 import org.devocative.wickomp.grid.column.OPropertyColumn;
+import org.devocative.wickomp.grid.column.link.OAjaxLinkColumn;
 import org.devocative.wickomp.html.WFloatTable;
 import org.devocative.wickomp.opt.OSize;
 
@@ -37,6 +41,9 @@ public class CommandLogListDPage extends DPage implements IGridDataSource<Comman
 
 	@Inject
 	private ICommandLogService commandLogService;
+
+	@Inject
+	private ICommandService commandService;
 
 	private CommandLogFVO filter;
 	private boolean formVisible = true;
@@ -130,6 +137,23 @@ public class CommandLogListDPage extends DPage implements IGridDataSource<Comman
 			.setFormatter(ODateFormatter.getDateTimeByUserPreference())
 			.setStyle("direction:ltr"));
 		columnList.add(new OPropertyColumn<>(new ResourceModel("entity.creatorUser"), "creatorUser"));
+
+		if (hasPermission(AresPrivilegeKey.StopRunningCommand)) {
+			columnList.add(new OAjaxLinkColumn<CommandLog>(new Model<>(), AresIcon.STOP_CIRCLE) {
+				private static final long serialVersionUID = 3900357108528664133L;
+
+				@Override
+				public void onClick(AjaxRequestTarget target, IModel<CommandLog> rowData) {
+					Long logId = rowData.getObject().getId();
+					commandService.cancelCommand(logId);
+				}
+
+				@Override
+				public boolean onCellRender(CommandLog bean, String id) {
+					return bean.getDuration() == null;
+				}
+			}.setConfirmMessage(getString("label.confirm")));
+		}
 
 		OGrid<CommandLog> oGrid = new OGrid<>();
 		oGrid

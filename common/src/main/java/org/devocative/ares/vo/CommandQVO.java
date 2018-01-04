@@ -14,6 +14,8 @@ public class CommandQVO implements Serializable {
 
 	private Long prepCommandId;
 
+	private Long logId;
+
 	// ------------------------------
 
 	public CommandQVO(Long commandId, Long serviceInstanceId, Map<String, Object> params, Long prepCommandId) {
@@ -60,6 +62,15 @@ public class CommandQVO implements Serializable {
 
 	public CommandQVO setOsiUserId(Long osiUserId) {
 		this.osiUserId = osiUserId;
+		return this;
+	}
+
+	public Long getLogId() {
+		return logId;
+	}
+
+	public CommandQVO setLogId(Long logId) {
+		this.logId = logId;
 		return this;
 	}
 }

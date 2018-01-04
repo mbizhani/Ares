@@ -6,10 +6,7 @@ import org.devocative.adroit.cache.IMissedHitHandler;
 import org.devocative.adroit.xml.AdroitXStream;
 import org.devocative.ares.AresErrorCode;
 import org.devocative.ares.AresException;
-import org.devocative.ares.cmd.CCUtil;
-import org.devocative.ares.cmd.CommandCenter;
-import org.devocative.ares.cmd.CommandCenterResource;
-import org.devocative.ares.cmd.ICommandResultCallBack;
+import org.devocative.ares.cmd.*;
 import org.devocative.ares.entity.OServer;
 import org.devocative.ares.entity.command.Command;
 import org.devocative.ares.entity.command.CommandCfgLob;
@@ -37,6 +34,7 @@ import org.devocative.demeter.iservice.ICacheService;
 import org.devocative.demeter.iservice.ISecurityService;
 import org.devocative.demeter.iservice.persistor.EJoinMode;
 import org.devocative.demeter.iservice.persistor.IPersistorService;
+import org.devocative.demeter.iservice.task.DTaskResult;
 import org.devocative.demeter.iservice.task.ITaskResultCallback;
 import org.devocative.demeter.iservice.task.ITaskService;
 import org.devocative.demeter.iservice.template.IStringTemplate;
@@ -52,6 +50,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 @Service("arsCommandService")
 public class CommandService implements ICommandService, IMissedHitHandler<Long, Command> {
@@ -61,6 +60,9 @@ public class CommandService implements ICommandService, IMissedHitHandler<Long, 
 	private XStream xstream;
 	private ICache<Long, Command> commandCache;
 	private CCUtil singleInstOfUtil = new CCUtil();
+
+	private final Map<Long, Boolean> runningCommands = new ConcurrentHashMap<>();
+	private final Map<Long, AbstractExecutor> currentExecutorForCommands = new ConcurrentHashMap<>();
 
 	// ---------------
 
@@ -232,8 +234,13 @@ public class CommandService implements ICommandService, IMissedHitHandler<Long, 
 	}
 
 	@Override
-	public void executeCommandTask(CommandQVO commandQVO, ITaskResultCallback callback) {
-		taskService.start(CommandExecutionDTask.class, commandQVO, callback);
+	public String executeCommandTask(CommandQVO commandQVO, ITaskResultCallback callback) {
+		Long logId = commandLogService.insertLog(commandQVO.getCommandId(), commandQVO.getServiceInstanceId(),
+			commandQVO.getParams(), commandQVO.getPrepCommandId());
+		commandQVO.setLogId(logId);
+		runningCommands.put(logId, true);
+		DTaskResult start = taskService.start(CommandExecutionDTask.class, logId, commandQVO, callback);
+		return start.getTaskInstance().getKey();
 	}
 
 	@Override
@@ -243,8 +250,8 @@ public class CommandService implements ICommandService, IMissedHitHandler<Long, 
 		Command command = load(commandQVO.getCommandId());
 		OServiceInstance serviceInstance = serviceInstanceService.load(commandQVO.getServiceInstanceId());
 
-		CommandCenterResource resource = new CommandCenterResource(this, serverService, serviceInstanceService, callBack);
-		Long logId = commandLogService.insertLog(command, serviceInstance, commandQVO.getParams(), commandQVO.getPrepCommandId());
+		Long logId = commandQVO.getLogId();
+		CommandCenterResource resource = new CommandCenterResource(this, serverService, serviceInstanceService, callBack, logId);
 
 		logger.info("Start command execution: cmd=[{}] si=[{}] currentUser=[{}] logId=[{}]",
 			command.getName(), serviceInstance, securityService.getCurrentUser(), logId);
@@ -256,6 +263,9 @@ public class CommandService implements ICommandService, IMissedHitHandler<Long, 
 			error = e;
 			throw e;
 		} finally {
+			runningCommands.remove(logId);
+			currentExecutorForCommands.remove(logId);
+
 			Long dur = ((System.currentTimeMillis() - start) / 1000);
 			logger.info("Finish command execution: cmd=[{}] si=[{}] currentUser=[{}] dur=[{}] logId=[{}]",
 				command.getName(), serviceInstance, securityService.getCurrentUser(), dur, logId);
@@ -277,6 +287,42 @@ public class CommandService implements ICommandService, IMissedHitHandler<Long, 
 			throw new AresException(AresErrorCode.CommandNotFound, commandQVO.getCommandName());
 		}
 		return executeCommand(cmd, commandQVO, resource);
+	}
+
+	@Override
+	public void cancelCommandTask(String key) {
+		taskService.stop(key);
+	}
+
+	@Override
+	public void cancelCommand(Long logId) {
+		if (runningCommands.containsKey(logId)) {
+			runningCommands.put(logId, false);
+
+			if (currentExecutorForCommands.containsKey(logId)) {
+				try {
+					currentExecutorForCommands.get(logId).cancel();
+				} catch (Exception e) {
+					logger.error("cancelCommand: {}", logId, e);
+					throw new RuntimeException(e); //TODO
+				} finally {
+					currentExecutorForCommands.remove(logId);
+				}
+
+			}
+		} else {
+			throw new RuntimeException("The command is not running anymore!"); //TODO
+		}
+	}
+
+	@Override
+	public boolean isOkToContinue(Long logId) {
+		return runningCommands.get(logId);
+	}
+
+	@Override
+	public void setCurrentExecutor(Long logId, AbstractExecutor current) {
+		currentExecutorForCommands.put(logId, current);
 	}
 
 	@Override
@@ -453,7 +499,7 @@ public class CommandService implements ICommandService, IMissedHitHandler<Long, 
 
 				persistorService.endSession();
 			} catch (Exception e) {
-				logger.error("CommandService.CmdRunner: ", e);
+				logger.warn("CommandService.CmdRunner: err={}", e.getMessage());
 				error = e;
 			}
 		}

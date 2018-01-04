@@ -29,6 +29,7 @@ public class CommandCenterResource {
 	private final IOServerService serverService;
 	private final IOServiceInstanceService serviceInstanceService;
 	private final ICommandResultCallBack resultCallBack;
+	private final Long logId;
 
 	// ------------------------------
 
@@ -36,12 +37,14 @@ public class CommandCenterResource {
 		ICommandService commandService,
 		IOServerService serverService,
 		IOServiceInstanceService serviceInstanceService,
-		ICommandResultCallBack resultCallBack) {
+		ICommandResultCallBack resultCallBack,
+		Long logId) {
 
 		this.commandService = commandService;
 		this.serverService = serverService;
 		this.serviceInstanceService = serviceInstanceService;
 		this.resultCallBack = resultCallBack;
+		this.logId = logId;
 	}
 
 	// ------------------------------
@@ -56,6 +59,14 @@ public class CommandCenterResource {
 
 	public IOServiceInstanceService getServiceInstanceService() {
 		return serviceInstanceService;
+	}
+
+	public boolean isOkToContinue() {
+		return commandService.isOkToContinue(logId);
+	}
+
+	public void setCurrentExecutor(AbstractExecutor current) {
+		commandService.setCurrentExecutor(logId, current);
 	}
 
 	// ---------------
@@ -92,14 +103,18 @@ public class CommandCenterResource {
 
 	public void closeAll() {
 		for (Session session : SSH.values()) {
-			session.disconnect();
+			try {
+				session.disconnect();
+			} catch (Exception e) {
+				logger.error("CommandCenterResource.closeAll: SSH", e);
+			}
 		}
 
 		for (Connection connection : DB_CONN.values()) {
 			try {
 				connection.close();
 			} catch (SQLException e) {
-				logger.error("CommandCenterResource.closeAll", e);
+				logger.error("CommandCenterResource.closeAll: SQL", e);
 			}
 		}
 	}

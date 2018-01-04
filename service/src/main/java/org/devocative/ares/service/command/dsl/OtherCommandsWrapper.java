@@ -31,26 +31,29 @@ public class OtherCommandsWrapper extends Proxy {
 		try {
 			FoundMethod foundMethod = callMethodOfDSL(name, argsArr);
 			if (foundMethod != null) {
+				assertToContinue();
 				return foundMethod.method.invoke(dsl, foundMethod.finalArgs);
 			}
 		} catch (InvocationTargetException e) {
 			if (e.getCause() instanceof CommandException) {
 				throw (CommandException) e.getCause();
 			} else {
-				logger.error("OtherCommandsWrapper: name=[{}]", name, e);
-				throw new RuntimeException(e.getCause());
+				logger.warn("OtherCommandsWrapper.InvocationTargetException: name=[{}] err=[{}]",
+					name, e.getCause().getMessage());
+				throw new RuntimeException(e.getCause()); //TODO
 			}
 		} catch (Exception e) {
-			logger.error("OtherCommandsWrapper: name=[{}]", name, e);
-			throw new RuntimeException(e);
+			logger.warn("OtherCommandsWrapper: name=[{}] err={}", name, e.getMessage());
+			throw new RuntimeException(e); //TODO
 		}
 
 		Object result;
 		if (argsArr.length == 1) {
 			if (argsArr[0] instanceof Map) {
+				assertToContinue();
 				result = dsl.getCommandCenter().exec(name, (Map<String, Object>) argsArr[0]);
 			} else {
-				throw new RuntimeException("Invalid User Defined Command: " + name + " (input param is not Map)");
+				throw new RuntimeException("Invalid User Defined Command: " + name + " (input param is not Map)"); //TODO
 			}
 		} else {
 			result = dsl.getCommandCenter().exec(name);
@@ -114,6 +117,10 @@ public class OtherCommandsWrapper extends Proxy {
 			return new FoundMethod(result, finalArgs);
 		}
 		return null;
+	}
+
+	private void assertToContinue() {
+		dsl.getCommandCenter().assertToContinue();
 	}
 
 	// ------------------------------

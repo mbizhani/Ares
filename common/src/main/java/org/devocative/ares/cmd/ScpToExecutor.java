@@ -13,6 +13,8 @@ public class ScpToExecutor extends AbstractExecutor {
 	private final FileStore fileStore;
 	private final String destDir;
 
+	private Channel channel;
+
 	// ------------------------------
 
 	public ScpToExecutor(OServiceInstanceTargetVO targetVO, CommandCenterResource resource, FileStore fileStore, String destDir) {
@@ -32,7 +34,7 @@ public class ScpToExecutor extends AbstractExecutor {
 
 		//String command = String.format("scp -p -t \"~/%s\"", fileStore.getName());
 		String command = "scp -p -t " + destDir;
-		Channel channel = session.openChannel("exec");
+		channel = session.openChannel("exec");
 		((ChannelExec) channel).setCommand(command);
 
 		// get I/O streams for remote scp
@@ -101,6 +103,15 @@ public class ScpToExecutor extends AbstractExecutor {
 
 		resource.onResult(new CommandOutput(CommandOutput.Type.LINE, "File sent successfully"));
 	}
+
+	@Override
+	public void cancel() throws Exception {
+		if (channel != null && channel.isConnected()) {
+			channel.disconnect();
+		}
+	}
+
+	// ------------------------------
 
 	private int checkAck(InputStream in) throws IOException {
 		int b = in.read();

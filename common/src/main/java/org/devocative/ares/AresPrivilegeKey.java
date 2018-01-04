@@ -12,7 +12,8 @@ public enum AresPrivilegeKey implements IPrivilegeKey {
 	OServerAdd, OServerEdit,
 	OBasicDataAdd, OBasicDataEdit,
 	PrepCommandAdd, PrepCommandEdit,
-	StopTerminalConnection;
+	StopTerminalConnection,
+	StopRunningCommand;
 
 	private String name;
 

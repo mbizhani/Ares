@@ -75,6 +75,11 @@ public class CommandExecutionDTask extends DTask implements ICommandResultCallBa
 	}
 
 	@Override
+	public void cancel() throws Exception {
+		commandService.cancelCommand(commandQVO.getLogId());
+	}
+
+	@Override
 	public void onResult(CommandOutput lineOfResult) {
 		sendResult(lineOfResult);
 	}
