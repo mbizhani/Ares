@@ -67,6 +67,7 @@ public class CommandExecPanel extends DPanel implements IAsyncResponse {
 	private DTaskBehavior taskBehavior;
 	private WebMarkupContainer tabs, log, tabular;
 	private List<WSelectionInput> guestInputList = new ArrayList<>();
+	private DAjaxButton execute;
 
 	private String commandDTaskKey;
 
@@ -120,19 +121,34 @@ public class CommandExecPanel extends DPanel implements IAsyncResponse {
 		logger.debug("onAsyncResult: {}", result);
 
 		CommandOutput line = (CommandOutput) result;
-		if (line.getType() != CommandOutput.Type.TABULAR) {
-			String str = Strings.escapeMarkup(line.getOutput().toString().trim(), false, true).toString();
-			str = str.replaceAll("[\n]", "<br/>");
-			str = str.replaceAll("[\r]", "");
 
-			String script = String.format("$('#%s').append(\"<div class='ars-cmd-%s'>%s</div>\");",
-				log.getMarkupId(),
-				line.getType().name().toLowerCase(),
-				str);
-			handler.appendJavaScript(script);
-			handler.appendJavaScript(String.format("$('#%1$s').scrollTop($('#%1$s')[0].scrollHeight);", log.getMarkupId()));
-		} else {
-			renderTabular((TabularVO) line.getOutput(), handler);
+		switch (line.getType()) {
+			case START:
+				String start = String.format("$('#%s').append(\"<div style='background-color:#ffd700;'>--- START ---</div>\");",
+					log.getMarkupId());
+				handler.appendJavaScript(start);
+				break;
+			case PROMPT:
+			case LINE:
+			case ERROR:
+				String script = String.format("$('#%s').append(\"<div class='ars-cmd-%s'>%s</div>\");",
+					log.getMarkupId(),
+					line.getType().name().toLowerCase(),
+					escape(line.getOutput().toString().trim()));
+				handler.appendJavaScript(script);
+				handler.appendJavaScript(String.format("$('#%1$s').scrollTop($('#%1$s')[0].scrollHeight);", log.getMarkupId()));
+				break;
+			case TABULAR:
+				renderTabular((TabularVO) line.getOutput(), handler);
+				break;
+			case FINISHED:
+				String finished = String.format("$('#%s').append(\"<div style='background-color:#ffd700;'>--- END ---</div><div>&nbsp;</div>\");",
+					log.getMarkupId());
+				handler.appendJavaScript(finished);
+
+				execute.setEnabled(true);
+				handler.add(execute);
+				break;
 		}
 	}
 
@@ -140,8 +156,12 @@ public class CommandExecPanel extends DPanel implements IAsyncResponse {
 	public void onAsyncError(IPartialPageRequestHandler handler, Exception error) {
 		StringWriter out = new StringWriter();
 		error.printStackTrace(new PrintWriter(out));
-		String script = String.format("$('#%s').append('<div>%s</div>');", log.getMarkupId(), out.toString());
+
+		String script = String.format("$('#%s').append('<div>%s</div>');", log.getMarkupId(), escape(out.toString()));
 		handler.appendJavaScript(script);
+
+		execute.setEnabled(true);
+		handler.add(execute);
 	}
 
 	// ------------------------------
@@ -198,7 +218,7 @@ public class CommandExecPanel extends DPanel implements IAsyncResponse {
 		Form<Map<String, Object>> form = new Form<>("form", new CompoundPropertyModel<>(params));
 		form.add(floatTable);
 
-		form.add(new DAjaxButton("execute", new ResourceModel("label.execute", "Exec"), AresIcon.EXECUTE) {
+		form.add(execute = new DAjaxButton("execute", new ResourceModel("label.execute", "Exec"), AresIcon.EXECUTE) {
 			private static final long serialVersionUID = 8306959811796741L;
 
 			@Override
@@ -221,6 +241,9 @@ public class CommandExecPanel extends DPanel implements IAsyncResponse {
 					taskBehavior);
 
 				target.appendJavaScript(String.format("$('#%s').tabs('select', 'Console');", tabs.getMarkupId()));
+
+				execute.setEnabled(false);
+				target.add(execute);
 			}
 		});
 
@@ -415,5 +438,12 @@ public class CommandExecPanel extends DPanel implements IAsyncResponse {
 		handler.appendJavaScript(String.format("$('#%s').html(\"%s\");", tabular.getMarkupId(), builder.toString().replaceAll("\"", "")));
 		//handler.appendJavaScript(String.format("$('#%s').datagrid();", tabId));
 		handler.appendJavaScript(String.format("$('#%s').tabs('select', 'Tabular');", tabs.getMarkupId()));
+	}
+
+	private String escape(String out) {
+		String str = Strings.escapeMarkup(out, false, true).toString();
+		str = str.replaceAll("[\n]", "<br/>");
+		str = str.replaceAll("[\r]", "");
+		return str;
 	}
 }

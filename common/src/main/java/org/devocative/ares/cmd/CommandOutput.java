@@ -10,6 +10,10 @@ public class CommandOutput implements Serializable {
 
 	// ------------------------------
 
+	public CommandOutput(Type type) {
+		this(type, null);
+	}
+
 	public CommandOutput(Type type, Object output) {
 		this.type = type;
 		this.output = output;
@@ -33,9 +37,11 @@ public class CommandOutput implements Serializable {
 	// ------------------------------
 
 	public enum Type {
+		START,
 		PROMPT,
 		LINE,
 		TABULAR,
-		ERROR
+		ERROR,
+		FINISHED
 	}
 }

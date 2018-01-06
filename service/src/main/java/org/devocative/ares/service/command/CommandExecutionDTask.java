@@ -40,6 +40,8 @@ public class CommandExecutionDTask extends DTask implements ICommandResultCallBa
 		try {
 			logger.info("CommandExecutionDTask: currentUser=[{}] cmd=[{}]", getCurrentUser(), commandQVO.getCommandId());
 
+			onResult(new CommandOutput(CommandOutput.Type.START));
+
 			Object result = commandService.executeCommand(commandQVO, this);
 			if (result != null) {
 				if (result instanceof TabularVO) {
@@ -57,8 +59,6 @@ public class CommandExecutionDTask extends DTask implements ICommandResultCallBa
 
 					onResult(new CommandOutput(CommandOutput.Type.PROMPT, String.format("Final Return: %s", resultAsStr)));
 				}
-			} else {
-				onResult(new CommandOutput(CommandOutput.Type.PROMPT, "Finished"));
 			}
 		} catch (Exception e) {
 			String msg = null;
@@ -72,6 +72,8 @@ public class CommandExecutionDTask extends DTask implements ICommandResultCallBa
 			onResult(new CommandOutput(CommandOutput.Type.ERROR, msg));
 			logger.error("CommandExecutionDTask: ", e);
 		}
+
+		onResult(new CommandOutput(CommandOutput.Type.FINISHED));
 	}
 
 	@Override
