@@ -6,6 +6,7 @@ import org.devocative.adroit.sql.plugin.PaginationPlugin;
 import org.devocative.adroit.sql.result.EColumnNameCase;
 import org.devocative.adroit.sql.result.QueryVO;
 import org.devocative.adroit.sql.result.ResultSetProcessor;
+import org.devocative.adroit.sql.result.RowVO;
 import org.devocative.ares.iservice.ITerminalConnectionService;
 import org.devocative.ares.vo.SqlMessageVO;
 import org.devocative.ares.vo.TerminalConnectionVO;
@@ -21,6 +22,7 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.Collections;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -78,11 +80,20 @@ public class SqlConnectionDTask extends DTask implements ITerminalProcess {
 
 			try {
 				if (msg.getSql() != null) {
-					currentNps = new NamedParameterStatement(connection, msg.getSql());
-					currentNps.addPlugin(new PaginationPlugin(msg.getPageIndex(), msg.getPageSize(), databaseType));
-					ResultSet resultSet = currentNps.executeQuery();
-					QueryVO process = ResultSetProcessor.process(resultSet, EColumnNameCase.LOWER);
-					sendResult(process.toListOfMap());
+					String sql = msg.getSql().trim();
+					currentNps = new NamedParameterStatement(connection, sql);
+
+					if (sql.toLowerCase().startsWith("select")) {
+						currentNps.addPlugin(new PaginationPlugin(msg.getPageIndex(), msg.getPageSize(), databaseType));
+						ResultSet resultSet = currentNps.executeQuery();
+						QueryVO process = ResultSetProcessor.process(resultSet, EColumnNameCase.LOWER);
+						sendResult(process.toListOfMap());
+					} else {
+						int updateCount = currentNps.executeUpdate();
+						RowVO rowVO = new RowVO();
+						rowVO.put("UpdateCount", updateCount);
+						sendResult(Collections.singletonList(rowVO));
+					}
 				}
 			} catch (SQLException e) {
 				logger.error("SqlConnectionDTask: Exec Sql", e);
