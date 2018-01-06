@@ -53,6 +53,7 @@ public class CommandExecPanel extends DPanel implements IAsyncResponse {
 	private static final long serialVersionUID = 6094381569285095361L;
 	private static final Logger logger = LoggerFactory.getLogger(CommandExecPanel.class);
 	private static final String TARGET_KEY = "Target";
+	private static final String COLOR = "#ffd700";
 
 	private Long commandId;
 	private Long prepCommandId;
@@ -70,6 +71,7 @@ public class CommandExecPanel extends DPanel implements IAsyncResponse {
 	private DAjaxButton execute;
 
 	private String commandDTaskKey;
+	private long startTime;
 
 	@Inject
 	private ICommandService commandService;
@@ -124,16 +126,20 @@ public class CommandExecPanel extends DPanel implements IAsyncResponse {
 
 		switch (line.getType()) {
 			case START:
-				String start = String.format("$('#%s').append(\"<div style='background-color:#ffd700;'>--- START ---</div>\");",
-					log.getMarkupId());
+				startTime = System.currentTimeMillis();
+				String start = String.format("$('#%s').append(\"<div style='background-color:%s;'>00:00:00 --- START ---</div>\");",
+					log.getMarkupId()
+					, COLOR);
 				handler.appendJavaScript(start);
 				break;
 			case PROMPT:
 			case LINE:
 			case ERROR:
-				String script = String.format("$('#%s').append(\"<div class='ars-cmd-%s'>%s</div>\");",
+				String script = String.format("$('#%s').append(\"<div class='ars-cmd-%s'><span style='background-color:%s;'>%s </span> %s</div>\");",
 					log.getMarkupId(),
 					line.getType().name().toLowerCase(),
+					COLOR,
+					elapsed(),
 					escape(line.getOutput().toString().trim()));
 				handler.appendJavaScript(script);
 				handler.appendJavaScript(String.format("$('#%1$s').scrollTop($('#%1$s')[0].scrollHeight);", log.getMarkupId()));
@@ -142,8 +148,10 @@ public class CommandExecPanel extends DPanel implements IAsyncResponse {
 				renderTabular((TabularVO) line.getOutput(), handler);
 				break;
 			case FINISHED:
-				String finished = String.format("$('#%s').append(\"<div style='background-color:#ffd700;'>--- END ---</div><div>&nbsp;</div>\");",
-					log.getMarkupId());
+				String finished = String.format("$('#%s').append(\"<div style='background-color:%s;'>%s --- END ---</div><div>&nbsp;</div>\");",
+					log.getMarkupId(),
+					COLOR,
+					elapsed());
 				handler.appendJavaScript(finished);
 
 				execute.setEnabled(true);
@@ -445,5 +453,13 @@ public class CommandExecPanel extends DPanel implements IAsyncResponse {
 		str = str.replaceAll("[\n]", "<br/>");
 		str = str.replaceAll("[\r]", "");
 		return str;
+	}
+
+	private String elapsed() {
+		long diffInSeconds = (System.currentTimeMillis() - startTime) / 1000;
+		int h = (int) (diffInSeconds / 3600);
+		int m = (int) ((diffInSeconds - h * 3600) / 60);
+		int s = (int) (diffInSeconds - h * 3600 - m * 60);
+		return String.format("%02d:%02d:%02d", h, m, s);
 	}
 }
