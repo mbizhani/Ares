@@ -26,11 +26,15 @@ import java.util.Collections;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 @Scope("prototype")
 @Component("arsSqlConnectionDTask")
 public class SqlConnectionDTask extends DTask implements ITerminalProcess {
 	private static final Logger logger = LoggerFactory.getLogger(SqlConnectionDTask.class);
+
+	private static final Pattern COMMENT_PATTERN = Pattern.compile("(?s)('.*?')|(\".*?\")|(/\\*.*?\\*/|--.*?([\r\n]|$))");
 
 	private long lastActivityTime;
 	private TerminalConnectionVO trmConnVO;
@@ -80,7 +84,8 @@ public class SqlConnectionDTask extends DTask implements ITerminalProcess {
 
 			try {
 				if (msg.getSql() != null) {
-					String sql = msg.getSql().trim();
+					String sql = removeComments(msg.getSql());
+					logger.debug("SqlConnectionDTask: final sql = {}", sql);
 					currentNps = new NamedParameterStatement(connection, sql);
 
 					if (sql.toLowerCase().startsWith("select")) {
@@ -182,5 +187,17 @@ public class SqlConnectionDTask extends DTask implements ITerminalProcess {
 
 			logger.info("SqlConnectionDTask: connected to DB type=[{}]", databaseType);
 		}
+	}
+
+	private static String removeComments(String sql) {
+		StringBuffer buffer = new StringBuffer();
+		Matcher matcher = COMMENT_PATTERN.matcher(sql);
+		while (matcher.find()) {
+			if (matcher.group(3) != null) {
+				matcher.appendReplacement(buffer, "");
+			}
+		}
+		matcher.appendTail(buffer);
+		return buffer.toString().trim();
 	}
 }
