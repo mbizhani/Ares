@@ -21,6 +21,7 @@ import org.devocative.wickomp.form.WBooleanInput;
 import org.devocative.wickomp.form.WSelectionInput;
 import org.devocative.wickomp.form.WTextInput;
 import org.devocative.wickomp.form.range.WDateRangeInput;
+import org.devocative.wickomp.form.range.WNumberRangeInput;
 import org.devocative.wickomp.formatter.OBooleanFormatter;
 import org.devocative.wickomp.formatter.ODateFormatter;
 import org.devocative.wickomp.formatter.ONumberFormatter;
@@ -109,6 +110,8 @@ public class CommandListDPage extends DPage implements IGridDataSource<Command> 
 			.setLabel(new ResourceModel("Command.enabled")));
 		floatTable.add(new WBooleanInput("listView")
 			.setLabel(new ResourceModel("Command.listView")));
+		floatTable.add(new WNumberRangeInput("execLimit", Integer.class)
+			.setLabel(new ResourceModel("Command.execLimit")));
 		floatTable.add(new WSelectionInput("service", commandService.getServiceList(), true)
 			.setLabel(new ResourceModel("Command.service")));
 		floatTable.add(new WDateRangeInput("creationDate")
@@ -141,6 +144,9 @@ public class CommandListDPage extends DPage implements IGridDataSource<Command> 
 			.setFormatter(OBooleanFormatter.bool()));
 		columnList.add(new OPropertyColumn<Command>(new ResourceModel("Command.listView"), "listView")
 			.setFormatter(OBooleanFormatter.bool()));
+		columnList.add(new OPropertyColumn<Command>(new ResourceModel("Command.execLimit"), "execLimit")
+			.setFormatter(ONumberFormatter.integer())
+			.setStyle("direction:ltr"));
 		columnList.add(new OPropertyColumn<>(new ResourceModel("Command.service"), "service"));
 		columnList.add(new OPropertyColumn<Command>(new ResourceModel("entity.creationDate"), "creationDate")
 			.setFormatter(ODateFormatter.getDateTimeByUserPreference())

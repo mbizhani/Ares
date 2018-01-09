@@ -11,6 +11,7 @@ import org.devocative.demeter.web.DPage;
 import org.devocative.demeter.web.UrlUtil;
 import org.devocative.demeter.web.component.DAjaxButton;
 import org.devocative.wickomp.form.WBooleanInput;
+import org.devocative.wickomp.form.WNumberInput;
 import org.devocative.wickomp.form.WSelectionInput;
 import org.devocative.wickomp.form.WTextInput;
 import org.devocative.wickomp.form.code.OCode;
@@ -73,6 +74,8 @@ public class CommandFormDPage extends DPage {
 		floatTable.add(new WBooleanInput("listView")
 			.setLabel(new ResourceModel("Command.listView"))
 			.setEnabled(false));
+		floatTable.add(new WNumberInput("execLimit", Integer.class)
+			.setLabel(new ResourceModel("Command.execLimit")));
 		floatTable.add(new WSelectionInput("service", commandService.getServiceList(), false)
 			.setLabel(new ResourceModel("Command.service"))
 			.setEnabled(false));

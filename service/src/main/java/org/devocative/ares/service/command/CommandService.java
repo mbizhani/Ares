@@ -1,9 +1,11 @@
 package org.devocative.ares.service.command;
 
 import com.thoughtworks.xstream.XStream;
+import org.devocative.adroit.ConfigUtil;
 import org.devocative.adroit.cache.ICache;
 import org.devocative.adroit.cache.IMissedHitHandler;
 import org.devocative.adroit.xml.AdroitXStream;
+import org.devocative.ares.AresConfigKey;
 import org.devocative.ares.AresErrorCode;
 import org.devocative.ares.AresException;
 import org.devocative.ares.cmd.*;
@@ -63,6 +65,7 @@ public class CommandService implements ICommandService, IMissedHitHandler<Long, 
 
 	private final Map<Long, Boolean> runningCommands = new ConcurrentHashMap<>();
 	private final Map<Long, AbstractExecutor> currentExecutorForCommands = new ConcurrentHashMap<>();
+	private final Map<String, Integer> noOfRunningCommandsForServiceInstance = new ConcurrentHashMap<>();
 
 	// ---------------
 
@@ -220,6 +223,7 @@ public class CommandService implements ICommandService, IMissedHitHandler<Long, 
 			command.setService(oService);
 			command.setConfig(lob);
 			command.setListView(xCommand.getListViewSafely());
+			command.setExecLimit(xCommand.getExecLimit());
 			persistorService.saveOrUpdate(command);
 
 			prepCommandService.saveByCommand(command);
@@ -227,6 +231,8 @@ public class CommandService implements ICommandService, IMissedHitHandler<Long, 
 			logger.info("Command not found and created: {} for {}", xCommand.getName(), oService.getName());
 		} else {
 			command.getConfig().setValue(xstream.toXML(xCommand));
+			command.setListView(xCommand.getListViewSafely());
+			command.setExecLimit(xCommand.getExecLimit());
 			persistorService.saveOrUpdate(command.getConfig());
 
 			logger.info("Command [{}] updated for OService [{}]", xCommand.getName(), oService.getName());
@@ -235,10 +241,13 @@ public class CommandService implements ICommandService, IMissedHitHandler<Long, 
 
 	@Override
 	public String executeCommandTask(CommandQVO commandQVO, ITaskResultCallback callback) {
+		assertCommandExecLimit(commandQVO.getCommandId(), commandQVO.getServiceInstanceId());
+
 		Long logId = commandLogService.insertLog(commandQVO.getCommandId(), commandQVO.getServiceInstanceId(),
 			commandQVO.getParams(), commandQVO.getPrepCommandId());
 		commandQVO.setLogId(logId);
 		runningCommands.put(logId, true);
+
 		DTaskResult start = taskService.start(CommandExecutionDTask.class, logId, commandQVO, callback);
 		return start.getTaskInstance().getKey();
 	}
@@ -251,6 +260,13 @@ public class CommandService implements ICommandService, IMissedHitHandler<Long, 
 		OServiceInstance serviceInstance = serviceInstanceService.load(commandQVO.getServiceInstanceId());
 
 		Long logId = commandQVO.getLogId();
+		if (logId == null) {
+			logger.warn("Calling command [{}] without any log id!", command);
+			logId = commandLogService.insertLog(commandQVO.getCommandId(), commandQVO.getServiceInstanceId(),
+				commandQVO.getParams(), commandQVO.getPrepCommandId());
+			commandQVO.setLogId(logId);
+			runningCommands.put(logId, true);
+		}
 		CommandCenterResource resource = new CommandCenterResource(this, serverService, serviceInstanceService, callBack, logId);
 
 		logger.info("Start command execution: cmd=[{}] si=[{}] currentUser=[{}] logId=[{}]",
@@ -265,6 +281,7 @@ public class CommandService implements ICommandService, IMissedHitHandler<Long, 
 		} finally {
 			runningCommands.remove(logId);
 			currentExecutorForCommands.remove(logId);
+			countDownCommandExec(commandQVO.getCommandId(), commandQVO.getServiceInstanceId());
 
 			Long dur = ((System.currentTimeMillis() - start) / 1000);
 			logger.info("Finish command execution: cmd=[{}] si=[{}] currentUser=[{}] dur=[{}] logId=[{}]",
@@ -286,7 +303,18 @@ public class CommandService implements ICommandService, IMissedHitHandler<Long, 
 		if (cmd == null) {
 			throw new AresException(AresErrorCode.CommandNotFound, commandQVO.getCommandName());
 		}
-		return executeCommand(cmd, commandQVO, resource);
+
+		if (ConfigUtil.getBoolean(AresConfigKey.ConsiderInnerCommandForLimit)) {
+			assertCommandExecLimit(cmd.getId(), serviceInstance.getId());
+		}
+
+		try {
+			return executeCommand(cmd, commandQVO, resource);
+		} finally {
+			if (ConfigUtil.getBoolean(AresConfigKey.ConsiderInnerCommandForLimit)) {
+				countDownCommandExec(cmd.getId(), serviceInstance.getId());
+			}
+		}
 	}
 
 	@Override
@@ -474,7 +502,35 @@ public class CommandService implements ICommandService, IMissedHitHandler<Long, 
 		return null;
 	}
 
-// ------------------------------
+	private synchronized void assertCommandExecLimit(Long cmdId, Long serviceInstId) {
+		String cmdSrvInstKey = String.format("%s_%s", cmdId, serviceInstId);
+		if (!noOfRunningCommandsForServiceInstance.containsKey(cmdSrvInstKey)) {
+			noOfRunningCommandsForServiceInstance.put(cmdSrvInstKey, 0);
+		}
+
+		int count = noOfRunningCommandsForServiceInstance.get(cmdSrvInstKey);
+		count++;
+
+		int limit = ConfigUtil.getInteger(AresConfigKey.GeneralCommandExecLimit);
+		Command command = load(cmdId);
+		if (command.getExecLimit() != null) {
+			limit = Math.min(limit, command.getExecLimit());
+		}
+
+		if (count > limit) {
+			throw new AresException(AresErrorCode.CommandExecLimitViolation, command.getName());
+		} else {
+			noOfRunningCommandsForServiceInstance.put(cmdSrvInstKey, count);
+		}
+	}
+
+	private synchronized void countDownCommandExec(Long cmdId, Long serviceInstId) {
+		String cmdSrvInstKey = String.format("%s_%s", cmdId, serviceInstId);
+		int count = noOfRunningCommandsForServiceInstance.get(cmdSrvInstKey);
+		noOfRunningCommandsForServiceInstance.put(cmdSrvInstKey, --count);
+	}
+
+	// ------------------------------
 
 	private class CmdRunner /*implements Runnable*/ {
 		private Long cmdId;

@@ -17,6 +17,7 @@ public class CommandFVO implements Serializable {
 	private String name;
 	private Boolean enabled;
 	private Boolean listView;
+	private RangeVO<Integer> execLimit;
 	private List<OService> service;
 	private RangeVO<Date> creationDate;
 	private List<User> creatorUser;
@@ -47,6 +48,14 @@ public class CommandFVO implements Serializable {
 
 	public void setListView(Boolean listView) {
 		this.listView = listView;
+	}
+
+	public RangeVO<Integer> getExecLimit() {
+		return execLimit;
+	}
+
+	public void setExecLimit(RangeVO<Integer> execLimit) {
+		this.execLimit = execLimit;
 	}
 
 	public List<OService> getService() {

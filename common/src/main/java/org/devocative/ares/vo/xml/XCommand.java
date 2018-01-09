@@ -16,6 +16,9 @@ public class XCommand implements Serializable {
 	@XStreamAsAttribute
 	private Boolean listView;
 
+	@XStreamAsAttribute
+	private Integer execLimit;
+
 	private List<XParam> params;
 
 	private String body;
@@ -36,6 +39,14 @@ public class XCommand implements Serializable {
 
 	public void setListView(Boolean listView) {
 		this.listView = listView;
+	}
+
+	public Integer getExecLimit() {
+		return execLimit;
+	}
+
+	public void setExecLimit(Integer execLimit) {
+		this.execLimit = execLimit;
 	}
 
 	public List<XParam> getParams() {

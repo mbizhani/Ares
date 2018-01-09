@@ -6,7 +6,9 @@ import java.util.Arrays;
 import java.util.List;
 
 public enum AresConfigKey implements IConfigKey {
-	ShellResponseResetExpiration("ars.shell.response.reset.expiration", false, Arrays.asList(true, false))
+	ShellResponseResetExpiration("ars.shell.response.reset.expiration", false, Arrays.asList(true, false)),
+	GeneralCommandExecLimit("ars.cmd.limit", 15),
+	ConsiderInnerCommandForLimit("ars.cmd.limit.inner", true, Arrays.asList(true, false))
 	;
 	// ------------------------------
 

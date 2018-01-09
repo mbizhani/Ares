@@ -23,6 +23,9 @@
 				<field name="listView">
 					<finfo/>
 				</field>
+				<field name="execLimit">
+					<finfo/>
+				</field>
 				<field name="service">
 					<finfo/>
 				</field>
@@ -83,8 +86,14 @@
 				<field name="command">
 					<finfo/>
 				</field>
+				<field name="commandId">
+					<finfo ignore="true"/>
+				</field>
 				<field name="serviceInstance">
 					<finfo/>
+				</field>
+				<field name="serviceInstanceId">
+					<finfo ignore="true"/>
 				</field>
 				<field name="prepCommand">
 					<finfo/>
