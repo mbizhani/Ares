@@ -20,7 +20,7 @@ import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
 
-public class ShellTerminalPanel extends DPanel implements ITaskResultCallback {
+public class ShellTerminalPanel extends DPanel implements ITaskResultCallback<String> {
 	private static final long serialVersionUID = 6542154194145516263L;
 
 	private static final Logger logger = LoggerFactory.getLogger(ShellTerminalPanel.class);
@@ -124,8 +124,8 @@ public class ShellTerminalPanel extends DPanel implements ITaskResultCallback {
 	}
 
 	@Override
-	public void onTaskResult(Object id, Object result) {
-		wTerminal.push(result.toString());
+	public void onTaskResult(Object id, String result) {
+		wTerminal.push(result);
 	}
 
 	@Override

@@ -8,7 +8,7 @@ import org.springframework.stereotype.Component;
 
 @Scope("prototype")
 @Component("arsCloseIdleConnectionsDTask")
-public class CloseIdleConnectionsDTask extends DTask {
+public class CloseIdleConnectionsDTask extends DTask<Void> {
 
 	@Autowired
 	private ITerminalConnectionService terminalConnectionService;

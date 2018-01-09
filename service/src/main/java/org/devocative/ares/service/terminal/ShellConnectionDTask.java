@@ -24,7 +24,7 @@ import java.io.PrintStream;
 
 @Scope("prototype")
 @Component("arsShellConnectionDTask")
-public class ShellConnectionDTask extends DTask implements ITerminalProcess {
+public class ShellConnectionDTask extends DTask<String> implements ITerminalProcess {
 	private static final Logger logger = LoggerFactory.getLogger(ShellConnectionDTask.class);
 
 	@Autowired

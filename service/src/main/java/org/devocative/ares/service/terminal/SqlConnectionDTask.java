@@ -23,6 +23,7 @@ import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Collections;
+import java.util.List;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -31,7 +32,7 @@ import java.util.regex.Pattern;
 
 @Scope("prototype")
 @Component("arsSqlConnectionDTask")
-public class SqlConnectionDTask extends DTask implements ITerminalProcess {
+public class SqlConnectionDTask extends DTask<List<RowVO>> implements ITerminalProcess {
 	private static final Logger logger = LoggerFactory.getLogger(SqlConnectionDTask.class);
 
 	private static final Pattern COMMENT_PATTERN = Pattern.compile("(?s)('.*?')|(\".*?\")|(/\\*.*?\\*/|--.*?([\r\n]|$))");

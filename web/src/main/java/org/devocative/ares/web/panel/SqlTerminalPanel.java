@@ -33,7 +33,7 @@ import javax.inject.Inject;
 import java.util.Arrays;
 import java.util.List;
 
-public class SqlTerminalPanel extends DPanel implements IGridAsyncDataSource<RowVO>, IAsyncResponse {
+public class SqlTerminalPanel extends DPanel implements IGridAsyncDataSource<RowVO>, IAsyncResponse<List<RowVO>> {
 	private static final Logger logger = LoggerFactory.getLogger(SqlTerminalPanel.class);
 
 	private static final long serialVersionUID = 4232841785147166549L;
@@ -99,7 +99,7 @@ public class SqlTerminalPanel extends DPanel implements IGridAsyncDataSource<Row
 			}
 		});
 
-		form.add(new WebMarkupContainer("clear").add(new AttributeModifier("onclick", sql.getClearJSCall())));
+		form.add(new WebMarkupContainer("clear").add(new AttributeModifier("onclick", sql.getCommandJSCall("clear"))));
 
 		layout.add(form);
 
@@ -117,7 +117,7 @@ public class SqlTerminalPanel extends DPanel implements IGridAsyncDataSource<Row
 			.setEnabled(false);
 		layout.add(grid);
 
-		DTaskBehavior dtb = new DTaskBehavior(this);
+		DTaskBehavior<List<RowVO>> dtb = new DTaskBehavior<>(this);
 		add(dtb);
 
 		connectionId = terminalConnectionService.createTerminal(osiUserId, null, dtb);
@@ -130,8 +130,8 @@ public class SqlTerminalPanel extends DPanel implements IGridAsyncDataSource<Row
 	protected void onAfterRender() {
 		super.onAfterRender();
 
-		String scriptF9 = String.format("$('#%s').keydown(function(e){if(e.keyCode==120) $('#%s').click();});",
-			sql.getMarkupId(), exec.getMarkupId());
+		String scriptF9 = String.format("$('#%s').keydown(function(e){if(e.keyCode==120) $('#%s').click();});%s;",
+			sql.getMarkupId(), exec.getMarkupId(), sql.getCommandJSCall("focus"));
 		WebUtil.writeJQueryCall(scriptF9, true);
 	}
 
@@ -152,9 +152,8 @@ public class SqlTerminalPanel extends DPanel implements IGridAsyncDataSource<Row
 	// --------------- ITaskResultCallback
 
 	@Override
-	public void onAsyncResult(IPartialPageRequestHandler handler, Object result) {
-		List<RowVO> list = (List<RowVO>) result;
-		grid.pushData(handler, list, 1000);
+	public void onAsyncResult(IPartialPageRequestHandler handler, List<RowVO> result) {
+		grid.pushData(handler, result, 1000);
 	}
 
 	@Override

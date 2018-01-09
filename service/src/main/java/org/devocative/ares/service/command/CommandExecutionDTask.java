@@ -17,7 +17,7 @@ import java.util.Arrays;
 
 @Scope("prototype")
 @Component("arsCommandExecutionDTask")
-public class CommandExecutionDTask extends DTask implements ICommandResultCallBack {
+public class CommandExecutionDTask extends DTask<CommandOutput> implements ICommandResultCallBack {
 	private static final Logger logger = LoggerFactory.getLogger(CommandExecutionDTask.class);
 
 	private CommandQVO commandQVO;

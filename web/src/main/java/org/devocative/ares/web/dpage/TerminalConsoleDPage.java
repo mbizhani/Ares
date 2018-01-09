@@ -57,6 +57,9 @@ public class TerminalConsoleDPage extends DPage {
 
 		OTabbedPanel oTabbedPanel = new OTabbedPanel();
 		oTabbedPanel
+			.setGlobalHotkeyEnabled(true)
+			.setCloseTabKeyCode(190)
+			.setOnSelect("function(title,index){$(this).tabs('getTab', index).find('textarea').focus();}") //NOTE: WOW! I don't know how it worked!
 			.setFit(true);
 		tabPanel = new WTabbedPanel("tabPanel", oTabbedPanel) {
 			private static final long serialVersionUID = 3302863870173680811L;

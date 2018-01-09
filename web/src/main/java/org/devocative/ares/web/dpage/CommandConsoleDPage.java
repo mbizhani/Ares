@@ -13,6 +13,7 @@ import org.devocative.ares.web.panel.CommandExecPanel;
 import org.devocative.demeter.web.DPage;
 import org.devocative.wickomp.html.WAjaxLink;
 import org.devocative.wickomp.html.tab.OTab;
+import org.devocative.wickomp.html.tab.OTabbedPanel;
 import org.devocative.wickomp.html.tab.WTabbedPanel;
 import org.devocative.wickomp.wrcs.CommonBehavior;
 
@@ -50,7 +51,11 @@ public class CommandConsoleDPage extends DPage {
 
 		Map<OService, List<PrepCommand>> allowed = prepCommandService.findAllowed();
 
-		tabPanel = new WTabbedPanel("tabPanel");
+		OTabbedPanel oTabbedPanel = new OTabbedPanel();
+		oTabbedPanel
+			.setGlobalHotkeyEnabled(true)
+			.setFit(true);
+		tabPanel = new WTabbedPanel("tabPanel", oTabbedPanel);
 		if (prepCommandAsParam != null) {
 			for (List<PrepCommand> list : allowed.values()) {
 				for (PrepCommand cmd : list) {

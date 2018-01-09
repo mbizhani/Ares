@@ -49,7 +49,7 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.*;
 
-public class CommandExecPanel extends DPanel implements IAsyncResponse {
+public class CommandExecPanel extends DPanel implements IAsyncResponse<CommandOutput> {
 	private static final long serialVersionUID = 6094381569285095361L;
 	private static final Logger logger = LoggerFactory.getLogger(CommandExecPanel.class);
 	private static final String TARGET_KEY = "Target";
@@ -65,7 +65,7 @@ public class CommandExecPanel extends DPanel implements IAsyncResponse {
 	private Long osiUserId;
 	private Long serviceId;
 
-	private DTaskBehavior taskBehavior;
+	private DTaskBehavior<CommandOutput> taskBehavior;
 	private WebMarkupContainer tabs, log, tabular;
 	private List<WSelectionInput> guestInputList = new ArrayList<>();
 	private DAjaxButton execute;
@@ -119,12 +119,11 @@ public class CommandExecPanel extends DPanel implements IAsyncResponse {
 	// ---------------
 
 	@Override
-	public void onAsyncResult(IPartialPageRequestHandler handler, Object result) {
+	public void onAsyncResult(IPartialPageRequestHandler handler, CommandOutput result) {
 		logger.debug("onAsyncResult: {}", result);
 
-		CommandOutput line = (CommandOutput) result;
 
-		switch (line.getType()) {
+		switch (result.getType()) {
 			case START:
 				startTime = System.currentTimeMillis();
 				String start = String.format("$('#%s').append(\"<div style='background-color:%s;'>00:00:00 --- START ---</div>\");",
@@ -137,15 +136,15 @@ public class CommandExecPanel extends DPanel implements IAsyncResponse {
 			case ERROR:
 				String script = String.format("$('#%s').append(\"<div class='ars-cmd-%s'><span style='background-color:%s;'>%s </span> %s</div>\");",
 					log.getMarkupId(),
-					line.getType().name().toLowerCase(),
+					result.getType().name().toLowerCase(),
 					COLOR,
 					elapsed(),
-					escape(line.getOutput().toString().trim()));
+					escape(result.getOutput().toString().trim()));
 				handler.appendJavaScript(script);
 				handler.appendJavaScript(String.format("$('#%1$s').scrollTop($('#%1$s')[0].scrollHeight);", log.getMarkupId()));
 				break;
 			case TABULAR:
-				renderTabular((TabularVO) line.getOutput(), handler);
+				renderTabular((TabularVO) result.getOutput(), handler);
 				break;
 			case FINISHED:
 				String finished = String.format("$('#%s').append(\"<div style='background-color:%s;'>%s --- END ---</div><div>&nbsp;</div>\");",
@@ -181,7 +180,7 @@ public class CommandExecPanel extends DPanel implements IAsyncResponse {
 		WModalWindow window = new WModalWindow("window");
 		add(window);
 
-		taskBehavior = new DTaskBehavior(this);
+		taskBehavior = new DTaskBehavior<>(this);
 		add(taskBehavior);
 
 		Command command = commandService.load(commandId);
