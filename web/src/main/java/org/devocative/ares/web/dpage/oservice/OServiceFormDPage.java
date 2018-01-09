@@ -68,6 +68,8 @@ public class OServiceFormDPage extends DPage {
 			.setLabel(new ResourceModel("OService.adminPort")));
 		floatTable.add(new WTextInput("ports")
 			.setLabel(new ResourceModel("OService.ports")));
+		floatTable.add(new WTextInput("usernameRegEx")
+			.setLabel(new ResourceModel("OService.usernameRegEx")));
 
 		Form<OService> form = new Form<>("form", new CompoundPropertyModel<>(entity));
 		form.add(floatTable);

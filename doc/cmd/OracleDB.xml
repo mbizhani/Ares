@@ -3,7 +3,8 @@
 
 		<service name="OracleDB"
 				 adminPort="1521"
-				 connectionPattern="jdbc:oracle:thin:@${target.address}:${target.port}:${target.prop.sid}">
+				 connectionPattern="jdbc:oracle:thin:@${target.address}:${target.port}:${target.prop.sid}"
+				 usernameRegEx="^[A-Za-z]+?[A-Za-z0-9. ]*?$">
 
 			<properties>
 				<property name="sid" required="true"/>

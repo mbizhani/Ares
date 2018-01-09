@@ -293,6 +293,9 @@
 				<field name="ports">
 					<finfo/>
 				</field>
+				<field name="usernameRegEx">
+					<finfo/>
+				</field>
 				<field name="properties">
 					<finfo hasForm="false"/>
 				</field>

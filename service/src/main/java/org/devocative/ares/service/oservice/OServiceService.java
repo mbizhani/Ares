@@ -123,17 +123,18 @@ public class OServiceService implements IOServiceService {
 			if (oService == null) {
 				oService = new OService();
 				oService.setName(xService.getName());
-				oService.setConnectionPattern(xService.getConnectionPattern());
-				oService.setAdminPort(xService.getAdminPort());
-				oService.setPorts(xService.getPorts());
 
 				roleService.createOrUpdateRole(xService.getName(), ERowMod.ADMIN, false);
 
 				logger.info("OService not found and created: {}", xService.getName());
 			} else {
-				oService.setConnectionPattern(xService.getConnectionPattern());
 				logger.info("OService loaded: {}", oService.getName());
 			}
+
+			oService.setConnectionPattern(xService.getConnectionPattern());
+			oService.setAdminPort(xService.getAdminPort());
+			oService.setPorts(xService.getPorts());
+			oService.setUsernameRegEx(xService.getUsernameRegEx());
 			saveOrUpdate(oService);
 
 			if (xService.getProperties() != null) {

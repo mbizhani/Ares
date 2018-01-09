@@ -18,6 +18,7 @@ public class OServiceFVO implements Serializable {
 	private String connectionPattern;
 	private RangeVO<Integer> adminPort;
 	private String ports;
+	private String usernameRegEx;
 	private List<OServiceProperty> properties;
 	private RangeVO<Date> creationDate;
 	private List<User> creatorUser;
@@ -56,6 +57,14 @@ public class OServiceFVO implements Serializable {
 
 	public void setPorts(String ports) {
 		this.ports = ports;
+	}
+
+	public String getUsernameRegEx() {
+		return usernameRegEx;
+	}
+
+	public void setUsernameRegEx(String usernameRegEx) {
+		this.usernameRegEx = usernameRegEx;
 	}
 
 	public List<OServiceProperty> getProperties() {

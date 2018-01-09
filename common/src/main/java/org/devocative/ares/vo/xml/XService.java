@@ -22,6 +22,9 @@ public class XService implements Serializable {
 	@XStreamAsAttribute
 	private String ports;
 
+	@XStreamAsAttribute
+	private String usernameRegEx;
+
 	private List<XProperty> properties;
 
 	private List<XValidation> validations;
@@ -60,6 +63,14 @@ public class XService implements Serializable {
 
 	public void setPorts(String ports) {
 		this.ports = ports;
+	}
+
+	public String getUsernameRegEx() {
+		return usernameRegEx;
+	}
+
+	public void setUsernameRegEx(String usernameRegEx) {
+		this.usernameRegEx = usernameRegEx;
 	}
 
 	public List<XProperty> getProperties() {

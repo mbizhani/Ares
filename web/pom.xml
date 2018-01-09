@@ -133,6 +133,11 @@
 						<port>${jetty.port}</port>
 					</httpConnector>
 
+					<!--<jettyXml>
+						src/test/resources/jetty.xml,src/test/resources/jetty-ssl.xml,src/test/resources/jetty-https.xml
+					</jettyXml>-->
+					<scanIntervalSeconds>-1</scanIntervalSeconds>
+
 					<stopKey>Ares</stopKey>
 					<stopPort>${jetty.port.stop}</stopPort>
 				</configuration>

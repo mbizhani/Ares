@@ -39,6 +39,9 @@ public class OService implements ICreationDate, ICreatorUser, IModificationDate,
 	@Column(name = "c_ports")
 	private String ports;
 
+	@Column(name = "c_username_reg_ex")
+	private String usernameRegEx;
+
 	@OneToMany(fetch = FetchType.EAGER, mappedBy = "service")
 	private List<OServiceProperty> properties;
 
@@ -122,6 +125,14 @@ public class OService implements ICreationDate, ICreatorUser, IModificationDate,
 
 	public void setPorts(String ports) {
 		this.ports = ports;
+	}
+
+	public String getUsernameRegEx() {
+		return usernameRegEx;
+	}
+
+	public void setUsernameRegEx(String usernameRegEx) {
+		this.usernameRegEx = usernameRegEx;
 	}
 
 	public List<OServiceProperty> getProperties() {

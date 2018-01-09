@@ -8,7 +8,8 @@ import java.util.List;
 public enum AresConfigKey implements IConfigKey {
 	ShellResponseResetExpiration("ars.shell.response.reset.expiration", false, Arrays.asList(true, false)),
 	GeneralCommandExecLimit("ars.cmd.limit", 15),
-	ConsiderInnerCommandForLimit("ars.cmd.limit.inner", true, Arrays.asList(true, false))
+	ConsiderInnerCommandForLimit("ars.cmd.limit.inner", true, Arrays.asList(true, false)),
+	SIUserUsernameRegEx("ars.siuser.username.regex", "^[A-Za-z]+?[A-Za-z0-9.]*?$")
 	;
 	// ------------------------------
 

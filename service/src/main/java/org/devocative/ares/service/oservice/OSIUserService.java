@@ -1,6 +1,8 @@
 package org.devocative.ares.service.oservice;
 
+import org.devocative.adroit.ConfigUtil;
 import org.devocative.adroit.StringEncryptorUtil;
+import org.devocative.ares.AresConfigKey;
 import org.devocative.ares.AresErrorCode;
 import org.devocative.ares.AresException;
 import org.devocative.ares.entity.OServer;
@@ -50,6 +52,14 @@ public class OSIUserService implements IOSIUserService {
 			if (count > 0) {
 				throw new AresException(AresErrorCode.DuplicateExecutor);
 			}
+		}
+
+		String usernameRegEx = entity.getServiceInstance().getService().getUsernameRegEx();
+		if (usernameRegEx == null) {
+			usernameRegEx = ConfigUtil.getString(AresConfigKey.SIUserUsernameRegEx);
+		}
+		if (!entity.getUsername().matches(usernameRegEx)) {
+			throw new AresException(AresErrorCode.InvalidServiceInstanceUsername, usernameRegEx);
 		}
 
 		entity.setServer(entity.getServiceInstance().getServer());
@@ -218,8 +228,7 @@ public class OSIUserService implements IOSIUserService {
 
 		IQueryBuilder queryBuilder = persistorService.createQueryBuilder()
 			.addFrom(OSIUser.class, "ent")
-			.addWhere("and ent.enabled = true")
-		;
+			.addWhere("and ent.enabled = true");
 
 		if (!currentUser.isAdmin()) {
 			queryBuilder
