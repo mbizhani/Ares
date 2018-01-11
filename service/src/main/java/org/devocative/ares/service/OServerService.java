@@ -44,6 +44,8 @@ public class OServerService implements IOServerService {
 
 	@Override
 	public void saveOrUpdate(OServer entity) {
+		boolean doUpdate = entity.getId() != null;
+
 		persistorService.saveOrUpdate(entity);
 
 		if (entity.getServerOS() != null) {
@@ -56,7 +58,9 @@ public class OServerService implements IOServerService {
 			}
 		}
 
-		oServiceInstanceService.clearCache();
+		if (doUpdate) {
+			oServiceInstanceService.clearCache();
+		}
 	}
 
 	@Override
