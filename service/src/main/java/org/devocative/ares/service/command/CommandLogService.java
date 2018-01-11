@@ -105,12 +105,16 @@ public class CommandLogService implements ICommandLogService {
 
 	@Override
 	public void updateLog(Long logId, Long duration, Exception error) {
-		String errMsg = null;
 		Throwable th = error;
+		String errMsg = null;
 
-		while (th != null) {
-			errMsg = String.format("%s (%s)", th.getMessage().trim(), th.getClass().getSimpleName());
-			th = th.getCause();
+		if (th != null) {
+			while (th.getCause() != null) {
+				th = th.getCause();
+			}
+			errMsg = String.format("%s (%s)",
+				th.getMessage() != null ? th.getMessage().trim() : "-",
+				th.getClass().getSimpleName());
 		}
 
 		persistorService.createQueryBuilder()

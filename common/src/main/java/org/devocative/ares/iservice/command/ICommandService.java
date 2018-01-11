@@ -1,7 +1,6 @@
 package org.devocative.ares.iservice.command;
 
 import org.devocative.ares.cmd.AbstractExecutor;
-import org.devocative.ares.cmd.CommandCenterResource;
 import org.devocative.ares.cmd.ICommandResultCallBack;
 import org.devocative.ares.entity.command.Command;
 import org.devocative.ares.entity.oservice.OService;
@@ -42,7 +41,7 @@ public interface ICommandService extends IEntityService<Command> {
 
 	Object executeCommand(CommandQVO commandQVO, ICommandResultCallBack callBack) throws Exception;
 
-	Object callCommand(CommandQVO commandQVO, CommandCenterResource resource) throws Exception;
+	Object callCommand(CommandQVO commandQVO) throws Exception;
 
 	void cancelCommandTask(String key);
 

@@ -267,14 +267,16 @@ public class CommandService implements ICommandService, IMissedHitHandler<Long, 
 			commandQVO.setLogId(logId);
 			runningCommands.put(logId, true);
 		}
-		CommandCenterResource resource = new CommandCenterResource(this, serverService, serviceInstanceService, callBack, logId);
+
+		CommandCenter.create();
+		CommandCenterResource.create(this, serverService, serviceInstanceService, callBack, logId);
 
 		logger.info("Start command execution: cmd=[{}] si=[{}] currentUser=[{}] logId=[{}]",
 			command.getName(), serviceInstance, securityService.getCurrentUser(), logId);
 
 		Exception error = null;
 		try {
-			return executeCommand(command, commandQVO, resource);
+			return executeCommand(command, commandQVO);
 		} catch (Exception e) {
 			error = e;
 			throw e;
@@ -282,17 +284,18 @@ public class CommandService implements ICommandService, IMissedHitHandler<Long, 
 			runningCommands.remove(logId);
 			currentExecutorForCommands.remove(logId);
 			countDownCommandExec(commandQVO.getCommandId(), commandQVO.getServiceInstanceId());
+			CommandCenterResource.close();
+			CommandCenter.close();
 
 			Long dur = ((System.currentTimeMillis() - start) / 1000);
 			logger.info("Finish command execution: cmd=[{}] si=[{}] currentUser=[{}] dur=[{}] logId=[{}]",
 				command.getName(), serviceInstance, securityService.getCurrentUser(), dur, logId);
 			commandLogService.updateLog(logId, dur, error);
-			resource.closeAll();
 		}
 	}
 
 	@Override
-	public Object callCommand(CommandQVO commandQVO, CommandCenterResource resource) throws Exception {
+	public Object callCommand(CommandQVO commandQVO) throws Exception {
 		OServiceInstance serviceInstance = serviceInstanceService.load(commandQVO.getServiceInstanceId());
 		Command cmd = loadByNameAndOService(commandQVO.getCommandName(), serviceInstance.getService().getId());
 
@@ -309,7 +312,7 @@ public class CommandService implements ICommandService, IMissedHitHandler<Long, 
 		}
 
 		try {
-			return executeCommand(cmd, commandQVO, resource);
+			return executeCommand(cmd, commandQVO);
 		} finally {
 			if (ConfigUtil.getBoolean(AresConfigKey.ConsiderInnerCommandForLimit)) {
 				countDownCommandExec(cmd.getId(), serviceInstance.getId());
@@ -401,12 +404,13 @@ public class CommandService implements ICommandService, IMissedHitHandler<Long, 
 
 	// ------------------------------
 
-	private Object executeCommand(Command command, CommandQVO commandQVO, CommandCenterResource resource) throws Exception {
+	// Main Execute Command
+	private Object executeCommand(Command command, CommandQVO commandQVO) throws Exception {
 		logger.debug("CommandService.executeCommand: currentUser=[{}] cmd=[{}]", securityService.getCurrentUser(), command.getName());
 
 		if (!command.getEnabled()) {
 			logger.warn("Disabled Command: [{}]", command.getName());
-			throw new RuntimeException("Disabled Command: " + command.getName());
+			throw new RuntimeException("Disabled Command: " + command.getName()); //TODO
 		}
 
 		Map<String, Object> params = commandQVO.getParams();
@@ -459,20 +463,18 @@ public class CommandService implements ICommandService, IMissedHitHandler<Long, 
 			targetVO = serviceInstanceService.getTargetVOByUser(commandQVO.getOsiUserId());
 		}
 
+		CommandCenter.push(targetVO, params);
+
 		Map<String, Object> cmdParams = new HashMap<>();
 		cmdParams.putAll(params);
-
-		CommandCenter commandCenter = new CommandCenter(targetVO, resource, params);
 		cmdParams.put("target", targetVO);
-
-		// TODO DEPRECATED!
-		cmdParams.put("$util", singleInstOfUtil);
-		cmdParams.put("$cmd", commandCenter);
-
-		cmdParams.put(IStringTemplate.GROOVY_DELEGATE_KEY, new OtherCommandsWrapper(new MainCommandDSL(commandCenter)));
+		cmdParams.put("$util", singleInstOfUtil); // TODO DEPRECATED!
+		cmdParams.put(IStringTemplate.GROOVY_DELEGATE_KEY, new OtherCommandsWrapper(new MainCommandDSL()));
 
 		CmdRunner runner = new CmdRunner(command.getId(), xCommand.getBody(), cmdParams);
 		runner.run();
+
+		CommandCenter.pop();
 
 		Object result = runner.getResult();
 		Exception error = runner.getError();

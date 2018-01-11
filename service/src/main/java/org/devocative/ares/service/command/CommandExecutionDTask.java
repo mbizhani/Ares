@@ -61,15 +61,17 @@ public class CommandExecutionDTask extends DTask<CommandOutput> implements IComm
 				}
 			}
 		} catch (Exception e) {
-			String msg = null;
 			Throwable th = e;
 
-			while (th != null) {
-				msg = String.format("%s (%s)", th.getMessage().trim(), th.getClass().getSimpleName());
+			while (th.getCause() != null) {
 				th = th.getCause();
 			}
 
-			onResult(new CommandOutput(CommandOutput.Type.ERROR, msg));
+			String errMsg = String.format("%s (%s)",
+				th.getMessage() != null ? th.getMessage().trim() : "-",
+				th.getClass().getSimpleName());
+
+			onResult(new CommandOutput(CommandOutput.Type.ERROR, errMsg));
 			logger.error("CommandExecutionDTask: ", e);
 		}
 

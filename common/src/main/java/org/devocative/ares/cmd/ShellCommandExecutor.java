@@ -14,9 +14,7 @@ import java.io.*;
  */
 public class ShellCommandExecutor extends AbstractCommandExecutor {
 	private final String[] stdin;
-
 	private ChannelExec channelExec;
-	private Session session;
 
 	// ---------------
 
@@ -39,7 +37,7 @@ public class ShellCommandExecutor extends AbstractCommandExecutor {
 
 	@Override
 	protected void execute() throws JSchException, IOException {
-		session = resource.createSession(targetVO);
+		Session session = resource.createSession(targetVO);
 
 		String finalCmd = command;
 		if (targetVO.isSudoer() && !command.startsWith("sudo -S")) {
@@ -137,10 +135,6 @@ public class ShellCommandExecutor extends AbstractCommandExecutor {
 	public void cancel() throws Exception {
 		if (channelExec != null && channelExec.isConnected()) {
 			channelExec.disconnect();
-		}
-
-		if (session != null && session.isConnected()) {
-			session.disconnect();
 		}
 	}
 }

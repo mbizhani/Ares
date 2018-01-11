@@ -7,23 +7,65 @@ import org.devocative.demeter.entity.FileStore;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class CommandCenter {
 	private static final Logger logger = LoggerFactory.getLogger(CommandCenter.class);
 
-	private final CommandCenterResource resource;
+	private static final ThreadLocal<Deque<CommandCenter>> CURRENT = new ThreadLocal<>();
+
+	// ------------------------------
+
+	public static void create() {
+		CURRENT.set(new LinkedList<>());
+	}
+
+	public static void push(OServiceInstanceTargetVO targetVO, Map<String, Object> params) {
+		if (CURRENT.get() == null) {
+			throw new RuntimeException("Invalid state for command's stack param: No Deque Object!");
+		}
+
+		CURRENT.get().add(new CommandCenter(targetVO, params));
+	}
+
+	public static CommandCenter get() {
+		if (CURRENT.get() == null) {
+			throw new RuntimeException("Invalid state for command's stack param: No Deque Object!");
+		} else if (CURRENT.get().size() == 0) {
+			throw new RuntimeException("Invalid state for command's stack param: No Entry!");
+		}
+
+		return CURRENT.get().peekLast();
+	}
+
+	public static void pop() {
+		if (CURRENT.get() == null) {
+			throw new RuntimeException("Invalid state for command's stack param: No Deque Object!");
+		} else if (CURRENT.get().size() == 0) {
+			throw new RuntimeException("Invalid state for command's stack param: No Entry!");
+		}
+
+		CURRENT.get().pollLast();
+	}
+
+	public static void close() {
+		if (CURRENT.get().size() != 0) {
+			throw new RuntimeException("Invalid state for command's stack param: size=" + CURRENT.get().size());
+		}
+
+		CURRENT.remove();
+	}
+
+	// ------------------------------
+
 	private OServiceInstanceTargetVO targetVO, origTargetVO;
 	private Map<String, Object> params;
 	private Exception exception;
 
 	// ------------------------------
 
-	public CommandCenter(OServiceInstanceTargetVO targetVO, CommandCenterResource resource, Map<String, Object> params) {
+	private CommandCenter(OServiceInstanceTargetVO targetVO, Map<String, Object> params) {
 		this.targetVO = targetVO;
-		this.resource = resource;
 		this.params = params;
 	}
 
@@ -35,9 +77,9 @@ public class CommandCenter {
 
 	public Object exec(String commandName, Map<String, Object> params) {
 		try {
-			Object result = resource
+			Object result = CommandCenterResource.get()
 				.getCommandService()
-				.callCommand(new CommandQVO(commandName, targetVO.getServiceInstance().getId(), params), resource);
+				.callCommand(new CommandQVO(commandName, targetVO.getServiceInstance().getId(), params));
 			logger.info("CommandCenter.exec: commandName=[{}}", commandName);
 			return result;
 		} catch (Exception e) {
@@ -55,6 +97,7 @@ public class CommandCenter {
 
 		int exitStatus = -1;
 		String result = null;
+		CommandCenterResource resource = CommandCenterResource.get();
 
 		OServiceInstanceTargetVO finalTargetVO = targetVO;
 		if (!ERemoteMode.SSH.equals(finalTargetVO.getUser().getRemoteMode())) {
@@ -107,6 +150,7 @@ public class CommandCenter {
 
 	public void scpTo(FileStore fileStore, String destDir) {
 		assertToContinue();
+		CommandCenterResource resource = CommandCenterResource.get();
 
 		OServiceInstanceTargetVO finalTargetVO = targetVO;
 		if (!ERemoteMode.SSH.equals(finalTargetVO.getUser().getRemoteMode())) {
@@ -139,6 +183,7 @@ public class CommandCenter {
 
 	public Object sql(String prompt, String sql, Map<String, Object> params, Map<String, Object> filter, Boolean force) {
 		assertToContinue();
+		CommandCenterResource resource = CommandCenterResource.get();
 
 		Object result = null;
 
@@ -179,7 +224,7 @@ public class CommandCenter {
 
 	public void userPasswordUpdated(String username, String password) {
 		logger.info("CommandCenter.userPasswordUpdated: target=[{}] username=[{}]", targetVO, username);
-		resource.getCommandService().userPasswordUpdated(targetVO, username, password);
+		CommandCenterResource.get().getCommandService().userPasswordUpdated(targetVO, username, password);
 	}
 
 	public void checkVMServers(List<Map<String, String>> servers) {
@@ -188,15 +233,15 @@ public class CommandCenter {
 
 	public void checkVMServers(Long hypervisorId, List<Map<String, String>> servers) {
 		logger.info("CommandCenter: checkServers hypervisorId=[{}] servers={}", hypervisorId, servers);
-		resource.getServerService().checkVMServers(hypervisorId, servers);
+		CommandCenterResource.get().getServerService().checkVMServers(hypervisorId, servers);
 	}
 
 	public void updateServer(Long id, String vmId) {
-		resource.getServerService().updateVmid(id, vmId);
+		CommandCenterResource.get().getServerService().updateVmid(id, vmId);
 	}
 
 	public void updateServer(Long hypervisorId, String oldVmId, String newVmId, String newName) {
-		resource.getServerService().updateServer(hypervisorId, oldVmId, newVmId, newName);
+		CommandCenterResource.get().getServerService().updateServer(hypervisorId, oldVmId, newVmId, newName);
 	}
 
 	public void error(String message) {
@@ -223,7 +268,7 @@ public class CommandCenter {
 	}
 
 	public void assertToContinue() {
-		if (!resource.isOkToContinue()) {
+		if (!CommandCenterResource.get().isOkToContinue()) {
 			error("Canceled");
 		}
 	}

@@ -22,17 +22,11 @@ public class MainCommandDSL {
 		"prompt", "query", "params", "filters",
 		"result", "force", "error");
 
-	private CommandCenter commandCenter;
-
-	// ------------------------------
-
-	public MainCommandDSL(CommandCenter commandCenter) {
-		this.commandCenter = commandCenter;
-	}
-
 	// ------------------------------
 
 	public Object ssh(Closure closure) {
+		CommandCenter commandCenter = CommandCenter.get();
+
 		MapOfClosureDelegate delegate = new MapOfClosureDelegate();
 		Closure rehydrate = closure.rehydrate(delegate, commandCenter.getParams(), null);
 		rehydrate.setResolveStrategy(Closure.DELEGATE_FIRST);
@@ -65,6 +59,8 @@ public class MainCommandDSL {
 	}
 
 	public Object db(Closure closure) {
+		CommandCenter commandCenter = CommandCenter.get();
+
 		MapOfClosureDelegate delegate = new MapOfClosureDelegate();
 		Closure rehydrate = closure.rehydrate(delegate, commandCenter.getParams(), null);
 		rehydrate.setResolveStrategy(Closure.DELEGATE_FIRST);
@@ -94,6 +90,8 @@ public class MainCommandDSL {
 	// ---------------
 
 	public void $reTarget(OServiceInstanceTargetVO newTargetVO, Closure closure) {
+		CommandCenter commandCenter = CommandCenter.get();
+
 		commandCenter.reTarget(newTargetVO);
 		closure
 			.rehydrate(new OtherCommandsWrapper(this), commandCenter.getParams(), null)
@@ -102,6 +100,8 @@ public class MainCommandDSL {
 	}
 
 	public Map<CharSequence, Object> $input(CharSequence... params) {
+		CommandCenter commandCenter = CommandCenter.get();
+
 		Map<String, Object> inParams = commandCenter.getParams();
 
 		Map<CharSequence, Object> result = new HashMap<>();
@@ -120,22 +120,27 @@ public class MainCommandDSL {
 	}
 
 	public Object $param(CharSequence param) {
+		CommandCenter commandCenter = CommandCenter.get();
 		return commandCenter.getParam(param.toString());
 	}
 
 	public void $scpTo(FileStore fileStore, String destDir) {
+		CommandCenter commandCenter = CommandCenter.get();
 		commandCenter.scpTo(fileStore, destDir);
 	}
 
 	public void $userPasswordUpdated(CharSequence username, CharSequence password) {
+		CommandCenter commandCenter = CommandCenter.get();
 		commandCenter.userPasswordUpdated(username.toString(), password.toString());
 	}
 
 	public void $checkVMServers(List<Map<String, String>> servers) {
+		CommandCenter commandCenter = CommandCenter.get();
 		commandCenter.checkVMServers(servers);
 	}
 
 	public void $error(CharSequence message) {
+		CommandCenter commandCenter = CommandCenter.get();
 		commandCenter.error(message.toString());
 	}
 
@@ -162,6 +167,6 @@ public class MainCommandDSL {
 	// other
 
 	public CommandCenter getCommandCenter() {
-		return commandCenter;
+		return CommandCenter.get();
 	}
 }

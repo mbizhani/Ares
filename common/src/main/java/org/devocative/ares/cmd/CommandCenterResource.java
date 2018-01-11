@@ -19,6 +19,29 @@ import java.util.Map;
 public class CommandCenterResource {
 	private static final Logger logger = LoggerFactory.getLogger(CommandCenterResource.class);
 
+	private static final ThreadLocal<CommandCenterResource> CURRENT = new ThreadLocal<>();
+
+	// ------------------------------
+
+	public static void create(ICommandService commandService,
+							  IOServerService serverService,
+							  IOServiceInstanceService serviceInstanceService,
+							  ICommandResultCallBack resultCallBack,
+							  Long logId) {
+		CURRENT.set(new CommandCenterResource(commandService, serverService, serviceInstanceService, resultCallBack, logId));
+	}
+
+	public static CommandCenterResource get() {
+		return CURRENT.get();
+	}
+
+	public static void close() {
+		CURRENT.get().closeAll();
+		CURRENT.remove();
+	}
+
+	// ------------------------------
+
 	private final JSch J_SCH = new JSch();
 	private final Map<Long, Session> SSH = new HashMap<>();
 	private final Map<Long, Connection> DB_CONN = new HashMap<>();
@@ -33,7 +56,7 @@ public class CommandCenterResource {
 
 	// ------------------------------
 
-	public CommandCenterResource(
+	private CommandCenterResource(
 		ICommandService commandService,
 		IOServerService serverService,
 		IOServiceInstanceService serviceInstanceService,
@@ -101,7 +124,7 @@ public class CommandCenterResource {
 		return DB_CONN.get(targetVO.getId());
 	}
 
-	public void closeAll() {
+	private void closeAll() {
 		for (Session session : SSH.values()) {
 			try {
 				session.disconnect();
