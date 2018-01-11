@@ -55,6 +55,8 @@ public class OServerService implements IOServerService {
 				}
 			}
 		}
+
+		oServiceInstanceService.clearCache();
 	}
 
 	@Override

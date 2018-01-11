@@ -38,6 +38,8 @@ public interface IOServiceInstanceService extends IEntityService<OServiceInstanc
 
 	// ==============================
 
+	void clearCache();
+
 	List<KeyValueVO<Long, String>> findListForCommandExecution(Long serviceId);
 
 	void updateProperties(OService oService, OServiceInstance oServiceInstance);

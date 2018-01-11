@@ -12,9 +12,11 @@ import org.devocative.ares.iservice.oservice.IOServiceInstanceService;
 import org.devocative.ares.vo.OServiceInstanceTargetVO;
 import org.devocative.ares.vo.filter.oservice.OServiceInstanceFVO;
 import org.devocative.demeter.DBConstraintViolationException;
+import org.devocative.demeter.entity.ERowMod;
 import org.devocative.demeter.entity.Role;
 import org.devocative.demeter.entity.User;
 import org.devocative.demeter.iservice.ICacheService;
+import org.devocative.demeter.iservice.IRoleService;
 import org.devocative.demeter.iservice.ISecurityService;
 import org.devocative.demeter.iservice.persistor.EJoinMode;
 import org.devocative.demeter.iservice.persistor.IPersistorService;
@@ -55,11 +57,29 @@ public class OServiceInstanceService implements IOServiceInstanceService, IMisse
 	@Autowired
 	private ISecurityService securityService;
 
+	@Autowired
+	private IRoleService roleService;
+
 	// ------------------------------
 
 	@Override
 	public void saveOrUpdate(OServiceInstance entity) {
 		try {
+			String roleName = entity.getService().getName() + "-SI";
+
+			Role role = roleService.loadByName(roleName);
+			if (role == null) {
+				role = roleService.createOrUpdateRole(roleName, ERowMod.ADMIN, false);
+			}
+
+			if (entity.getAllowedRoles() == null) {
+				entity.setAllowedRoles(new ArrayList<>());
+			}
+
+			if (!entity.getAllowedRoles().contains(role)) {
+				entity.getAllowedRoles().add(role);
+			}
+
 			entity = persistorService.merge(entity);
 			serviceInstanceCache.remove(entity.getId());
 		} catch (DBConstraintViolationException e) {
@@ -146,6 +166,11 @@ public class OServiceInstanceService implements IOServiceInstanceService, IMisse
 
 		updateProperties(oServiceInstance.getService(), oServiceInstance);
 		return oServiceInstance;
+	}
+
+	@Override
+	public void clearCache() {
+		serviceInstanceCache.clear();
 	}
 
 	@Override
