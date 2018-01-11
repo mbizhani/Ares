@@ -189,7 +189,7 @@ ssh {
 						<param name="Schemas" required="true" validRef="OraIdList"/>
 						<param name="Content" stringLiterals="ALL|DATA_ONLY|METADATA_ONLY" defaultValue="ALL"
 							   required="true"/>
-						<param name="Force" type="Boolean" required="true" defaultValue="false"/>
+						<param name="Force" type="Boolean" required="true" defaultValue="false" adminOnly="true"/>
 					</params>
 
 					<body><![CDATA[

@@ -205,7 +205,7 @@ public class CommandExecPanel extends DPanel implements IAsyncResponse<CommandOu
 				.setType(XParamType.Service)
 				.setRequired(true)
 		);
-		xParams.addAll(xCommand.getParams());
+		xParams.addAll(xCommand.getProperParams(getCurrentUser().isAdmin()));
 
 		WFloatTable floatTable = new WFloatTable("floatTable");
 		floatTable.add(new ListView<XParam>("fields", xParams) {

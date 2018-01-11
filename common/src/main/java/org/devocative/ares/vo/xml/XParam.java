@@ -2,6 +2,7 @@ package org.devocative.ares.vo.xml;
 
 import com.thoughtworks.xstream.annotations.XStreamAlias;
 import com.thoughtworks.xstream.annotations.XStreamAsAttribute;
+import org.devocative.adroit.ObjectUtil;
 
 import java.io.Serializable;
 
@@ -29,6 +30,9 @@ public class XParam implements Serializable {
 
 	@XStreamAsAttribute
 	private String validRef;
+
+	@XStreamAsAttribute
+	private Boolean adminOnly;
 
 	// ------------------------------
 
@@ -95,6 +99,15 @@ public class XParam implements Serializable {
 		return this;
 	}
 
+	public Boolean getAdminOnly() {
+		return adminOnly;
+	}
+
+	public XParam setAdminOnly(Boolean adminOnly) {
+		this.adminOnly = adminOnly;
+		return this;
+	}
+
 	// ---------------
 
 	public Object getDefaultValueObject() {
@@ -103,5 +116,9 @@ public class XParam implements Serializable {
 		} else {
 			return getDefaultValue();
 		}
+	}
+
+	public boolean isAdminOnlySafely() {
+		return ObjectUtil.isTrue(getAdminOnly());
 	}
 }

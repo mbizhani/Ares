@@ -4,6 +4,7 @@ import com.thoughtworks.xstream.annotations.XStreamAlias;
 import com.thoughtworks.xstream.annotations.XStreamAsAttribute;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.List;
 
 @XStreamAlias("command")
@@ -80,4 +81,17 @@ public class XCommand implements Serializable {
 		return getListView() != null ? getListView() : false;
 	}
 
+	public List<XParam> getProperParams(boolean isAdmin) {
+		if (isAdmin) {
+			return getParams();
+		} else {
+			List<XParam> list = new ArrayList<>();
+			for (XParam xParam : getParams()) {
+				if (!xParam.isAdminOnlySafely()) {
+					list.add(xParam);
+				}
+			}
+			return list;
+		}
+	}
 }
