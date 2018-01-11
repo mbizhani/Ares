@@ -2,6 +2,7 @@
 package org.devocative.ares.vo.filter.command;
 
 import org.devocative.adroit.vo.RangeVO;
+import org.devocative.ares.entity.command.EViewMode;
 import org.devocative.ares.entity.oservice.OService;
 import org.devocative.demeter.entity.User;
 import org.devocative.demeter.iservice.persistor.Filterer;
@@ -16,8 +17,8 @@ public class CommandFVO implements Serializable {
 
 	private String name;
 	private Boolean enabled;
-	private Boolean listView;
 	private RangeVO<Integer> execLimit;
+	private List<EViewMode> viewMode;
 	private List<OService> service;
 	private RangeVO<Date> creationDate;
 	private List<User> creatorUser;
@@ -42,20 +43,20 @@ public class CommandFVO implements Serializable {
 		this.enabled = enabled;
 	}
 
-	public Boolean getListView() {
-		return listView;
-	}
-
-	public void setListView(Boolean listView) {
-		this.listView = listView;
-	}
-
 	public RangeVO<Integer> getExecLimit() {
 		return execLimit;
 	}
 
 	public void setExecLimit(RangeVO<Integer> execLimit) {
 		this.execLimit = execLimit;
+	}
+
+	public List<EViewMode> getViewMode() {
+		return viewMode;
+	}
+
+	public void setViewMode(List<EViewMode> viewMode) {
+		this.viewMode = viewMode;
 	}
 
 	public List<OService> getService() {

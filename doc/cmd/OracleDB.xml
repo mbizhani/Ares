@@ -20,7 +20,7 @@
 
 			<commands>
 
-				<command name="listUser" listView="true">
+				<command name="listUser" viewMode="List">
 					<params>
 						<param name="Username" validRef="OraId"/>
 						<param name="AccountStatus" stringLiterals="OPEN|LOCKED|EXPIRED &amp; LOCKED"/>
@@ -262,7 +262,7 @@ if($param('DestSchemas')) {
 ]]></body>
 				</command>
 
-				<command name="generateRemap">
+				<command name="generateRemap" viewMode="Hidden">
 					<params>
 						<param name="SourceSchemas" required="true"/>
 						<param name="DestSchemas" required="true"/>
@@ -371,7 +371,7 @@ else {
 ]]></body>
 				</command>
 
-				<command name="copyLocalSchema">
+				<command name="copyLocalSchema" viewMode="Hidden">
 					<params>
 						<param name="SourceSchemas" required="true" validRef="OraIdList"/>
 						<param name="DestSchemas" required="true" validRef="OraIdList"/>
@@ -396,7 +396,7 @@ ssh {
 ]]></body>
 				</command>
 
-				<command name="copyRemoteSchema">
+				<command name="copyRemoteSchema" viewMode="Hidden">
 					<params>
 						<param name="SourceSchemas" required="true" validRef="OraIdList"/>
 						<param name="DestSchemas" validRef="OraIdList"/>

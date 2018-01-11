@@ -222,7 +222,7 @@ public class CommandService implements ICommandService, IMissedHitHandler<Long, 
 			command.setName(xCommand.getName());
 			command.setService(oService);
 			command.setConfig(lob);
-			command.setListView(xCommand.getListViewSafely());
+			command.setViewMode(xCommand.getViewModeSafely());
 			command.setExecLimit(xCommand.getExecLimit());
 			persistorService.saveOrUpdate(command);
 
@@ -231,7 +231,7 @@ public class CommandService implements ICommandService, IMissedHitHandler<Long, 
 			logger.info("Command not found and created: {} for {}", xCommand.getName(), oService.getName());
 		} else {
 			command.getConfig().setValue(xstream.toXML(xCommand));
-			command.setListView(xCommand.getListViewSafely());
+			command.setViewMode(xCommand.getViewModeSafely());
 			command.setExecLimit(xCommand.getExecLimit());
 			persistorService.saveOrUpdate(command.getConfig());
 

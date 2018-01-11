@@ -1,6 +1,7 @@
 package org.devocative.ares.service.command;
 
 import org.devocative.ares.entity.command.Command;
+import org.devocative.ares.entity.command.EViewMode;
 import org.devocative.ares.entity.command.PrepCommand;
 import org.devocative.ares.entity.oservice.OService;
 import org.devocative.ares.entity.oservice.OServiceInstance;
@@ -150,7 +151,6 @@ public class PrepCommandService implements IPrepCommandService {
 		Map<OService, List<PrepCommand>> result = new HashMap<>();
 
 		UserVO currentUser = securityService.getCurrentUser();
-		List<OService> services = serviceService.list();
 
 		IQueryBuilder queryBuilder = persistorService.createQueryBuilder()
 			.addSelect("select ent")
@@ -159,6 +159,8 @@ public class PrepCommandService implements IPrepCommandService {
 			.addWhere("and ent.enabled = true")
 			.addWhere("and cmd.enabled = true")
 			.addWhere("and cmd.service = :service")
+			.addWhere("and cmd.viewMode in :viewMode")
+			.addParam("viewMode", Arrays.asList(EViewMode.NORMAL, EViewMode.LIST))
 			.setOrderBy("ent.name");
 
 		if (!currentUser.isAdmin()) {
@@ -172,6 +174,7 @@ public class PrepCommandService implements IPrepCommandService {
 			;
 		}
 
+		List<OService> services = serviceService.list();
 		for (OService service : services) {
 			List<PrepCommand> list = queryBuilder
 				.addParam("service", service)

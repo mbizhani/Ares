@@ -31,11 +31,12 @@ public class Command implements ICreationDate, ICreatorUser, IModificationDate, 
 	@Column(name = "b_enabled", nullable = false)
 	private Boolean enabled = true;
 
-	@Column(name = "b_list_view", nullable = false)
-	private Boolean listView;
-
 	@Column(name = "n_exec_limit")
 	private Integer execLimit;
+
+	@Embedded
+	@AttributeOverride(name = "id", column = @Column(name = "e_view_mode", nullable = false))
+	private EViewMode viewMode;
 
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "f_service", nullable = false, foreignKey = @ForeignKey(name = "command2service"))
@@ -113,20 +114,20 @@ public class Command implements ICreationDate, ICreatorUser, IModificationDate, 
 		this.enabled = enabled;
 	}
 
-	public Boolean getListView() {
-		return listView;
-	}
-
-	public void setListView(Boolean listView) {
-		this.listView = listView;
-	}
-
 	public Integer getExecLimit() {
 		return execLimit;
 	}
 
 	public void setExecLimit(Integer execLimit) {
 		this.execLimit = execLimit;
+	}
+
+	public EViewMode getViewMode() {
+		return viewMode;
+	}
+
+	public void setViewMode(EViewMode viewMode) {
+		this.viewMode = viewMode;
 	}
 
 	public OService getService() {

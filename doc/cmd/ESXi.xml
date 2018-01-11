@@ -32,7 +32,7 @@ $scpTo($param('File'), '~')
 
 				<!-- Specific Commands -->
 
-				<command name="vList" listView="true">
+				<command name="vList" viewMode="List">
 					<params>
 						<param name="Vmid" type="Guest"/>
 						<param name="Name"/>

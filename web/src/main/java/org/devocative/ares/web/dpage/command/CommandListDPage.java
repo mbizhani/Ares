@@ -8,6 +8,7 @@ import org.apache.wicket.model.Model;
 import org.apache.wicket.model.ResourceModel;
 import org.devocative.ares.AresPrivilegeKey;
 import org.devocative.ares.entity.command.Command;
+import org.devocative.ares.entity.command.EViewMode;
 import org.devocative.ares.iservice.command.ICommandService;
 import org.devocative.ares.vo.filter.command.CommandFVO;
 import org.devocative.ares.web.AresIcon;
@@ -108,10 +109,10 @@ public class CommandListDPage extends DPage implements IGridDataSource<Command> 
 			.setLabel(new ResourceModel("Command.name")));
 		floatTable.add(new WBooleanInput("enabled")
 			.setLabel(new ResourceModel("Command.enabled")));
-		floatTable.add(new WBooleanInput("listView")
-			.setLabel(new ResourceModel("Command.listView")));
 		floatTable.add(new WNumberRangeInput("execLimit", Integer.class)
 			.setLabel(new ResourceModel("Command.execLimit")));
+		floatTable.add(new WSelectionInput("viewMode", EViewMode.list(), true)
+			.setLabel(new ResourceModel("Command.viewMode")));
 		floatTable.add(new WSelectionInput("service", commandService.getServiceList(), true)
 			.setLabel(new ResourceModel("Command.service")));
 		floatTable.add(new WDateRangeInput("creationDate")
@@ -142,11 +143,10 @@ public class CommandListDPage extends DPage implements IGridDataSource<Command> 
 		columnList.add(new OPropertyColumn<>(new ResourceModel("Command.name"), "name"));
 		columnList.add(new OPropertyColumn<Command>(new ResourceModel("Command.enabled"), "enabled")
 			.setFormatter(OBooleanFormatter.bool()));
-		columnList.add(new OPropertyColumn<Command>(new ResourceModel("Command.listView"), "listView")
-			.setFormatter(OBooleanFormatter.bool()));
 		columnList.add(new OPropertyColumn<Command>(new ResourceModel("Command.execLimit"), "execLimit")
 			.setFormatter(ONumberFormatter.integer())
 			.setStyle("direction:ltr"));
+		columnList.add(new OPropertyColumn<>(new ResourceModel("Command.viewMode"), "viewMode"));
 		columnList.add(new OPropertyColumn<>(new ResourceModel("Command.service"), "service"));
 		columnList.add(new OPropertyColumn<Command>(new ResourceModel("entity.creationDate"), "creationDate")
 			.setFormatter(ODateFormatter.getDateTimeByUserPreference())

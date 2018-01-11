@@ -198,7 +198,7 @@ ssh {
 
 				<!-- ============= OS QUERY ============= -->
 
-				<command name="oQuery">
+				<command name="oQuery" viewMode="Hidden">
 					<params>
 						<param name="Prompt" defaultValue="Querying"/>
 						<param name="Sql" required="true"/>
@@ -374,7 +374,7 @@ oQuery([Prompt: 'List of Processes', Sql: sql])]]></body>
 					</params>
 
 					<body><![CDATA[
-def sql = "select pr.pid, pr.name process_name, os.protocol, os.local_address, os.local_port, os.remote_address, os.remote_port, us.username"
+def sql = "select distinct pr.pid, pr.name process_name, os.protocol, os.local_address, os.local_port, os.remote_address, os.remote_port, us.username"
 
 if(ShowProcessPath)
 	sql += ", pr.path process_path"

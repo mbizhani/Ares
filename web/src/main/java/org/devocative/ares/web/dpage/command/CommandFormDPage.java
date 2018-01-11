@@ -5,6 +5,7 @@ import org.apache.wicket.markup.html.form.Form;
 import org.apache.wicket.model.CompoundPropertyModel;
 import org.apache.wicket.model.ResourceModel;
 import org.devocative.ares.entity.command.Command;
+import org.devocative.ares.entity.command.EViewMode;
 import org.devocative.ares.iservice.command.ICommandService;
 import org.devocative.ares.web.AresIcon;
 import org.devocative.demeter.web.DPage;
@@ -71,11 +72,11 @@ public class CommandFormDPage extends DPage {
 		floatTable.add(new WBooleanInput("enabled")
 			.setRequired(true)
 			.setLabel(new ResourceModel("Command.enabled")));
-		floatTable.add(new WBooleanInput("listView")
-			.setLabel(new ResourceModel("Command.listView"))
-			.setEnabled(false));
 		floatTable.add(new WNumberInput("execLimit", Integer.class)
 			.setLabel(new ResourceModel("Command.execLimit")));
+		floatTable.add(new WSelectionInput("viewMode", EViewMode.list(), false)
+			.setLabel(new ResourceModel("Command.viewMode"))
+			.setEnabled(false));
 		floatTable.add(new WSelectionInput("service", commandService.getServiceList(), false)
 			.setLabel(new ResourceModel("Command.service"))
 			.setEnabled(false));
