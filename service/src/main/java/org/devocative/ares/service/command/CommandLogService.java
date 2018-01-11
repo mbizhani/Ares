@@ -9,6 +9,8 @@ import org.devocative.ares.iservice.command.ICommandLogService;
 import org.devocative.ares.iservice.command.IPrepCommandService;
 import org.devocative.ares.vo.filter.command.CommandLogFVO;
 import org.devocative.demeter.entity.User;
+import org.devocative.demeter.iservice.ApplicationLifecyclePriority;
+import org.devocative.demeter.iservice.IApplicationLifecycle;
 import org.devocative.demeter.iservice.persistor.IPersistorService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -19,7 +21,7 @@ import java.util.List;
 import java.util.Map;
 
 @Service("arsCommandLogService")
-public class CommandLogService implements ICommandLogService {
+public class CommandLogService implements ICommandLogService, IApplicationLifecycle {
 	private static final Logger logger = LoggerFactory.getLogger(CommandLogService.class);
 
 	@Autowired
@@ -87,6 +89,27 @@ public class CommandLogService implements ICommandLogService {
 	}
 
 	// ==============================
+
+	@Override
+	public void init() {
+		persistorService
+			.createQueryBuilder()
+			.addSelect("update CommandLog ent set ent.duration=-1, ent.result=:res where ent.duration is null")
+			.addParam("res", ECommandResult.UNKNOWN)
+			.update();
+		persistorService.commitOrRollback();
+	}
+
+	@Override
+	public void shutdown() {
+	}
+
+	@Override
+	public ApplicationLifecyclePriority getLifecyclePriority() {
+		return ApplicationLifecyclePriority.Fourth;
+	}
+
+	// ---------------
 
 	@Override
 	public Long insertLog(Long commandId, Long serviceInstanceId, Map<String, ?> params, Long prepCommandId) {

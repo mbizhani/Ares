@@ -14,6 +14,7 @@ public class ECommandResult implements Serializable {
 
 	// ------------------------------
 
+	public static final ECommandResult UNKNOWN = new ECommandResult(0, "Unknown");
 	public static final ECommandResult RUNNING = new ECommandResult(1, "Running");
 	public static final ECommandResult SUCCESSFUL = new ECommandResult(2, "Successful");
 	public static final ECommandResult ERROR = new ECommandResult(3, "Error");
