@@ -26,6 +26,9 @@
 				<field name="viewMode">
 					<finfo/>
 				</field>
+				<field name="confirm">
+					<finfo/>
+				</field>
 				<field name="service">
 					<finfo/>
 				</field>

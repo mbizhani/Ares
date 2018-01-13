@@ -38,6 +38,9 @@ public class Command implements ICreationDate, ICreatorUser, IModificationDate, 
 	@AttributeOverride(name = "id", column = @Column(name = "e_view_mode", nullable = false))
 	private EViewMode viewMode;
 
+	@Column(name = "b_confirm", nullable = false)
+	private Boolean confirm = false;
+
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "f_service", nullable = false, foreignKey = @ForeignKey(name = "command2service"))
 	private OService service;
@@ -128,6 +131,14 @@ public class Command implements ICreationDate, ICreatorUser, IModificationDate, 
 
 	public void setViewMode(EViewMode viewMode) {
 		this.viewMode = viewMode;
+	}
+
+	public Boolean getConfirm() {
+		return confirm;
+	}
+
+	public void setConfirm(Boolean confirm) {
+		this.confirm = confirm;
 	}
 
 	public OService getService() {

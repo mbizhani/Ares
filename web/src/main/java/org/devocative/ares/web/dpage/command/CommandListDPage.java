@@ -113,6 +113,8 @@ public class CommandListDPage extends DPage implements IGridDataSource<Command> 
 			.setLabel(new ResourceModel("Command.execLimit")));
 		floatTable.add(new WSelectionInput("viewMode", EViewMode.list(), true)
 			.setLabel(new ResourceModel("Command.viewMode")));
+		floatTable.add(new WBooleanInput("confirm")
+			.setLabel(new ResourceModel("Command.confirm")));
 		floatTable.add(new WSelectionInput("service", commandService.getServiceList(), true)
 			.setLabel(new ResourceModel("Command.service")));
 		floatTable.add(new WDateRangeInput("creationDate")
@@ -147,6 +149,8 @@ public class CommandListDPage extends DPage implements IGridDataSource<Command> 
 			.setFormatter(ONumberFormatter.integer())
 			.setStyle("direction:ltr"));
 		columnList.add(new OPropertyColumn<>(new ResourceModel("Command.viewMode"), "viewMode"));
+		columnList.add(new OPropertyColumn<Command>(new ResourceModel("Command.confirm"), "confirm")
+			.setFormatter(OBooleanFormatter.bool()));
 		columnList.add(new OPropertyColumn<>(new ResourceModel("Command.service"), "service"));
 		columnList.add(new OPropertyColumn<Command>(new ResourceModel("entity.creationDate"), "creationDate")
 			.setFormatter(ODateFormatter.getDateTimeByUserPreference())

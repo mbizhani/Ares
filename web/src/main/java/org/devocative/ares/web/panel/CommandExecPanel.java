@@ -254,6 +254,10 @@ public class CommandExecPanel extends DPanel implements IAsyncResponse<CommandOu
 			}
 		});
 
+		if (command.getConfirm()) {
+			execute.setConfirmationMessage(new ResourceModel("label.confirm"));
+		}
+
 		form.add(new WAjaxLink("cancel", new ResourceModel("label.fa.stop", "Cancel"), AresIcon.STOP_CIRCLE) {
 			private static final long serialVersionUID = 3211013451452565219L;
 

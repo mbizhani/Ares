@@ -77,6 +77,8 @@ public class CommandFormDPage extends DPage {
 		floatTable.add(new WSelectionInput("viewMode", EViewMode.list(), false)
 			.setLabel(new ResourceModel("Command.viewMode"))
 			.setEnabled(false));
+		floatTable.add(new WBooleanInput("confirm")
+			.setLabel(new ResourceModel("Command.confirm")));
 		floatTable.add(new WSelectionInput("service", commandService.getServiceList(), false)
 			.setLabel(new ResourceModel("Command.service"))
 			.setEnabled(false));

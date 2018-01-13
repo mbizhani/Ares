@@ -19,6 +19,7 @@ public class CommandFVO implements Serializable {
 	private Boolean enabled;
 	private RangeVO<Integer> execLimit;
 	private List<EViewMode> viewMode;
+	private Boolean confirm;
 	private List<OService> service;
 	private RangeVO<Date> creationDate;
 	private List<User> creatorUser;
@@ -57,6 +58,14 @@ public class CommandFVO implements Serializable {
 
 	public void setViewMode(List<EViewMode> viewMode) {
 		this.viewMode = viewMode;
+	}
+
+	public Boolean getConfirm() {
+		return confirm;
+	}
+
+	public void setConfirm(Boolean confirm) {
+		this.confirm = confirm;
 	}
 
 	public List<OService> getService() {

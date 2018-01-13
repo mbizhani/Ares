@@ -118,7 +118,7 @@ if(DBARole)
 ]]></body>
 				</command>
 
-				<command name="changePassword">
+				<command name="changePassword" confirm="true">
 					<params>
 						<param name="Username" required="true" validRef="OraId"/>
 						<param name="NewPassword" required="true" validRef="OraPass"/>
@@ -216,7 +216,7 @@ if(availSchema.length() > 1) {
 ]]></body>
 				</command>
 
-				<command name="restoreSchema">
+				<command name="restoreSchema" confirm="true">
 					<params>
 						<param name="DumpFile" required="true"/>
 						<param name="SourceSchemas" required="true" validRef="OraIdList"/>
@@ -288,7 +288,7 @@ else {
 ]]></body>
 				</command>
 
-				<command name="killUserSession">
+				<command name="killUserSession" confirm="true">
 					<params>
 						<param name="Usernames" required="true" validRef="OraIdList"/>
 					</params>
@@ -318,7 +318,7 @@ Usernames.split(',').each {
 ]]></body>
 				</command>
 
-				<command name="dropUser">
+				<command name="dropUser" confirm="true">
 					<params>
 						<param name="Usernames" required="true" validRef="OraIdList"/>
 						<param name="DoBackup" type="Boolean" defaultValue="true" required="true"/>
@@ -347,7 +347,7 @@ Usernames.split(',').each {
 ]]></body>
 				</command>
 
-				<command name="copySchema">
+				<command name="copySchema" confirm="true">
 					<params>
 						<param name="SourceSchemas" required="true" validRef="OraIdList"/>
 						<param name="DestSchemas" validRef="OraIdList"/>

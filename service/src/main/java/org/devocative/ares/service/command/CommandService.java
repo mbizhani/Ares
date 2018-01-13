@@ -224,16 +224,18 @@ public class CommandService implements ICommandService, IMissedHitHandler<Long, 
 			command.setConfig(lob);
 			command.setViewMode(xCommand.getViewModeSafely());
 			command.setExecLimit(xCommand.getExecLimit());
+			command.setConfirm(xCommand.getConfirmSafely());
 			persistorService.saveOrUpdate(command);
 
 			prepCommandService.saveByCommand(command);
 
 			logger.info("Command not found and created: {} for {}", xCommand.getName(), oService.getName());
 		} else {
-			command.getConfig().setValue(xstream.toXML(xCommand));
+			command.setXCommand(xCommand);
 			command.setViewMode(xCommand.getViewModeSafely());
 			command.setExecLimit(xCommand.getExecLimit());
-			persistorService.saveOrUpdate(command.getConfig());
+			command.setConfirm(xCommand.getConfirmSafely());
+			saveOrUpdate(command);
 
 			logger.info("Command [{}] updated for OService [{}]", xCommand.getName(), oService.getName());
 		}

@@ -2,6 +2,7 @@ package org.devocative.ares.vo.xml;
 
 import com.thoughtworks.xstream.annotations.XStreamAlias;
 import com.thoughtworks.xstream.annotations.XStreamAsAttribute;
+import org.devocative.adroit.ObjectUtil;
 import org.devocative.ares.entity.command.EViewMode;
 
 import java.io.Serializable;
@@ -20,6 +21,9 @@ public class XCommand implements Serializable {
 
 	@XStreamAsAttribute
 	private XCommandViewMode viewMode;
+
+	@XStreamAsAttribute
+	private Boolean confirm;
 
 	private List<XParam> params;
 
@@ -49,6 +53,14 @@ public class XCommand implements Serializable {
 
 	public void setViewMode(XCommandViewMode viewMode) {
 		this.viewMode = viewMode;
+	}
+
+	public Boolean getConfirm() {
+		return confirm;
+	}
+
+	public void setConfirm(Boolean confirm) {
+		this.confirm = confirm;
 	}
 
 	public List<XParam> getParams() {
@@ -105,5 +117,9 @@ public class XCommand implements Serializable {
 			}
 			return list;
 		}
+	}
+
+	public boolean getConfirmSafely() {
+		return ObjectUtil.isTrue(getConfirm());
 	}
 }
