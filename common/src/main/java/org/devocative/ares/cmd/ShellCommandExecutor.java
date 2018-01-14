@@ -11,10 +11,14 @@ import java.io.*;
  * Since in JSch library, when Channel.disconnect() is called,
  * the current thread is modified and the data in ThreadLocal, like currentUser
  * are deleted. So by this class, ssh command execution is isolated!
+ *
+ * Based on https://stackoverflow.com/questions/26403422/jsch-interrupt-command-executing, to interrupt the current
+ * command, the pty=true and out.write(3)!
  */
 public class ShellCommandExecutor extends AbstractCommandExecutor {
 	private final String[] stdin;
 	private ChannelExec channelExec;
+	private OutputStream out;
 
 	// ---------------
 
@@ -55,6 +59,7 @@ public class ShellCommandExecutor extends AbstractCommandExecutor {
 
 		channelExec = (ChannelExec) session.openChannel("exec");
 		channelExec.setCommand(finalCmd);
+		channelExec.setPty(true); //https://stackoverflow.com/questions/26403422/jsch-interrupt-command-executing
 
 		channelExec.setInputStream(null);
 		channelExec.setErrStream(null);
@@ -62,7 +67,7 @@ public class ShellCommandExecutor extends AbstractCommandExecutor {
 		final InputStream in = channelExec.getInputStream();
 		final InputStream err = channelExec.getErrStream();
 
-		OutputStream out = channelExec.getOutputStream();
+		out = channelExec.getOutputStream();
 
 		channelExec.connect();
 
@@ -72,6 +77,11 @@ public class ShellCommandExecutor extends AbstractCommandExecutor {
 		}
 
 		if (stdin != null) {
+			try {
+				Thread.sleep(1500);
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
 			for (String s : stdin) {
 				if (s != null) {
 					out.write((s + "\n").getBytes());
@@ -102,9 +112,12 @@ public class ShellCommandExecutor extends AbstractCommandExecutor {
 
 		while (true) {
 			reader.lines().forEach(line -> {
-				resource.onResult(new CommandOutput(CommandOutput.Type.LINE, " . " + line));
-				logger.debug("\tResult = {}", line);
-				result.append(line).append("\n");
+				// NOTE: When channelExec.setPty(true), the password for sudo is written in InputStream, so try to prevent it!
+				if (!line.equals(targetVO.getPassword())) {
+					resource.onResult(new CommandOutput(CommandOutput.Type.LINE, " . " + line));
+					logger.debug("\tResult = {}", line);
+					result.append(line).append("\n");
+				}
 			});
 			if (channelExec.isClosed()) {
 				break;
@@ -126,7 +139,7 @@ public class ShellCommandExecutor extends AbstractCommandExecutor {
 			if (isForce()) {
 				resource.onResult(new CommandOutput(CommandOutput.Type.LINE, "WARNING: exitStatus: " + exitStatus));
 			} else {
-				throw new RuntimeException("Invalid ssh command exitStatus: " + exitStatus);
+				throw new RuntimeException("Bad Shell Command Exit Status: " + exitStatus);
 			}
 		}
 	}
@@ -134,6 +147,8 @@ public class ShellCommandExecutor extends AbstractCommandExecutor {
 	@Override
 	public void cancel() throws Exception {
 		if (channelExec != null && channelExec.isConnected()) {
+			out.write(3); // https://stackoverflow.com/questions/26403422/jsch-interrupt-command-executing
+			out.flush();
 			channelExec.disconnect();
 		}
 	}

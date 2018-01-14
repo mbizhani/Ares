@@ -152,9 +152,7 @@ public class CommandExecPanel extends DPanel implements IAsyncResponse<CommandOu
 					COLOR,
 					elapsed());
 				handler.appendJavaScript(finished);
-
-				execute.setEnabled(true);
-				handler.add(execute);
+				handler.appendJavaScript(String.format("$('#%s').removeAttr('disabled');", execute.getMarkupId()));
 				break;
 		}
 	}
@@ -166,9 +164,7 @@ public class CommandExecPanel extends DPanel implements IAsyncResponse<CommandOu
 
 		String script = String.format("$('#%s').append('<div>%s</div>');", log.getMarkupId(), escape(out.toString()));
 		handler.appendJavaScript(script);
-
-		execute.setEnabled(true);
-		handler.add(execute);
+		handler.appendJavaScript(String.format("$('#%s').removeAttr('disabled');", execute.getMarkupId()));
 	}
 
 	// ------------------------------
@@ -248,12 +244,10 @@ public class CommandExecPanel extends DPanel implements IAsyncResponse<CommandOu
 					taskBehavior);
 
 				target.appendJavaScript(String.format("$('#%s').tabs('select', 'Console');", tabs.getMarkupId()));
-
-				execute.setEnabled(false);
-				target.add(execute);
+				target.appendJavaScript(String.format("$('#%s').attr('disabled', 'disabled');", execute.getMarkupId()));
 			}
 		});
-
+		execute.setOutputMarkupId(true);
 		if (command.getConfirm()) {
 			execute.setConfirmationMessage(new ResourceModel("label.confirm"));
 		}
