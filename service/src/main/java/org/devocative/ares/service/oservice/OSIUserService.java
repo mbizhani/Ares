@@ -25,7 +25,9 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 @Service("arsOSIUserService")
 public class OSIUserService implements IOSIUserService {
@@ -201,13 +203,23 @@ public class OSIUserService implements IOSIUserService {
 	}
 
 	@Override
-	public List<OSIUser> findAllowedOnes(ERemoteMode remoteMode) {
-		IQueryBuilder queryBuilder = createBaseAllowedUsers()
-			.addSelect("select ent")
-			.addWhere("and ent.remoteMode = :rm")
-			.addParam("rm", remoteMode);
+	public Map<ERemoteMode, List<OSIUser>> findAllowed() {
+		Map<ERemoteMode, List<OSIUser>> result = new LinkedHashMap<>();
 
-		return queryBuilder.list();
+		for (ERemoteMode remoteMode : ERemoteMode.list()) {
+			List<OSIUser> list = createBaseAllowedUsers()
+				.addSelect("select ent")
+				.addWhere("and ent.remoteMode = :rm")
+				.addParam("rm", remoteMode)
+				.setOrderBy("ent.remoteMode")
+				.list();
+
+			if (list.size() > 0) {
+				result.put(remoteMode, list);
+			}
+		}
+
+		return result;
 	}
 
 	@Override

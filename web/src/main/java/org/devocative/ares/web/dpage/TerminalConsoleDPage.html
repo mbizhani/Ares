@@ -10,16 +10,11 @@
 				<button id="searchBut" type="button" style="margin:0"><i class="fa fa-search"></i></button>
 			</div>
 
-			<div class="easyui-panel" title="SSH" data-options="collapsible:true"
-				 style="border: 0; padding: 10px; width:100%">
-				<wicket:container wicket:id="sshConnections">
-					<button class="act" style="margin-bottom: 5px;" wicket:id="osiUser"></button>
-				</wicket:container>
-			</div>
+			<div wicket:id="message"></div>
 
-			<div class="easyui-panel" title="SQL" data-options="collapsible:true"
+			<div wicket:id="terminals" class="easyui-panel" data-options="collapsible:true"
 				 style="border: 0; padding: 10px; width:100%">
-				<wicket:container wicket:id="jdbcConnections">
+				<wicket:container wicket:id="terminal">
 					<button class="act" style="margin-bottom: 5px;" wicket:id="osiUser"></button>
 				</wicket:container>
 			</div>

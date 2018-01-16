@@ -179,7 +179,9 @@ public class PrepCommandService implements IPrepCommandService {
 			List<PrepCommand> list = queryBuilder
 				.addParam("service", service)
 				.list();
-			result.put(service, list);
+			if (list.size() > 0) {
+				result.put(service, list);
+			}
 		}
 
 		return result;

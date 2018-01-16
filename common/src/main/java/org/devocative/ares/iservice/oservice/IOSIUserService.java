@@ -11,6 +11,7 @@ import org.devocative.demeter.entity.User;
 import org.devocative.demeter.iservice.IEntityService;
 
 import java.util.List;
+import java.util.Map;
 
 public interface IOSIUserService extends IEntityService<OSIUser> {
 	void saveOrUpdate(OSIUser entity);
@@ -49,7 +50,7 @@ public interface IOSIUserService extends IEntityService<OSIUser> {
 
 	OSIUser findExecutor(Long serverId, ERemoteMode remoteMode);
 
-	List<OSIUser> findAllowedOnes(ERemoteMode remoteMode);
+	Map<ERemoteMode, List<OSIUser>> findAllowed();
 
 	boolean isOSIUserAllowed(Long osiUserId);
 }

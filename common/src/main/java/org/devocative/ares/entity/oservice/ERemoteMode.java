@@ -11,11 +11,12 @@ public class ERemoteMode implements Serializable {
 	private static final long serialVersionUID = -771802110362958021L;
 
 	private static final Map<Integer, ERemoteMode> ID_TO_LIT = new LinkedHashMap<>();
+
 	// ------------------------------
 
 	public static final ERemoteMode SSH = new ERemoteMode(1, "SSH");
 	public static final ERemoteMode JDBC = new ERemoteMode(2, "JDBC");
-	public static final ERemoteMode HTTP = new ERemoteMode(3, "HTTP");
+	//public static final ERemoteMode HTTP = new ERemoteMode(3, "HTTP"); TODO
 
 	// ------------------------------
 

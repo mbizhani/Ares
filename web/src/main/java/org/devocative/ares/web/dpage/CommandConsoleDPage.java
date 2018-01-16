@@ -2,6 +2,7 @@ package org.devocative.ares.web.dpage;
 
 import org.apache.wicket.AttributeModifier;
 import org.apache.wicket.ajax.AjaxRequestTarget;
+import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.markup.html.list.ListItem;
 import org.apache.wicket.markup.html.list.ListView;
 import org.apache.wicket.model.IModel;
@@ -97,5 +98,7 @@ public class CommandConsoleDPage extends DPage {
 				});
 			}
 		});
+
+		add(new Label("message", "No Accessible Command!").setVisible(allowed.isEmpty()));
 	}
 }

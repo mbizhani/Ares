@@ -1,8 +1,10 @@
 package org.devocative.ares.web.dpage;
 
+import org.apache.wicket.AttributeModifier;
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.event.Broadcast;
 import org.apache.wicket.event.IEvent;
+import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.markup.html.list.ListItem;
 import org.apache.wicket.markup.html.list.ListView;
 import org.apache.wicket.model.IModel;
@@ -24,10 +26,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 
 public class TerminalConsoleDPage extends DPage {
 	private static final long serialVersionUID = -2200966618262815151L;
@@ -86,54 +85,51 @@ public class TerminalConsoleDPage extends DPage {
 		};
 		add(tabPanel);
 
-		List<OSIUser> allowedOnes = osiUserService.findAllowedOnes(ERemoteMode.SSH);
-		add(new ListView<OSIUser>("sshConnections", allowedOnes) {
-			private static final long serialVersionUID = -2856412103432642301L;
+		Map<ERemoteMode, List<OSIUser>> allowedOnes = osiUserService.findAllowed();
+
+		add(new ListView<ERemoteMode>("terminals", new ArrayList<>(allowedOnes.keySet())) {
+			private static final long serialVersionUID = 1416116347227236048L;
 
 			@Override
-			protected void populateItem(ListItem<OSIUser> item) {
-				OSIUser osiUser = item.getModelObject();
-				IModel<String> title = new Model<>(osiUser.toString());
+			protected void populateItem(ListItem<ERemoteMode> item) {
+				ERemoteMode remoteMode = item.getModelObject();
+				item.add(new AttributeModifier("title", remoteMode.getName()));
 
-				item.add(new WAjaxLink("osiUser", title) {
-					private static final long serialVersionUID = -360097665014494986L;
+				item.add(new ListView<OSIUser>("terminal", new ArrayList<>(allowedOnes.get(remoteMode))) {
+					private static final long serialVersionUID = -6470792116062021736L;
 
 					@Override
-					public void onClick(AjaxRequestTarget target) {
-						String tabId = UUID.randomUUID().toString().replaceAll("[-]", "");
-						logger.info("Creating ShellTerminalPanel: OSIUser=[{}] tabId=[{}]", osiUser.toString(), tabId);
-						DPanel panel = new ShellTerminalPanel(tabPanel.getTabContentId(), osiUser, tabId);
-						tabPanel.addTab(target, panel, new OTab(title, true).setTabId(tabId));
+					protected void populateItem(ListItem<OSIUser> item) {
+						OSIUser osiUser = item.getModelObject();
+						IModel<String> title = new Model<>(osiUser.toString());
+
+						item.add(new WAjaxLink("osiUser", title) {
+							private static final long serialVersionUID = -2582918546272510666L;
+
+							@Override
+							public void onClick(AjaxRequestTarget target) {
+								DPanel panel;
+								String tabId = UUID.randomUUID().toString().replaceAll("[-]", "");
+
+								if (ERemoteMode.SSH.equals(remoteMode)) {
+									logger.info("Creating ShellTerminalPanel: OSIUser=[{}] tabId=[{}]", osiUser.toString(), tabId);
+									panel = new ShellTerminalPanel(tabPanel.getTabContentId(), osiUser, tabId);
+								} else if (ERemoteMode.JDBC.equals(remoteMode)) {
+									logger.info("Creating SqlTerminalPanel: OSIUser=[{}] tabId=[{}]", osiUser.toString(), tabId);
+									panel = new SqlTerminalPanel(tabPanel.getTabContentId(), osiUser.getId(), tabId);
+								} else {
+									throw new RuntimeException("Invalid Remote Mode: " + remoteMode);
+								}
+
+								tabPanel.addTab(target, panel, new OTab(title, true).setTabId(tabId));
+							}
+						});
+
 					}
 				});
 			}
 		});
 
-		allowedOnes = osiUserService.findAllowedOnes(ERemoteMode.JDBC);
-		add(new ListView<OSIUser>("jdbcConnections", allowedOnes) {
-			private static final long serialVersionUID = -2856412103432642301L;
-
-			@Override
-			protected void populateItem(ListItem<OSIUser> item) {
-				OSIUser osiUser = item.getModelObject();
-
-				final Long osiUserId = osiUser.getId();
-				final IModel<String> title = new Model<>(osiUser.toString());
-
-				item.add(new WAjaxLink("osiUser", title) {
-					private static final long serialVersionUID = -360097665014494986L;
-
-					@Override
-					public void onClick(AjaxRequestTarget target) {
-						String tabId = UUID.randomUUID().toString().replaceAll("[-]", "");
-						logger.info("Creating SqlTerminalPanel: OSIUser=[{}] tabId=[{}]", title.getObject(), tabId);
-						DPanel panel = new SqlTerminalPanel(tabPanel.getTabContentId(), osiUserId, tabId);
-						tabPanel.addTab(target, panel, new OTab(title, true).setTabId(tabId));
-					}
-				});
-			}
-		});
-
-		//add(new Label("message", "No allowed terminal!").setVisible(allowedOnes.isEmpty()));
+		add(new Label("message", "No Accessible Terminal!").setVisible(allowedOnes.isEmpty()));
 	}
 }
