@@ -50,7 +50,7 @@ ssh {
 ]]></body>
 				</command>
 
-				<command name="killProcess">
+				<command name="killProcess" confirm="true">
 					<params>
 						<param name="ProcessName" required="true" validRef="LinId"/>
 						<param name="Username" required="true" validRef="LinId"/>
@@ -60,6 +60,9 @@ ssh {
 					<body><![CDATA[
 def d9 = Dash9 ? '-9' : ''
 def processes = oListProcess([ProcessName: ProcessName, Username: Username])
+if(processes.size == 0)
+	$error('No Process Found')
+
 processes.rows.each {r ->
 	ssh {
 		prompt "Kill Process: pid=${r.pid}"
@@ -97,7 +100,7 @@ if(!prc.rows.empty) {
 					<params>
 						<param name="Name" required="true" validRef="LinId"/>
 						<param name="Action" required="true"
-							   stringLiterals="Search|Info|DepList|CheckInstall|Install|CheckUnInstall|UnInstall"
+							   stringLiterals="Search|Info|DepList|CheckInstall|Install|ReInstall|CheckUnInstall|UnInstall"
 							   defaultValue="Search"/>
 					</params>
 
@@ -148,6 +151,13 @@ switch(Action) {
 		}
 		break
 
+	case 'ReInstall':
+		ssh {
+			prompt "ReInstalling '${Name}'"
+			cmd "yum -y -q reinstall ${Name}"
+		}
+		break
+
 	case 'CheckUnInstall':
 		ssh {
 			prompt "Check UnInstallation for '${Name}'"
@@ -192,6 +202,37 @@ ssh {
 	result {
 		it.toTabular('[ ]{2,}')
 	}
+}
+]]></body>
+				</command>
+
+				<command name="tail">
+					<params>
+						<param name="FileAddress" required="true"/>
+						<param name="NoOfLineFromButton" defaultValue="20" validRef="LinNum"/>
+						<param name="Force" type="Boolean" required="true" defaultValue="false"/>
+					</params>
+
+					<body><![CDATA[
+def opt = "-n ${NoOfLineFromButton}"
+if(Force)
+	opt += " -f"
+ssh {
+	prompt 'Tail File'
+	cmd "tail ${opt} ${FileAddress}"
+}
+]]></body>
+				</command>
+
+				<command name="showFile">
+					<params>
+						<param name="Name" required="true"/>
+					</params>
+
+					<body><![CDATA[
+ssh {
+	prompt "Show File Content: ${Name}"
+	cmd "cat ${Name}"
 }
 ]]></body>
 				</command>
