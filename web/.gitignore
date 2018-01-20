@@ -1,7 +1,4 @@
 target/
 logs/
 
-src/test/webapp/fonts
-src/test/webapp/styles
-
 *.iml
