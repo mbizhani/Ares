@@ -34,6 +34,22 @@ CREATE TABLE a_mt_ars_siUser_user (
 	PRIMARY KEY (r_num, f_siUser, f_user)
 );
 
+CREATE TABLE a_mt_ars_srvcinst_role (
+	r_num      NUMBER(10, 0) NOT NULL,
+	f_srvcinst NUMBER(19, 0) NOT NULL,
+	f_role     NUMBER(19, 0) NOT NULL,
+	r_type     NUMBER(3, 0),
+	PRIMARY KEY (r_num, f_srvcinst, f_role)
+);
+
+CREATE TABLE a_mt_ars_srvcinst_user (
+	r_num      NUMBER(10, 0) NOT NULL,
+	f_srvcinst NUMBER(19, 0) NOT NULL,
+	f_user     NUMBER(19, 0) NOT NULL,
+	r_type     NUMBER(3, 0),
+	PRIMARY KEY (r_num, f_srvcinst, f_user)
+);
+
 CREATE TABLE a_t_ars_basic_data (
 	id              NUMBER(19, 0) NOT NULL,
 	r_num           NUMBER(10, 0) NOT NULL,
@@ -80,15 +96,16 @@ CREATE TABLE a_t_ars_server (
 );
 
 CREATE TABLE a_t_ars_service (
-	id              NUMBER(19, 0) NOT NULL,
-	r_num           NUMBER(10, 0) NOT NULL,
-	r_type          NUMBER(3, 0),
-	n_admin_port    NUMBER(10, 0),
-	c_conn_pattern  VARCHAR2(1000 CHAR),
-	d_modification  DATE,
-	f_modifier_user NUMBER(19, 0),
-	c_name          VARCHAR2(255 CHAR),
-	c_ports         VARCHAR2(255 CHAR),
+	id                NUMBER(19, 0) NOT NULL,
+	r_num             NUMBER(10, 0) NOT NULL,
+	r_type            NUMBER(3, 0),
+	n_admin_port      NUMBER(10, 0),
+	c_conn_pattern    VARCHAR2(1000 CHAR),
+	d_modification    DATE,
+	f_modifier_user   NUMBER(19, 0),
+	c_name            VARCHAR2(255 CHAR),
+	c_ports           VARCHAR2(255 CHAR),
+	c_username_reg_ex VARCHAR2(255 CHAR),
 	PRIMARY KEY (id, r_num)
 );
 
@@ -98,10 +115,11 @@ CREATE TABLE a_t_ars_service_inst (
 	r_type          NUMBER(3, 0),
 	d_modification  DATE,
 	f_modifier_user NUMBER(19, 0),
+	c_name VARCHAR2(255 CHAR),
 	n_port          NUMBER(10, 0),
 	f_server        NUMBER(19, 0),
 	f_service       NUMBER(19, 0),
-	PRIMARY KEY (id, r_num)
+	PRIMARY KEY (r_num, f_server, f_service)
 );
 
 CREATE TABLE a_t_ars_service_inst_prop_val (
@@ -171,6 +189,16 @@ CREATE TABLE mt_ars_siUser_user (
 	f_user   NUMBER(19, 0) NOT NULL
 );
 
+CREATE TABLE mt_ars_srvcinst_role (
+	f_srvcinst NUMBER(19, 0) NOT NULL,
+	f_role     NUMBER(19, 0) NOT NULL
+);
+
+CREATE TABLE mt_ars_srvcinst_user (
+	f_srvcinst NUMBER(19, 0) NOT NULL,
+	f_user     NUMBER(19, 0) NOT NULL
+);
+
 CREATE TABLE t_ars_basic_data (
 	id              NUMBER(19, 0)      NOT NULL,
 	d_creation      DATE               NOT NULL,
@@ -186,15 +214,17 @@ CREATE TABLE t_ars_basic_data (
 CREATE TABLE t_ars_command (
 	id              NUMBER(19, 0)      NOT NULL,
 	f_config        NUMBER(19, 0),
+	b_confirm      NUMBER(1, 0)  NOT NULL,
 	d_creation      DATE               NOT NULL,
 	f_creator_user NUMBER(19, 0) NOT NULL,
 	b_enabled      NUMBER(1, 0)  NOT NULL,
-	b_list_view     NUMBER(1, 0)       NOT NULL,
+	n_exec_limit   NUMBER(10, 0),
 	d_modification  DATE,
 	f_modifier_user NUMBER(19, 0),
 	c_name          VARCHAR2(255 CHAR) NOT NULL,
 	f_service       NUMBER(19, 0),
 	n_version       NUMBER(10, 0)      NOT NULL,
+	e_view_mode    NUMBER(10, 0) NOT NULL,
 	PRIMARY KEY (id)
 );
 
@@ -261,16 +291,17 @@ CREATE TABLE t_ars_server (
 );
 
 CREATE TABLE t_ars_service (
-	id              NUMBER(19, 0)      NOT NULL,
-	n_admin_port    NUMBER(10, 0),
-	c_conn_pattern  VARCHAR2(1000 CHAR),
-	d_creation      DATE               NOT NULL,
-	f_creator_user NUMBER(19, 0) NOT NULL,
-	d_modification  DATE,
-	f_modifier_user NUMBER(19, 0),
-	c_name          VARCHAR2(255 CHAR) NOT NULL,
-	c_ports         VARCHAR2(255 CHAR),
-	n_version       NUMBER(10, 0)      NOT NULL,
+	id                NUMBER(19, 0)      NOT NULL,
+	n_admin_port      NUMBER(10, 0),
+	c_conn_pattern    VARCHAR2(1000 CHAR),
+	d_creation        DATE               NOT NULL,
+	f_creator_user    NUMBER(19, 0)      NOT NULL,
+	d_modification    DATE,
+	f_modifier_user   NUMBER(19, 0),
+	c_name            VARCHAR2(255 CHAR) NOT NULL,
+	c_ports           VARCHAR2(255 CHAR),
+	c_username_reg_ex VARCHAR2(255 CHAR),
+	n_version         NUMBER(10, 0)      NOT NULL,
 	PRIMARY KEY (id)
 );
 
@@ -280,6 +311,7 @@ CREATE TABLE t_ars_service_inst (
 	f_creator_user NUMBER(19, 0) NOT NULL,
 	d_modification  DATE,
 	f_modifier_user NUMBER(19, 0),
+	c_name         VARCHAR2(255 CHAR),
 	n_port          NUMBER(10, 0),
 	f_server       NUMBER(19, 0),
 	n_version       NUMBER(10, 0) NOT NULL,
@@ -363,7 +395,7 @@ ALTER TABLE t_ars_service
 ADD CONSTRAINT uk_ars_service UNIQUE (c_name);
 
 ALTER TABLE t_ars_service_inst
-ADD CONSTRAINT uk_ars_serviceInst UNIQUE (f_server, f_service);
+ADD CONSTRAINT uk_ars_serviceInst UNIQUE (f_server, f_service, c_name);
 
 ALTER TABLE t_ars_service_inst_prop_val
 ADD CONSTRAINT uk_ars_siPropVal UNIQUE (f_property, f_service_inst);
@@ -394,6 +426,16 @@ REFERENCES REVINFO;
 
 ALTER TABLE a_mt_ars_siUser_user
 ADD CONSTRAINT FK_b1pb99uns0y1kcxn9sfmqpydv
+FOREIGN KEY (r_num)
+REFERENCES REVINFO;
+
+ALTER TABLE a_mt_ars_srvcinst_role
+ADD CONSTRAINT FK_49xcp0ty1ljil5d00ors9wdba
+FOREIGN KEY (r_num)
+REFERENCES REVINFO;
+
+ALTER TABLE a_mt_ars_srvcinst_user
+ADD CONSTRAINT FK_bbvuuecgf1puo5wsmdhepdf37
 FOREIGN KEY (r_num)
 REFERENCES REVINFO;
 
@@ -478,6 +520,26 @@ ALTER TABLE mt_ars_siUser_user
 ADD CONSTRAINT siUserUser2siUser
 FOREIGN KEY (f_siUser)
 REFERENCES t_ars_service_inst_user;
+
+ALTER TABLE mt_ars_srvcinst_role
+ADD CONSTRAINT srvcinstRole2role
+FOREIGN KEY (f_role)
+REFERENCES t_dmt_role;
+
+ALTER TABLE mt_ars_srvcinst_role
+ADD CONSTRAINT srvcinstRole2srvcinst
+FOREIGN KEY (f_srvcinst)
+REFERENCES t_ars_service_inst;
+
+ALTER TABLE mt_ars_srvcinst_user
+ADD CONSTRAINT srvcinstUser2srvcinst
+FOREIGN KEY (f_user)
+REFERENCES t_dmt_user;
+
+ALTER TABLE mt_ars_srvcinst_user
+ADD CONSTRAINT srvcinstUser2user
+FOREIGN KEY (f_srvcinst)
+REFERENCES t_ars_service_inst;
 
 ALTER TABLE t_ars_basic_data
 ADD CONSTRAINT basic_crtrusr2user
