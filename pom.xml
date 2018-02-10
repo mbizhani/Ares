@@ -43,7 +43,7 @@
 	<scm>
 		<connection>scm:git:https://github.com/mbizhani/Ares.git</connection>
 		<developerConnection>scm:git:https://github.com/mbizhani/Ares.git</developerConnection>
-		<url>https://github.com/mbizhani/Metis</url>
+		<url>https://github.com/mbizhani/Ares</url>
 		<tag>HEAD</tag>
 	</scm>
 
@@ -54,7 +54,7 @@
 		<jetty.context>/ctx</jetty.context>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
-		<d.demeter.ver>1.0-SNAPSHOT</d.demeter.ver>
+		<d.demeter.ver>1.0</d.demeter.ver>
 		<d.diadem.ver>1.2</d.diadem.ver>
 		<d.spring.ver>4.3.12.RELEASE</d.spring.ver>
 		<d.servlet.ver>3.1.0</d.servlet.ver>

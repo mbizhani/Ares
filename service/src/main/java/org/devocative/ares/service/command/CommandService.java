@@ -367,7 +367,7 @@ public class CommandService implements ICommandService, IMissedHitHandler<Long, 
 
 		if (search.size() == 1) {
 			OSIUser user = search.get(0);
-			osiUserService.saveOrUpdate(user, password);
+			osiUserService.saveOrUpdate(user, password, false);
 		}
 	}
 

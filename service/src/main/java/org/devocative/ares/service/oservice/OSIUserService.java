@@ -67,7 +67,7 @@ public class OSIUserService implements IOSIUserService {
 		entity.setServer(entity.getServiceInstance().getServer());
 		entity.setService(entity.getServiceInstance().getService());
 		if (entity.getRowMod() == null) {
-			entity.setRowMod(ERowMod.CREATOR);
+			entity.setRowMod(ERowMod.NORMAL);
 		}
 
 		persistorService.saveOrUpdate(entity);
@@ -141,9 +141,13 @@ public class OSIUserService implements IOSIUserService {
 	// ==============================
 
 	@Override
-	public void saveOrUpdate(OSIUser entity, String password) {
+	public void saveOrUpdate(OSIUser entity, String password, boolean userSelfAdd) {
 		if (password != null) {
 			entity.setPassword(StringEncryptorUtil.encrypt(password));
+		}
+
+		if (entity.getId() == null && userSelfAdd) {
+			entity.setRowMod(ERowMod.CREATOR);
 		}
 
 		saveOrUpdate(entity);

@@ -41,6 +41,8 @@ public class OSIUserFormDPage extends DPage {
 
 	private Long serverId;
 
+	private boolean userSelfAdd = false;
+
 	// ------------------------------
 
 	public OSIUserFormDPage(String id) {
@@ -69,6 +71,11 @@ public class OSIUserFormDPage extends DPage {
 
 	public OSIUserFormDPage setServerId(Long serverId) {
 		this.serverId = serverId;
+		return this;
+	}
+
+	public OSIUserFormDPage setUserSelfAdd(boolean userSelfAdd) {
+		this.userSelfAdd = userSelfAdd;
 		return this;
 	}
 
@@ -134,7 +141,7 @@ public class OSIUserFormDPage extends DPage {
 
 			@Override
 			protected void onSubmit(AjaxRequestTarget target) {
-				oSIUserService.saveOrUpdate(entity, password.getModelObject());
+				oSIUserService.saveOrUpdate(entity, password.getModelObject(), userSelfAdd);
 
 				if (!WModalWindow.closeParentWindow(OSIUserFormDPage.this, target)) {
 					UrlUtil.redirectTo(OSIUserListDPage.class);

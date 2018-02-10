@@ -40,7 +40,7 @@ public interface IOSIUserService extends IEntityService<OSIUser> {
 
 	// ==============================
 
-	void saveOrUpdate(OSIUser entity, String password);
+	void saveOrUpdate(OSIUser entity, String password, boolean userSelfAdd);
 
 	String getPassword(Long userId);
 
