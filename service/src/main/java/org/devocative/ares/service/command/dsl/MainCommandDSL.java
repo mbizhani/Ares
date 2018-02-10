@@ -5,6 +5,7 @@ import org.devocative.adroit.CalendarUtil;
 import org.devocative.ares.cmd.CommandCenter;
 import org.devocative.ares.cmd.CommandException;
 import org.devocative.ares.cmd.SshResult;
+import org.devocative.ares.entity.OServer;
 import org.devocative.ares.vo.OServiceInstanceTargetVO;
 import org.devocative.demeter.entity.FileStore;
 import org.slf4j.Logger;
@@ -134,9 +135,13 @@ public class MainCommandDSL {
 		commandCenter.userPasswordUpdated(username.toString(), password.toString());
 	}
 
-	public void $checkVMServers(List<Map<String, String>> servers) {
+	public void $updateVMServers(List<Map<String, String>> servers, Boolean onlyNew) {
 		CommandCenter commandCenter = CommandCenter.get();
-		commandCenter.checkVMServers(servers);
+		commandCenter.updateVMServers(servers, onlyNew);
+	}
+
+	public OServer $checkVMServer(String name, String vmId, String address) {
+		return CommandCenter.get().checkVMServer(name, vmId, address);
 	}
 
 	public void $error(CharSequence message) {

@@ -39,11 +39,13 @@ $scpTo($param('File'), '~')
 						<param name="ShowPowerStat" type="Boolean" defaultValue="false" required="true"/>
 						<param name="ShowIP" type="Boolean" defaultValue="false" required="true"/>
 						<param name="ShowVmx" type="Boolean" defaultValue="false" required="true"/>
-						<param name="UpdateServer" type="Boolean" defaultValue="false" required="true"/>
+						<param name="CheckDef" type="Boolean" defaultValue="false" required="true"/>
+						<param name="UpdateMode" stringLiterals="none|all|onlyNew" defaultValue="none" required="true"/>
 					</params>
 
 					<body><![CDATA[
 def filter = $input('Vmid', 'Name')
+def UpdateServer = UpdateMode != 'none'
 
 def tab = ssh {
 	prompt 'List of VMs'
@@ -64,6 +66,9 @@ tab.rows.each {Map vmMap ->
 
 	if(ShowIP || UpdateServer)
 		vmMap.IpAddress = vGetIP([Vmid : vmMap.Vmid])
+
+	if(CheckDef)
+		vmMap.Defined = $checkVMServer(vmMap.Name, vmMap.Vmid, vmMap['IpAddress']) != null
 
 	if(ShowPowerStat)
 		vmMap.PowerStat = vPowerStat([Vmid : vmMap.Vmid])
@@ -105,7 +110,7 @@ tab.rows.each {Map vmMap ->
 }
 
 if (UpdateServer)
-	$checkVMServers(listOfServers)
+	$updateVMServers(listOfServers, UpdateMode == 'onlyNew')
 
 return tab
 ]]></body>

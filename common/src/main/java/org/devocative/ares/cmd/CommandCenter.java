@@ -1,5 +1,6 @@
 package org.devocative.ares.cmd;
 
+import org.devocative.ares.entity.OServer;
 import org.devocative.ares.entity.oservice.ERemoteMode;
 import org.devocative.ares.vo.CommandQVO;
 import org.devocative.ares.vo.OServiceInstanceTargetVO;
@@ -227,13 +228,22 @@ public class CommandCenter {
 		CommandCenterResource.get().getCommandService().userPasswordUpdated(targetVO, username, password);
 	}
 
-	public void checkVMServers(List<Map<String, String>> servers) {
-		checkVMServers(targetVO.getServerId(), servers);
+	public void updateVMServers(List<Map<String, String>> servers, boolean onlyNew) {
+		updateVMServers(targetVO.getServerId(), servers, onlyNew);
 	}
 
-	public void checkVMServers(Long hypervisorId, List<Map<String, String>> servers) {
+	public void updateVMServers(Long hypervisorId, List<Map<String, String>> servers, boolean onlyNew) {
 		logger.info("CommandCenter: checkServers hypervisorId=[{}] servers={}", hypervisorId, servers);
-		CommandCenterResource.get().getServerService().checkVMServers(hypervisorId, servers);
+		List<String> updatedServers = CommandCenterResource.get().getServerService().updateVMServers(hypervisorId, servers, onlyNew);
+		CommandCenterResource.get().onResult(new CommandOutput(CommandOutput.Type.LINE, "List of VM(s): " + updatedServers.toString()));
+	}
+
+	public OServer checkVMServer(String name, String vmId, String address) {
+		return checkVMServer(targetVO.getServerId(), name, vmId, address);
+	}
+
+	public OServer checkVMServer(Long hypervisorId, String name, String vmId, String address) {
+		return CommandCenterResource.get().getServerService().checkVMServer(hypervisorId, name, vmId, address);
 	}
 
 	public void updateServer(Long id, String vmId) {

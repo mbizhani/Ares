@@ -232,9 +232,10 @@ public class OServerService implements IOServerService {
 	}
 
 	@Override
-	public void checkVMServers(Long hypervisorId, List<Map<String, String>> servers) {
+	public List<String> updateVMServers(Long hypervisorId, List<Map<String, String>> servers, boolean onlyNew) {
 		logger.info("CheckVMServers: hypervisor=[{}] servers={}", hypervisorId, servers);
 
+		List<String> result = new ArrayList<>();
 		List<String> validVmId = new ArrayList<>();
 
 		for (Map<String, String> server : servers) {
@@ -245,33 +246,10 @@ public class OServerService implements IOServerService {
 
 			validVmId.add(vmId);
 
-			IQueryBuilder oServerBuilder = persistorService.createQueryBuilder()
-				.addFrom(OServer.class, "ent")
-				.addWhere("and ent.hypervisor.id = :hypervisorId")
-				.addParam("hypervisorId", hypervisorId)
+			OServer oServer = checkVMServer(hypervisorId, name, vmId, address);
 
-				.addWhere("and (ent.name = :name")
-				.addParam("name", name)
-				.addWhere("or ent.vmId = :vmId")
-				.addParam("vmId", vmId);
-
-			if (address != null && !address.isEmpty()) {
-				oServerBuilder
-					.addWhere("or ent.address = :address")
-					.addParam("address", address);
-			}
-
-			oServerBuilder.addWhere(")");
-
-			List<OServer> oServerList = oServerBuilder.list();
-
-			OServer oServer;
-			if (oServerList.isEmpty()) {
-				oServer = null;
-			} else if (oServerList.size() == 1) {
-				oServer = oServerList.get(0);
-			} else {
-				oServer = findProperOServer(oServerList, vmId, name, address);
+			if (onlyNew && oServer != null) {
+				continue;
 			}
 
 			if (oServer != null) {
@@ -303,6 +281,7 @@ public class OServerService implements IOServerService {
 			}
 
 			saveOrUpdate(oServer);
+			result.add(oServer.toString());
 		}
 
 		int noOfInvalidVmId = persistorService.createQueryBuilder()
@@ -314,6 +293,41 @@ public class OServerService implements IOServerService {
 		logger.info("Update hypervisor's VM: hypervisorId=[{}] no of invalid vmId = [{}]", hypervisorId, noOfInvalidVmId);
 
 		persistorService.commitOrRollback();
+
+		return result;
+	}
+
+	@Override
+	public OServer checkVMServer(Long hypervisorId, String name, String vmId, String address) {
+		IQueryBuilder oServerBuilder = persistorService.createQueryBuilder()
+			.addFrom(OServer.class, "ent")
+			.addWhere("and ent.hypervisor.id = :hypervisorId")
+			.addParam("hypervisorId", hypervisorId)
+
+			.addWhere("and (ent.name = :name")
+			.addParam("name", name)
+			.addWhere("or ent.vmId = :vmId")
+			.addParam("vmId", vmId);
+
+		if (address != null && !address.isEmpty()) {
+			oServerBuilder
+				.addWhere("or ent.address = :address")
+				.addParam("address", address);
+		}
+
+		oServerBuilder.addWhere(")");
+
+		List<OServer> oServerList = oServerBuilder.list();
+
+		OServer oServer;
+		if (oServerList.isEmpty()) {
+			oServer = null;
+		} else if (oServerList.size() == 1) {
+			oServer = oServerList.get(0);
+		} else {
+			oServer = findProperOServer(oServerList, vmId, name, address);
+		}
+		return oServer;
 	}
 
 	@Override

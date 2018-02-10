@@ -85,8 +85,10 @@ public class OtherCommandsWrapper extends Proxy {
 					boolean allParams = true;
 
 					for (int i = 0; i < paramCount; i++) {
-						allParams = allParams && parameters[i].getType().isAssignableFrom(args[i].getClass());
-						finalArgs[i] = args[i];
+						if (args[i] != null) {
+							allParams = allParams && parameters[i].getType().isAssignableFrom(args[i].getClass());
+							finalArgs[i] = args[i];
+						}
 					}
 
 					if (varArgIdx >= 0) {
