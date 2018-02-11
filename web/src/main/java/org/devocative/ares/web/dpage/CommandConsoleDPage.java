@@ -55,7 +55,8 @@ public class CommandConsoleDPage extends DPage {
 		OTabbedPanel oTabbedPanel = new OTabbedPanel();
 		oTabbedPanel
 			.setGlobalHotkeyEnabled(true)
-			.setFit(true);
+		//.setFit(true)
+		;
 		tabPanel = new WTabbedPanel("tabPanel", oTabbedPanel);
 		if (prepCommandAsParam != null) {
 			for (List<PrepCommand> list : allowed.values()) {

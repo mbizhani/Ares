@@ -48,6 +48,7 @@ import javax.inject.Inject;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class CommandExecPanel extends DPanel implements IAsyncResponse<CommandOutput> {
 	private static final long serialVersionUID = 6094381569285095361L;
@@ -309,7 +310,7 @@ public class CommandExecPanel extends DPanel implements IAsyncResponse<CommandOu
 	protected void onAfterRender() {
 		super.onAfterRender();
 
-		WebUtil.writeJQueryCall(String.format("$('#%s').tabs();", tabs.getMarkupId()), false);
+		WebUtil.writeJQueryCall(String.format("$('#%s').tabs({fit:true, border:false});", tabs.getMarkupId()), false);
 	}
 
 	// ------------------------------
@@ -420,29 +421,32 @@ public class CommandExecPanel extends DPanel implements IAsyncResponse<CommandOu
 	}
 
 	private void renderTabular(TabularVO<?> tabularVO, IPartialPageRequestHandler handler) {
-		String tabId = tabular.getMarkupId() + "-tab";
+		String tabId = tabular.getMarkupId() + "TAB";
 
-		StringBuilder builder = new StringBuilder();
-		builder.append(String.format("<table id='%s' border='1' style='width:100%%;'><caption><b>Total: %s</b></caption><thead><tr><td></td>", tabId, tabularVO.getSize()));
-		for (String col : tabularVO.getColumns()) {
-			//builder.append(String.format("<th data-options=\\\"field:'%s'\\\">", col.replaceAll("\\W",""))).append(col).append("</th>");
-			builder.append("<th>").append(col).append("</th>");
-		}
-		builder.append("</tr></thead><tbody>");
-		int i = 1;
+		List<ColVO> colVOs = tabularVO
+			.getColumns()
+			.stream()
+			.map(col -> new ColVO(col, col))
+			.collect(Collectors.toList());
+
+		List<Map<String, String>> data = new ArrayList<>();
 		for (Map<String, ?> row : tabularVO.getRows()) {
-			builder.append("<tr><td>").append(i++).append("</td>");
-			for (Object cell : row.values()) {
-				builder.append("<td>").append(cell != null ? cell : "").append("</td>");
+			Map<String, String> rowStr = new HashMap<>();
+			for (Map.Entry<String, ?> entry : row.entrySet()) {
+				rowStr.put(entry.getKey(), entry.getValue() != null ? entry.getValue().toString() : "");
 			}
-			builder.append("</tr>");
+			data.add(rowStr);
 		}
-		builder.append("</tbody></table>");
 
-		handler.appendJavaScript(String.format("$('#%s').remove();", tabId));
-		handler.appendJavaScript(String.format("$('#%s').html(\"%s\");", tabular.getMarkupId(), builder.toString().replaceAll("\"", "")));
-		//handler.appendJavaScript(String.format("$('#%s').datagrid();", tabId));
-		handler.appendJavaScript(String.format("$('#%s').tabs('select', 'Tabular');", tabs.getMarkupId()));
+		DataGridVO dataGridVO = new DataGridVO(Collections.singletonList(colVOs), data)
+			.setTitle("Total: " + tabularVO.getSize());
+
+		StringBuilder scripts = new StringBuilder();
+		scripts.append(String.format("$('#%s').tabs('select', 'Tabular');", tabs.getMarkupId()));
+		scripts.append(String.format("$('#%s').empty();", tabular.getMarkupId()));
+		scripts.append(String.format("$('#%s').append(\"<table id='%s'></table>\");", tabular.getMarkupId(), tabId));
+		scripts.append(String.format("$('#%s').datagrid(%s);", tabId, WebUtil.toJson(dataGridVO)));
+		handler.appendJavaScript(scripts.toString());
 	}
 
 	private String escape(String out) {
@@ -458,5 +462,69 @@ public class CommandExecPanel extends DPanel implements IAsyncResponse<CommandOu
 		int m = (int) ((diffInSeconds - h * 3600) / 60);
 		int s = (int) (diffInSeconds - h * 3600 - m * 60);
 		return String.format("%02d:%02d:%02d", h, m, s);
+	}
+
+	// ------------------------------
+
+	private class DataGridVO {
+		private List<List<ColVO>> columns;
+		private List<Map<String, String>> data;
+		private String title;
+
+		// ------------------------------
+
+		public DataGridVO(List<List<ColVO>> columns, List<Map<String, String>> data) {
+			this.columns = columns;
+			this.data = data;
+		}
+
+		// ------------------------------
+
+		public List<List<ColVO>> getColumns() {
+			return columns;
+		}
+
+		public List<Map<String, String>> getData() {
+			return data;
+		}
+
+		public Boolean getAutoRowHeight() {
+			return false;
+		}
+
+		public Boolean getFit() {
+			return true;
+		}
+
+		public Boolean getRownumbers() {
+			return true;
+		}
+
+		public String getTitle() {
+			return title;
+		}
+
+		public DataGridVO setTitle(String title) {
+			this.title = title;
+			return this;
+		}
+	}
+
+	private class ColVO {
+		private String field;
+		private String title;
+
+		public ColVO(String field, String title) {
+			this.field = field;
+			this.title = title;
+		}
+
+		public String getField() {
+			return field;
+		}
+
+		public String getTitle() {
+			return title;
+		}
 	}
 }
