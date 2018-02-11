@@ -44,13 +44,15 @@ public class ShellCommandExecutor extends AbstractCommandExecutor {
 		Session session = resource.createSession(targetVO);
 
 		String finalCmd = command;
-		if (targetVO.isSudoer() && !command.startsWith("sudo -S")) {
+		if (targetVO.isSudoer() && !command.trim().startsWith("sudo")) {
 				/*
 				NOTE: in /etc/sudoers the line
 				Defaults    requiretty
 				must be commented, unless sudo -S does not work!
+
+				REFERENCE: https://stackoverflow.com/questions/5560442/how-to-run-two-commands-in-sudo
 				*/
-			finalCmd = String.format("sudo -S -p '' %s", command);
+			finalCmd = String.format("sudo -p '' -s <<EOF\n%s\nEOF", command);
 		}
 
 		logger.info("Sending SSH Command: cmd=[{}] si=[{}]", prompt, targetVO);

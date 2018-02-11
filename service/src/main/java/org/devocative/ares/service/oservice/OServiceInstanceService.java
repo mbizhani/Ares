@@ -5,6 +5,7 @@ import org.devocative.adroit.cache.IMissedHitHandler;
 import org.devocative.adroit.vo.KeyValueVO;
 import org.devocative.ares.AresErrorCode;
 import org.devocative.ares.AresException;
+import org.devocative.ares.entity.EServerOS;
 import org.devocative.ares.entity.OServer;
 import org.devocative.ares.entity.oservice.*;
 import org.devocative.ares.iservice.oservice.IOSIUserService;
@@ -272,7 +273,7 @@ public class OServiceInstanceService implements IOServiceInstanceService, IMisse
 		}
 
 		return createTargetVO(executor)
-			.setSudoer(true);
+			.setSudoer(true); //TODO Why?
 	}
 
 	@Override
@@ -312,7 +313,10 @@ public class OServiceInstanceService implements IOServiceInstanceService, IMisse
 
 		String password = siUserService.getPassword(user);
 		OServiceInstanceTargetVO targetVO = new OServiceInstanceTargetVO(serviceInstance, user, password, props)
-			.setSudoer(!"root".equals(user.getUsername())); //TODO
+			.setSudoer(
+				!"root".equals(user.getUsername()) &&
+					serviceInstance.getServer().getServerOS().equals(EServerOS.LINUX)
+			); //TODO
 
 		if (serviceInstance.getService().getConnectionPattern() != null) {
 			Map<String, Object> params = new HashMap<>();
