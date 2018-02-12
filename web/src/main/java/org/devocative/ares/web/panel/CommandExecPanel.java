@@ -426,10 +426,7 @@ public class CommandExecPanel extends DPanel implements IAsyncResponse<CommandOu
 		List<ColVO> colVOs = tabularVO
 			.getColumns()
 			.stream()
-			.map(col -> {
-				String c = col.replaceAll("\\W", "");
-				return new ColVO(c, c);
-			})
+			.map(col -> new ColVO(col.replaceAll("\\W", ""), col))
 			.collect(Collectors.toList());
 
 		List<Map<String, String>> data = new ArrayList<>();
