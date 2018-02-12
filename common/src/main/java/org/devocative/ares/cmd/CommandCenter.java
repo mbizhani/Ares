@@ -228,22 +228,22 @@ public class CommandCenter {
 		CommandCenterResource.get().getCommandService().userPasswordUpdated(targetVO, username, password);
 	}
 
-	public void updateVMServers(List<Map<String, String>> servers, boolean onlyNew) {
-		updateVMServers(targetVO.getServerId(), servers, onlyNew);
+	public void updateVMServers(String multiMatchAlg, List<Map<String, String>> servers, boolean onlyNew) {
+		updateVMServers(targetVO.getServerId(), multiMatchAlg, servers, onlyNew);
 	}
 
-	public void updateVMServers(Long hypervisorId, List<Map<String, String>> servers, boolean onlyNew) {
+	public void updateVMServers(Long hypervisorId, String multiMatchAlg, List<Map<String, String>> servers, boolean onlyNew) {
 		logger.info("CommandCenter: checkServers hypervisorId=[{}] servers={}", hypervisorId, servers);
-		List<String> updatedServers = CommandCenterResource.get().getServerService().updateVMServers(hypervisorId, servers, onlyNew);
+		List<String> updatedServers = CommandCenterResource.get().getServerService().updateVMServers(hypervisorId, multiMatchAlg, servers, onlyNew);
 		CommandCenterResource.get().onResult(new CommandOutput(CommandOutput.Type.LINE, "List of VM(s): " + updatedServers.toString()));
 	}
 
-	public OServer checkVMServer(String name, String vmId, String address) {
-		return checkVMServer(targetVO.getServerId(), name, vmId, address);
+	public List<OServer> checkVMServer(String multiMatchAlg, String name, String vmId, String address) {
+		return checkVMServer(targetVO.getServerId(), multiMatchAlg, name, vmId, address);
 	}
 
-	public OServer checkVMServer(Long hypervisorId, String name, String vmId, String address) {
-		return CommandCenterResource.get().getServerService().checkVMServer(hypervisorId, name, vmId, address);
+	public List<OServer> checkVMServer(Long hypervisorId, String multiMatchAlg, String name, String vmId, String address) {
+		return CommandCenterResource.get().getServerService().checkVMServer(hypervisorId, multiMatchAlg, name, vmId, address);
 	}
 
 	public void updateServer(Long id, String vmId) {

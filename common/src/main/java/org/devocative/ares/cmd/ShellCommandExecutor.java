@@ -51,6 +51,7 @@ public class ShellCommandExecutor extends AbstractCommandExecutor {
 				must be commented, unless sudo -S does not work!
 
 				REFERENCE: https://stackoverflow.com/questions/5560442/how-to-run-two-commands-in-sudo
+				#TIP
 				*/
 			finalCmd = String.format("sudo -p '' -s <<EOF\n%s\nEOF", command);
 		}
@@ -149,7 +150,7 @@ public class ShellCommandExecutor extends AbstractCommandExecutor {
 	@Override
 	public void cancel() throws Exception {
 		if (channelExec != null && channelExec.isConnected()) {
-			out.write(3); // https://stackoverflow.com/questions/26403422/jsch-interrupt-command-executing
+			out.write(3); // #TIP https://stackoverflow.com/questions/26403422/jsch-interrupt-command-executing
 			out.flush();
 			channelExec.disconnect();
 		}

@@ -11,6 +11,7 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
 import java.util.Map;
 
+// #TIP
 public class OtherCommandsWrapper extends Proxy {
 	private static final Logger logger = LoggerFactory.getLogger(OtherCommandsWrapper.class);
 

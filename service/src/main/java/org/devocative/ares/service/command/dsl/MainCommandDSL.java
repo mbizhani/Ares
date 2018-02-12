@@ -13,6 +13,7 @@ import org.slf4j.LoggerFactory;
 
 import java.util.*;
 
+// #TIP
 public class MainCommandDSL {
 	private static final Logger logger = LoggerFactory.getLogger(MainCommandDSL.class);
 
@@ -135,13 +136,18 @@ public class MainCommandDSL {
 		commandCenter.userPasswordUpdated(username.toString(), password.toString());
 	}
 
-	public void $updateVMServers(List<Map<String, String>> servers, Boolean onlyNew) {
+	public void $updateVMServers(CharSequence multiMatchAlg, List<Map<String, String>> servers, Boolean onlyNew) {
 		CommandCenter commandCenter = CommandCenter.get();
-		commandCenter.updateVMServers(servers, onlyNew);
+		commandCenter.updateVMServers(multiMatchAlg.toString(), servers, onlyNew);
 	}
 
-	public OServer $checkVMServer(String name, String vmId, String address) {
-		return CommandCenter.get().checkVMServer(name, vmId, address);
+	public List<OServer> $checkVMServer(CharSequence multiMatchAlg, CharSequence name, CharSequence vmId, CharSequence address) {
+		return CommandCenter.get().checkVMServer(
+			multiMatchAlg != null ? multiMatchAlg.toString() : null,
+			name != null ? name.toString() : null,
+			vmId != null ? vmId.toString() : null,
+			address != null ? address.toString() : null
+		);
 	}
 
 	public void $error(CharSequence message) {

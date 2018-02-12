@@ -41,6 +41,7 @@ $scpTo($param('File'), '~')
 						<param name="ShowVmx" type="Boolean" defaultValue="false" required="true"/>
 						<param name="CheckDef" type="Boolean" defaultValue="false" required="true"/>
 						<param name="UpdateMode" stringLiterals="None|All|OnlyNew" defaultValue="None" required="true"/>
+						<param name="MultiMatchAlg" stringLiterals="Vmid|Name|Address"/>
 					</params>
 
 					<body><![CDATA[
@@ -64,11 +65,18 @@ tab.rows.each {Map vmMap ->
 	vmMap.DataStore = vmMap.File.find('\\[(.+?)\\]', 1)
 	vmMap.File = vmMap.File.replaceAll('\\[.+?\\] ', '')
 
-	if(ShowIP || UpdateServer)
+	if(ShowIP || UpdateServer || CheckDef)
 		vmMap.IpAddress = vGetIP([Vmid : vmMap.Vmid])
 
-	if(CheckDef)
-		vmMap.Defined = $checkVMServer(vmMap.Name, vmMap.Vmid, vmMap['IpAddress']) != null
+	if(CheckDef) {
+		def oServers = $checkVMServer($param('MultiMatchAlg'), vmMap.Name, vmMap.Vmid, vmMap.IpAddress)
+		vmMap.Defined = oServers.size()
+
+		// #TIP
+		vmMap.Match = oServers
+		                .inject([]){list, oSr -> list << "( ${oSr.vmId} ) ( ${oSr.name} ) ( ${oSr.address} )" }
+		                .join(',')
+	}
 
 	if(ShowPowerStat)
 		vmMap.PowerStat = vPowerStat([Vmid : vmMap.Vmid])
@@ -110,7 +118,10 @@ tab.rows.each {Map vmMap ->
 }
 
 if (UpdateServer)
-	$updateVMServers(listOfServers, UpdateMode == 'OnlyNew')
+	if ($param('MultiMatchAlg'))
+		$updateVMServers(MultiMatchAlg, listOfServers, UpdateMode == 'OnlyNew')
+	else
+		$error("'MultiMatchAlg' is required for 'Update'")
 
 return tab
 ]]></body>

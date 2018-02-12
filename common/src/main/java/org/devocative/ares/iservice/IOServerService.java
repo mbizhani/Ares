@@ -52,9 +52,9 @@ public interface IOServerService {
 
 	void updateVmid(Long id, String vmId);
 
-	List<String> updateVMServers(Long hypervisorId, List<Map<String, String>> servers, boolean onlyNew);
+	List<String> updateVMServers(Long hypervisorId, String multiMatchAlg, List<Map<String, String>> servers, boolean onlyNew);
 
-	OServer checkVMServer(Long hypervisorId, String name, String vmId, String address);
+	List<OServer> checkVMServer(Long hypervisorId, String multiMatchAlg, String name, String vmId, String address);
 
 	void updateServer(Long hypervisorId, String oldVmId, String newVmId, String newName);
 }

@@ -21,6 +21,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -232,8 +233,8 @@ public class OServerService implements IOServerService {
 	}
 
 	@Override
-	public List<String> updateVMServers(Long hypervisorId, List<Map<String, String>> servers, boolean onlyNew) {
-		logger.info("CheckVMServers: hypervisor=[{}] servers={}", hypervisorId, servers);
+	public List<String> updateVMServers(Long hypervisorId, String multiMatchAlg, List<Map<String, String>> servers, boolean onlyNew) {
+		logger.info("UpdateVMServers: hypervisor=[{}] multiMatchAlg=[{}] servers={}", hypervisorId, multiMatchAlg, servers);
 
 		List<String> result = new ArrayList<>();
 		List<String> validVmId = new ArrayList<>();
@@ -246,14 +247,21 @@ public class OServerService implements IOServerService {
 
 			validVmId.add(vmId);
 
-			OServer oServer = checkVMServer(hypervisorId, name, vmId, address);
+			List<OServer> oServers = checkVMServer(hypervisorId, multiMatchAlg, name, vmId, address);
+
+			OServer oServer = null;
+			if (oServers.size() == 1) {
+				oServer = oServers.get(0);
+			} else if (oServers.size() > 1) {
+				throw new RuntimeException("Multiple Server Found: " + oServers);
+			}
 
 			if (onlyNew && oServer != null) {
 				continue;
 			}
 
 			if (oServer != null) {
-				logger.info("CheckVMServers: update server hypervisor=[{}] vmId=[{}]  name=[{}] <-[{}]  address=[{}] <-[{}] id=[{}] ",
+				logger.info("UpdateVMServers: update server hypervisor=[{}] vmId=[{}]  name=[{}] <-[{}]  address=[{}] <-[{}] id=[{}] ",
 					hypervisorId, vmId, name, oServer.getName(), address, oServer.getAddress(), oServer.getId());
 
 				oServer.setVmId(vmId);
@@ -262,7 +270,7 @@ public class OServerService implements IOServerService {
 					oServer.setAddress(address);
 				}
 			} else {
-				logger.info("CheckVMServers: insert new server hypervisor=[{}] vmId=[{}] name=[{}] ",
+				logger.info("UpdateVMServers: insert new server hypervisor=[{}] vmId=[{}] name=[{}] ",
 					hypervisorId, name, vmId);
 				oServer = new OServer(name, address);
 				oServer.setVmId(vmId);
@@ -298,7 +306,10 @@ public class OServerService implements IOServerService {
 	}
 
 	@Override
-	public OServer checkVMServer(Long hypervisorId, String name, String vmId, String address) {
+	public List<OServer> checkVMServer(Long hypervisorId, String multiMatchAlg, String name, String vmId, String address) {
+		logger.info("CheckVMServer: hypervisor=[{}] multiMatchAlg=[{}] name=[{}] vmId=[{}] address=[{}]",
+			hypervisorId, multiMatchAlg, name, vmId, address);
+
 		IQueryBuilder oServerBuilder = persistorService.createQueryBuilder()
 			.addFrom(OServer.class, "ent")
 			.addWhere("and ent.hypervisor.id = :hypervisorId")
@@ -309,25 +320,21 @@ public class OServerService implements IOServerService {
 			.addWhere("or ent.vmId = :vmId")
 			.addParam("vmId", vmId);
 
-		if (address != null && !address.isEmpty()) {
+		if (address != null && !address.trim().isEmpty()) {
 			oServerBuilder
 				.addWhere("or ent.address = :address")
-				.addParam("address", address);
+				.addParam("address", address.trim());
 		}
 
 		oServerBuilder.addWhere(")");
 
 		List<OServer> oServerList = oServerBuilder.list();
 
-		OServer oServer;
-		if (oServerList.isEmpty()) {
-			oServer = null;
-		} else if (oServerList.size() == 1) {
-			oServer = oServerList.get(0);
+		if (oServerList.isEmpty() || oServerList.size() == 1) {
+			return oServerList;
 		} else {
-			oServer = findProperOServer(oServerList, vmId, name, address);
+			return findProperOServer(oServerList, multiMatchAlg, vmId, name, address);
 		}
-		return oServer;
 	}
 
 	@Override
@@ -352,25 +359,44 @@ public class OServerService implements IOServerService {
 
 	// ------------------------------
 
-	private OServer findProperOServer(List<OServer> oServerList, String vmId, String name, String address) {
-		for (OServer oServer : oServerList) {
-			if (oServer.getVmId().equals(vmId)) {
-				return oServer;
-			}
+	private List<OServer> findProperOServer(List<OServer> oServerList, String multiMatchAlg, String vmId, String name, String address) {
+		if (multiMatchAlg == null) {
+			return oServerList;
 		}
 
-		for (OServer oServer : oServerList) {
-			if (oServer.getAddress() != null && oServer.getAddress().equals(address)) {
-				return oServer;
+		String[] priorities = multiMatchAlg.split("[,]");
+		for (String priority : priorities) {
+			switch (priority) {
+				case "Vmid":
+					for (OServer oServer : oServerList) {
+						if (oServer.getVmId().equals(vmId)) {
+							return Collections.singletonList(oServer);
+						}
+					}
+					break;
+
+				case "Name":
+					for (OServer oServer : oServerList) {
+						if (oServer.getName().equals(name)) {
+							return Collections.singletonList(oServer);
+						}
+					}
+					break;
+
+				case "Address":
+					if (address != null) {
+						for (OServer oServer : oServerList) {
+							if (oServer.getAddress() != null && address.equals(oServer.getAddress())) {
+								return Collections.singletonList(oServer);
+							}
+						}
+					}
+					break;
+
+				default:
+					throw new RuntimeException("Invalid match algorithm: " + multiMatchAlg);
 			}
 		}
-
-		for (OServer oServer : oServerList) {
-			if (oServer.getName().equals(name)) {
-				return oServer;
-			}
-		}
-
-		return null;
+		return oServerList;
 	}
 }
