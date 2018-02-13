@@ -15,7 +15,7 @@ public class EServerOS implements Serializable {
 	// ------------------------------
 
 	public static final EServerOS LINUX = new EServerOS(1, "Linux");
-	public static final EServerOS ESX = new EServerOS(2, "ESX");
+	public static final EServerOS ESXi = new EServerOS(2, "ESXi");
 	public static final EServerOS WINDOWS = new EServerOS(3, "Windows");
 
 	// ------------------------------

@@ -65,7 +65,7 @@ tab.rows.each {Map vmMap ->
 	vmMap.DataStore = vmMap.File.find('\\[(.+?)\\]', 1)
 	vmMap.File = vmMap.File.replaceAll('\\[.+?\\] ', '')
 
-	if(ShowIP || UpdateServer || CheckDef)
+	if(ShowIP || UpdateServer)
 		vmMap.IpAddress = vGetIP([Vmid : vmMap.Vmid])
 
 	if(CheckDef) {
