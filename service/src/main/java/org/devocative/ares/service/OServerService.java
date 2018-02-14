@@ -20,14 +20,17 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @Service("arsOServerService")
 public class OServerService implements IOServerService {
 	private static final Logger logger = LoggerFactory.getLogger(OServerService.class);
+
+	private static final String VM_ID = "Vmid";
+	private static final String NAME = "Name";
+	private static final String ADDRESS = "Address";
+
+	// ------------------------------
 
 	@Autowired
 	private IPersistorService persistorService;
@@ -236,6 +239,20 @@ public class OServerService implements IOServerService {
 	public List<String> updateVMServers(Long hypervisorId, String multiMatchAlg, List<Map<String, String>> servers, boolean onlyNew) {
 		logger.info("UpdateVMServers: hypervisor=[{}] multiMatchAlg=[{}] servers={}", hypervisorId, multiMatchAlg, servers);
 
+		switch (multiMatchAlg) {
+			case VM_ID:
+				assertNoConflict("vmId", servers);
+				break;
+
+			case NAME:
+				assertNoConflict("name", servers);
+				break;
+
+			case ADDRESS:
+				assertNoConflict("address", servers);
+				break;
+		}
+
 		List<String> result = new ArrayList<>();
 		List<String> validVmId = new ArrayList<>();
 
@@ -261,8 +278,11 @@ public class OServerService implements IOServerService {
 			}
 
 			if (oServer != null) {
-				logger.info("UpdateVMServers: update server hypervisor=[{}] vmId=[{}]  name=[{}] <-[{}]  address=[{}] <-[{}] id=[{}] ",
-					hypervisorId, vmId, name, oServer.getName(), address, oServer.getAddress(), oServer.getId());
+				logger.info("UpdateVMServers for Hypervisor=[{}]: vmId=[{}] name=[{}] addr=[{}] <- OServer(id=[{}] name=[{}] addr=[{}])",
+					hypervisorId,
+					vmId, name, address,
+					oServer.getId(), oServer.getName(), oServer.getAddress()
+				);
 
 				oServer.setVmId(vmId);
 				oServer.setName(name);
@@ -270,7 +290,7 @@ public class OServerService implements IOServerService {
 					oServer.setAddress(address);
 				}
 			} else {
-				logger.info("UpdateVMServers: insert new server hypervisor=[{}] vmId=[{}] name=[{}] ",
+				logger.info("UpdateVMServers for Hypervisor=[{}]: insert new server vmId=[{}] name=[{}]",
 					hypervisorId, name, vmId);
 				oServer = new OServer(name, address);
 				oServer.setVmId(vmId);
@@ -313,17 +333,42 @@ public class OServerService implements IOServerService {
 		IQueryBuilder oServerBuilder = persistorService.createQueryBuilder()
 			.addFrom(OServer.class, "ent")
 			.addWhere("and ent.hypervisor.id = :hypervisorId")
-			.addParam("hypervisorId", hypervisorId)
+			.addParam("hypervisorId", hypervisorId);
 
-			.addWhere("and (ent.name = :name")
-			.addParam("name", name)
-			.addWhere("or ent.vmId = :vmId")
-			.addParam("vmId", vmId);
-
-		if (address != null && !address.trim().isEmpty()) {
+		if (multiMatchAlg == null) {
 			oServerBuilder
-				.addWhere("or ent.address = :address")
-				.addParam("address", address.trim());
+				.addWhere("and (ent.name = :name")
+				.addParam("name", name)
+				.addWhere("or ent.vmId = :vmId")
+				.addParam("vmId", vmId);
+			if (address != null && !address.trim().isEmpty()) {
+				oServerBuilder
+					.addWhere("or ent.address = :address")
+					.addParam("address", address.trim());
+			}
+		} else {
+			oServerBuilder.addWhere("and (1=0");
+			switch (multiMatchAlg) {
+				case VM_ID:
+					oServerBuilder
+						.addWhere("or ent.vmId = :vmId")
+						.addParam("vmId", vmId);
+					break;
+
+				case NAME:
+					oServerBuilder
+						.addWhere("or ent.name = :name")
+						.addParam("name", name);
+					break;
+
+				case ADDRESS:
+					if (address != null && !address.trim().isEmpty()) {
+						oServerBuilder
+							.addWhere("or ent.address = :address")
+							.addParam("address", address.trim());
+					}
+					break;
+			}
 		}
 
 		oServerBuilder.addWhere(")");
@@ -364,39 +409,55 @@ public class OServerService implements IOServerService {
 			return oServerList;
 		}
 
-		String[] priorities = multiMatchAlg.split("[,]");
-		for (String priority : priorities) {
-			switch (priority) {
-				case "Vmid":
+		switch (multiMatchAlg) {
+			case VM_ID:
+				for (OServer oServer : oServerList) {
+					if (oServer.getVmId().equals(vmId)) {
+						return Collections.singletonList(oServer);
+					}
+				}
+				break;
+
+			case NAME:
+				for (OServer oServer : oServerList) {
+					if (oServer.getName().equals(name)) {
+						return Collections.singletonList(oServer);
+					}
+				}
+				break;
+
+			case ADDRESS:
+				if (address != null) {
 					for (OServer oServer : oServerList) {
-						if (oServer.getVmId().equals(vmId)) {
+						if (oServer.getAddress() != null && address.equals(oServer.getAddress())) {
 							return Collections.singletonList(oServer);
 						}
 					}
-					break;
+				}
+				break;
 
-				case "Name":
-					for (OServer oServer : oServerList) {
-						if (oServer.getName().equals(name)) {
-							return Collections.singletonList(oServer);
-						}
-					}
-					break;
+			default:
+				throw new RuntimeException("Invalid match algorithm: " + multiMatchAlg);
+		}
 
-				case "Address":
-					if (address != null) {
-						for (OServer oServer : oServerList) {
-							if (oServer.getAddress() != null && address.equals(oServer.getAddress())) {
-								return Collections.singletonList(oServer);
-							}
-						}
-					}
-					break;
+		return oServerList;
+	}
 
-				default:
-					throw new RuntimeException("Invalid match algorithm: " + multiMatchAlg);
+	private void assertNoConflict(String field, List<Map<String, String>> servers) {
+		Set<String> set = new HashSet<>();
+		for (Map<String, String> server : servers) {
+			String value = server.get(field);
+			if (value == null || value.trim().isEmpty()) {
+				throw new RuntimeException(String.format("No value for '%s': %s", field, server)); //TODO
+			}
+
+			value = value.trim();
+
+			if (set.contains(value)) {
+				throw new RuntimeException(String.format("Duplicate '%s': %s [%s]", field, value, server)); //TODO
+			} else {
+				set.add(value);
 			}
 		}
-		return oServerList;
 	}
 }

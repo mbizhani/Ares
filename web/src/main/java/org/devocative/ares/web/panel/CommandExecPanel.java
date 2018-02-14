@@ -502,6 +502,10 @@ public class CommandExecPanel extends DPanel implements IAsyncResponse<CommandOu
 			return true;
 		}
 
+		public Boolean getSingleSelect() {
+			return true;
+		}
+
 		public String getTitle() {
 			return title;
 		}
