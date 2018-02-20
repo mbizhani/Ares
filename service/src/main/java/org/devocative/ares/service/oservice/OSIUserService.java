@@ -12,7 +12,8 @@ import org.devocative.ares.entity.oservice.OService;
 import org.devocative.ares.entity.oservice.OServiceInstance;
 import org.devocative.ares.iservice.oservice.IOSIUserService;
 import org.devocative.ares.vo.filter.oservice.OSIUserFVO;
-import org.devocative.demeter.entity.ERowMod;
+import org.devocative.demeter.entity.ERoleMode;
+import org.devocative.demeter.entity.ERowMode;
 import org.devocative.demeter.entity.Role;
 import org.devocative.demeter.entity.User;
 import org.devocative.demeter.iservice.ISecurityService;
@@ -25,6 +26,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -66,8 +68,34 @@ public class OSIUserService implements IOSIUserService {
 
 		entity.setServer(entity.getServiceInstance().getServer());
 		entity.setService(entity.getServiceInstance().getService());
-		if (entity.getRowMod() == null) {
-			entity.setRowMod(ERowMod.NORMAL);
+		if (entity.getRowMode() == null) {
+			entity.setRowMode(ERowMode.ROLE);
+		}
+
+		// TODO the following code must be placed in Demeter HibernateInterceptor
+		UserVO currentUser = securityService.getCurrentUser();
+		if (!currentUser.isRoot() && !currentUser.isAdmin()) {
+			if (ERowMode.ROLE.equals(entity.getRowMode()) &&
+				(entity.getAllowedRoles() == null || entity.getAllowedRoles().isEmpty())) {
+
+				List<Role> roles = new ArrayList<>();
+
+				for (Role cuRole : currentUser.getRoles()) {
+					if (ERoleMode.MAIN.equals(cuRole.getRoleMode())) {
+						roles.add(cuRole);
+						break;
+					}
+				}
+				if (roles.isEmpty()) {
+					for (Role cuRole : currentUser.getRoles()) {
+						if (ERoleMode.NORMAL.equals(cuRole.getRoleMode())) {
+							roles.add(cuRole);
+							break;
+						}
+					}
+				}
+				entity.setAllowedRoles(roles);
+			}
 		}
 
 		persistorService.saveOrUpdate(entity);
@@ -147,7 +175,7 @@ public class OSIUserService implements IOSIUserService {
 		}
 
 		if (entity.getId() == null && userSelfAdd) {
-			entity.setRowMod(ERowMod.CREATOR);
+			entity.setRowMode(ERowMode.CREATOR);
 		}
 
 		saveOrUpdate(entity);
@@ -230,7 +258,7 @@ public class OSIUserService implements IOSIUserService {
 	public boolean isOSIUserAllowed(Long osiUserId) {
 		IQueryBuilder queryBuilder = createBaseAllowedUsers()
 			.addSelect("select count(ent.id)")
-			.addWhere("and ent.id=:osiUserId")
+			.addWhere("and ent.id = :osiUserId")
 			.addParam("osiUserId", osiUserId);
 
 		Long count = queryBuilder.object();
@@ -251,11 +279,11 @@ public class OSIUserService implements IOSIUserService {
 				.addJoin("usr", "ent.allowedUsers", EJoinMode.Left)
 				.addJoin("role", "ent.allowedRoles", EJoinMode.Left)
 
-				.addWhere("and ( usr.id=:userId or (ent.rowMod=:creator and ent.creatorUserId=:userId) ")
+				.addWhere("and ( usr.id = :userId or (ent.rowMode = :creator and ent.creatorUserId = :userId)")
 				.addWhere("or role in (:roles) )")
 
 				.addParam("userId", currentUser.getUserId())
-				.addParam("creator", ERowMod.CREATOR)
+				.addParam("creator", ERowMode.CREATOR)
 				.addParam("roles", currentUser.getRoles())
 			;
 		}

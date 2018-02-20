@@ -13,7 +13,8 @@ import org.devocative.ares.iservice.oservice.IOServiceInstanceService;
 import org.devocative.ares.vo.OServiceInstanceTargetVO;
 import org.devocative.ares.vo.filter.oservice.OServiceInstanceFVO;
 import org.devocative.demeter.DBConstraintViolationException;
-import org.devocative.demeter.entity.ERowMod;
+import org.devocative.demeter.entity.ERoleMode;
+import org.devocative.demeter.entity.ERowMode;
 import org.devocative.demeter.entity.Role;
 import org.devocative.demeter.entity.User;
 import org.devocative.demeter.iservice.ICacheService;
@@ -70,7 +71,7 @@ public class OServiceInstanceService implements IOServiceInstanceService, IMisse
 
 			Role role = roleService.loadByName(roleName);
 			if (role == null) {
-				role = roleService.createOrUpdateRole(roleName, ERowMod.ADMIN, false);
+				role = roleService.createOrUpdateRole(roleName, ERowMode.ADMIN, ERoleMode.MAIN);
 			}
 
 			if (entity.getAllowedRoles() == null) {

@@ -87,10 +87,8 @@ public class OSIUserFormDPage extends DPage {
 
 		WFloatTable floatTable = new WFloatTable("floatTable");
 		floatTable.add(new WTextInput("username")
-				.setRequired(true)
-				.setLabel(new ResourceModel("OSIUser.username"))
-			//.add(new WPatternValidator("^[A-Za-z]+?[A-Za-z0-9.]*?$", "OSIUser.username.invalid.format"))
-		);
+			.setRequired(true)
+			.setLabel(new ResourceModel("OSIUser.username", "username")));
 
 		password = new WTextInput("password", new Model<>(), true);
 		password
@@ -105,13 +103,13 @@ public class OSIUserFormDPage extends DPage {
 
 		floatTable.add(new WBooleanInput("executor")
 			.setRequired(true)
-			.setLabel(new ResourceModel("OSIUser.executor")));
+			.setLabel(new ResourceModel("OSIUser.executor", "executor")));
 		floatTable.add(new WBooleanInput("enabled")
 			.setRequired(true)
-			.setLabel(new ResourceModel("OSIUser.enabled")));
+			.setLabel(new ResourceModel("OSIUser.enabled", "enabled")));
 		floatTable.add(new WSelectionInput("remoteMode", ERemoteMode.list(), false)
 			.setRequired(true)
-			.setLabel(new ResourceModel("OSIUser.remoteMode")));
+			.setLabel(new ResourceModel("OSIUser.remoteMode", "remoteMode")));
 
 		List<OServiceInstance> oServiceInstances;
 		if (serverId != null) {
@@ -125,12 +123,11 @@ public class OSIUserFormDPage extends DPage {
 		}
 		floatTable.add(new WSelectionInput("serviceInstance", oServiceInstances, false)
 			.setRequired(true)
-			.setLabel(new ResourceModel("OSIUser.serviceInstance")));
-
+			.setLabel(new ResourceModel("OSIUser.serviceInstance", "serviceInstance")));
 		floatTable.add(new WSelectionInput("allowedUsers", oSIUserService.getAllowedUsersList(), true)
-			.setLabel(new ResourceModel("OSIUser.allowedUsers")));
+			.setLabel(new ResourceModel("OSIUser.allowedUsers", "allowedUsers")));
 		floatTable.add(new WSelectionInput("allowedRoles", oSIUserService.getAllowedRolesList(), true)
-			.setLabel(new ResourceModel("OSIUser.allowedRoles")));
+			.setLabel(new ResourceModel("OSIUser.allowedRoles", "allowedRoles")));
 
 		Form<OSIUser> form = new Form<>("form", new CompoundPropertyModel<>(entity));
 		form.add(new WEqualInputValidator(password, password2));

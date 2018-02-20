@@ -509,7 +509,7 @@
 				<field name="allowedRoles">
 					<finfo/>
 				</field>
-				<field name="rowMod">
+				<field name="rowMode">
 					<finfo hasForm="false"/>
 				</field>
 				<field name="creationDate">

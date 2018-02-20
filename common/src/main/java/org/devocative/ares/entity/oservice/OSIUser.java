@@ -14,7 +14,7 @@ import java.util.List;
 @Table(name = "t_ars_service_inst_user", uniqueConstraints = {
 	@UniqueConstraint(name = "uk_ars_user_username", columnNames = {"c_username", "f_service_inst"})
 })
-public class OSIUser implements IRowMod, ICreationDate, ICreatorUser, IModificationDate, IModifierUser {
+public class OSIUser implements IRowMode, IRoleRowAccess, ICreationDate, ICreatorUser, IModificationDate, IModifierUser {
 	private static final long serialVersionUID = 753142909119873415L;
 
 	@Id
@@ -62,6 +62,7 @@ public class OSIUser implements IRowMod, ICreationDate, ICreatorUser, IModificat
 	@Column(name = "f_service", insertable = false, updatable = false)
 	private Long serviceId;
 
+	@OrderBy("username")
 	@ManyToMany(fetch = FetchType.LAZY)
 	@JoinTable(name = "mt_ars_siUser_user",
 		joinColumns = {@JoinColumn(name = "f_siUser", nullable = false)},
@@ -71,6 +72,7 @@ public class OSIUser implements IRowMod, ICreationDate, ICreatorUser, IModificat
 	)
 	private List<User> allowedUsers;
 
+	@OrderBy("name")
 	@ManyToMany(fetch = FetchType.LAZY)
 	@JoinTable(name = "mt_ars_siUser_role",
 		joinColumns = {@JoinColumn(name = "f_siUser", nullable = false)},
@@ -84,7 +86,7 @@ public class OSIUser implements IRowMod, ICreationDate, ICreatorUser, IModificat
 
 	@Embedded
 	@AttributeOverride(name = "id", column = @Column(name = "e_mod", nullable = false))
-	private ERowMod rowMod;
+	private ERowMode rowMode;
 
 	@NotAudited
 	@Column(name = "d_creation", nullable = false, columnDefinition = "date")
@@ -219,6 +221,7 @@ public class OSIUser implements IRowMod, ICreationDate, ICreatorUser, IModificat
 		this.allowedUsers = allowedUsers;
 	}
 
+	@Override
 	public List<Role> getAllowedRoles() {
 		return allowedRoles;
 	}
@@ -230,13 +233,13 @@ public class OSIUser implements IRowMod, ICreationDate, ICreatorUser, IModificat
 	// ---------------
 
 	@Override
-	public ERowMod getRowMod() {
-		return rowMod;
+	public ERowMode getRowMode() {
+		return rowMode;
 	}
 
 	@Override
-	public void setRowMod(ERowMod rowMod) {
-		this.rowMod = rowMod;
+	public void setRowMode(ERowMode rowMode) {
+		this.rowMode = rowMode;
 	}
 
 	@Override

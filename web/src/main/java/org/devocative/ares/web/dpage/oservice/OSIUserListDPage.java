@@ -12,7 +12,7 @@ import org.devocative.ares.entity.oservice.OSIUser;
 import org.devocative.ares.iservice.oservice.IOSIUserService;
 import org.devocative.ares.vo.filter.oservice.OSIUserFVO;
 import org.devocative.ares.web.AresIcon;
-import org.devocative.demeter.entity.ERowMod;
+import org.devocative.demeter.entity.ERowMode;
 import org.devocative.demeter.web.DPage;
 import org.devocative.demeter.web.component.DAjaxButton;
 import org.devocative.demeter.web.component.grid.OEditAjaxColumn;
@@ -111,36 +111,36 @@ public class OSIUserListDPage extends DPage implements IGridDataSource<OSIUser> 
 
 		WFloatTable floatTable = new WFloatTable("floatTable");
 		floatTable.add(new WTextInput("username")
-			.setLabel(new ResourceModel("OSIUser.username")));
+			.setLabel(new ResourceModel("OSIUser.username", "username")));
 		floatTable.add(new WBooleanInput("executor")
-			.setLabel(new ResourceModel("OSIUser.executor")));
+			.setLabel(new ResourceModel("OSIUser.executor", "executor")));
 		floatTable.add(new WBooleanInput("enabled")
-			.setLabel(new ResourceModel("OSIUser.enabled")));
+			.setLabel(new ResourceModel("OSIUser.enabled", "enabled")));
 		floatTable.add(new WSelectionInput("remoteMode", ERemoteMode.list(), true)
-			.setLabel(new ResourceModel("OSIUser.remoteMode")));
+			.setLabel(new ResourceModel("OSIUser.remoteMode", "remoteMode")));
 		floatTable.add(new WSelectionInput("serviceInstance", oSIUserService.getServiceInstanceList(), true)
-			.setLabel(new ResourceModel("OSIUser.serviceInstance")));
+			.setLabel(new ResourceModel("OSIUser.serviceInstance", "serviceInstance")));
 		floatTable.add(new WSelectionInput("server", oSIUserService.getServerList(), true)
-			.setLabel(new ResourceModel("OSIUser.server")));
+			.setLabel(new ResourceModel("OSIUser.server", "server")));
 		floatTable.add(new WSelectionInput("service", oSIUserService.getServiceList(), true)
-			.setLabel(new ResourceModel("OSIUser.service")));
+			.setLabel(new ResourceModel("OSIUser.service", "service")));
 		floatTable.add(new WSelectionInput("allowedUsers", oSIUserService.getAllowedUsersList(), true)
-			.setLabel(new ResourceModel("OSIUser.allowedUsers")));
+			.setLabel(new ResourceModel("OSIUser.allowedUsers", "allowedUsers")));
 		floatTable.add(new WSelectionInput("allowedRoles", oSIUserService.getAllowedRolesList(), true)
-			.setLabel(new ResourceModel("OSIUser.allowedRoles")));
-		floatTable.add(new WSelectionInput("rowMod", ERowMod.list(), true)
-			.setLabel(new ResourceModel("entity.rowMod"))
+			.setLabel(new ResourceModel("OSIUser.allowedRoles", "allowedRoles")));
+		floatTable.add(new WSelectionInput("rowMode", ERowMode.list(), true)
+			.setLabel(new ResourceModel("entity.rowMode", "rowMode"))
 			.setVisible(getCurrentUser().isRoot()));
 		floatTable.add(new WDateRangeInput("creationDate")
 			.setTimePartVisible(true)
-			.setLabel(new ResourceModel("entity.creationDate")));
+			.setLabel(new ResourceModel("entity.creationDate", "creationDate")));
 		floatTable.add(new WSelectionInput("creatorUser", oSIUserService.getCreatorUserList(), true)
-			.setLabel(new ResourceModel("entity.creatorUser")));
+			.setLabel(new ResourceModel("entity.creatorUser", "creatorUser")));
 		floatTable.add(new WDateRangeInput("modificationDate")
 			.setTimePartVisible(true)
-			.setLabel(new ResourceModel("entity.modificationDate")));
+			.setLabel(new ResourceModel("entity.modificationDate", "modificationDate")));
 		floatTable.add(new WSelectionInput("modifierUser", oSIUserService.getModifierUserList(), true)
-			.setLabel(new ResourceModel("entity.modifierUser")));
+			.setLabel(new ResourceModel("entity.modifierUser", "modifierUser")));
 
 		Form<OSIUserFVO> form = new Form<>("form", new CompoundPropertyModel<>(filter));
 		form.add(floatTable);
@@ -156,35 +156,33 @@ public class OSIUserListDPage extends DPage implements IGridDataSource<OSIUser> 
 		add(form);
 
 		OColumnList<OSIUser> columnList = new OColumnList<>();
-		columnList.add(new OPropertyColumn<>(new ResourceModel("OSIUser.username"), "username"));
-		columnList.add(new OPropertyColumn<OSIUser>(new ResourceModel("OSIUser.executor"), "executor")
-				.setFormatter(OBooleanFormatter.bool())
-				.setCellStyler((IStyler<OSIUser> & Serializable) (bean, id) -> OStyle.style(bean.getExecutor() ? "color: #32cd32" : null))
-		);
-		columnList.add(new OPropertyColumn<OSIUser>(new ResourceModel("OSIUser.enabled"), "enabled")
-				.setFormatter(OBooleanFormatter.bool())
-				.setCellStyler((IStyler<OSIUser> & Serializable) (bean, id) -> OStyle.style(bean.getEnabled() ? "color: #32cd32" : "color: red"))
-		);
-		columnList.add(new OPropertyColumn<>(new ResourceModel("OSIUser.remoteMode"), "remoteMode"));
-		//columnList.add(new OPropertyColumn<>(new ResourceModel("OSIUser.serviceInstance"), "serviceInstance"));
-		columnList.add(new OPropertyColumn<>(new ResourceModel("OSIUser.server"), "server"));
-		columnList.add(new OPropertyColumn<>(new ResourceModel("OSIUser.service"), "service"));
-		columnList.add(new OPropertyColumn<OSIUser>(new ResourceModel("OSIUser.allowedUsers"), "allowedUsers")
+		columnList.add(new OPropertyColumn<>(new ResourceModel("OSIUser.username", "username"), "username"));
+		columnList.add(new OPropertyColumn<OSIUser>(new ResourceModel("OSIUser.executor", "executor"), "executor")
+			.setFormatter(OBooleanFormatter.bool())
+			.setCellStyler((IStyler<OSIUser> & Serializable) (bean, id) -> OStyle.style(bean.getExecutor() ? "color: #32cd32" : null)));
+		columnList.add(new OPropertyColumn<OSIUser>(new ResourceModel("OSIUser.enabled", "enabled"), "enabled")
+			.setFormatter(OBooleanFormatter.bool())
+			.setCellStyler((IStyler<OSIUser> & Serializable) (bean, id) -> OStyle.style(bean.getEnabled() ? "color: #32cd32" : "color: red")));
+		columnList.add(new OPropertyColumn<>(new ResourceModel("OSIUser.remoteMode", "remoteMode"), "remoteMode"));
+		//columnList.add(new OPropertyColumn<>(new ResourceModel("OSIUser.serviceInstance", "serviceInstance"), "serviceInstance"));
+		columnList.add(new OPropertyColumn<>(new ResourceModel("OSIUser.server", "server"), "server"));
+		columnList.add(new OPropertyColumn<>(new ResourceModel("OSIUser.service", "service"), "service"));
+		columnList.add(new OPropertyColumn<OSIUser>(new ResourceModel("OSIUser.allowedUsers", "allowedUsers"), "allowedUsers")
 			.setWidth(OSize.fixed(200)));
-		columnList.add(new OPropertyColumn<OSIUser>(new ResourceModel("OSIUser.allowedRoles"), "allowedRoles")
+		columnList.add(new OPropertyColumn<OSIUser>(new ResourceModel("OSIUser.allowedRoles", "allowedRoles"), "allowedRoles")
 			.setWidth(OSize.fixed(200)));
 		if (getCurrentUser().isRoot()) {
-			columnList.add(new OPropertyColumn<>(new ResourceModel("entity.rowMod"), "rowMod"));
+			columnList.add(new OPropertyColumn<>(new ResourceModel("entity.rowMode", "rowMode"), "rowMode"));
 		}
-		columnList.add(new OPropertyColumn<OSIUser>(new ResourceModel("entity.creationDate"), "creationDate")
+		columnList.add(new OPropertyColumn<OSIUser>(new ResourceModel("entity.creationDate", "creationDate"), "creationDate")
 			.setFormatter(ODateFormatter.getDateTimeByUserPreference())
 			.setStyle("direction:ltr"));
-		columnList.add(new OPropertyColumn<>(new ResourceModel("entity.creatorUser"), "creatorUser"));
-		columnList.add(new OPropertyColumn<OSIUser>(new ResourceModel("entity.modificationDate"), "modificationDate")
+		columnList.add(new OPropertyColumn<>(new ResourceModel("entity.creatorUser", "creatorUser"), "creatorUser"));
+		columnList.add(new OPropertyColumn<OSIUser>(new ResourceModel("entity.modificationDate", "modificationDate"), "modificationDate")
 			.setFormatter(ODateFormatter.getDateTimeByUserPreference())
 			.setStyle("direction:ltr"));
-		columnList.add(new OPropertyColumn<>(new ResourceModel("entity.modifierUser"), "modifierUser"));
-		columnList.add(new OPropertyColumn<OSIUser>(new ResourceModel("entity.version"), "version")
+		columnList.add(new OPropertyColumn<>(new ResourceModel("entity.modifierUser", "modifierUser"), "modifierUser"));
+		columnList.add(new OPropertyColumn<OSIUser>(new ResourceModel("entity.version", "version"), "version")
 			.setFormatter(ONumberFormatter.integer())
 			.setStyle("direction:ltr"));
 

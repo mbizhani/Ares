@@ -6,7 +6,7 @@ import org.devocative.ares.entity.OServer;
 import org.devocative.ares.entity.oservice.ERemoteMode;
 import org.devocative.ares.entity.oservice.OService;
 import org.devocative.ares.entity.oservice.OServiceInstance;
-import org.devocative.demeter.entity.ERowMod;
+import org.devocative.demeter.entity.ERowMode;
 import org.devocative.demeter.entity.Role;
 import org.devocative.demeter.entity.User;
 import org.devocative.demeter.iservice.persistor.Filterer;
@@ -28,7 +28,7 @@ public class OSIUserFVO implements Serializable {
 	private List<OService> service;
 	private List<User> allowedUsers;
 	private List<Role> allowedRoles;
-	private List<ERowMod> rowMod;
+	private List<ERowMode> rowMode;
 	private RangeVO<Date> creationDate;
 	private List<User> creatorUser;
 	private RangeVO<Date> modificationDate;
@@ -108,12 +108,12 @@ public class OSIUserFVO implements Serializable {
 		this.allowedRoles = allowedRoles;
 	}
 
-	public List<ERowMod> getRowMod() {
-		return rowMod;
+	public List<ERowMode> getRowMode() {
+		return rowMode;
 	}
 
-	public void setRowMod(List<ERowMod> rowMod) {
-		this.rowMod = rowMod;
+	public void setRowMode(List<ERowMode> rowMode) {
+		this.rowMode = rowMode;
 	}
 
 	public RangeVO<Date> getCreationDate() {

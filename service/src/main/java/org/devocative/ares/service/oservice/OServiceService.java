@@ -10,7 +10,8 @@ import org.devocative.ares.iservice.oservice.IOServicePropertyService;
 import org.devocative.ares.iservice.oservice.IOServiceService;
 import org.devocative.ares.vo.filter.oservice.OServiceFVO;
 import org.devocative.ares.vo.xml.*;
-import org.devocative.demeter.entity.ERowMod;
+import org.devocative.demeter.entity.ERoleMode;
+import org.devocative.demeter.entity.ERowMode;
 import org.devocative.demeter.entity.User;
 import org.devocative.demeter.iservice.IRoleService;
 import org.devocative.demeter.iservice.persistor.IPersistorService;
@@ -124,7 +125,7 @@ public class OServiceService implements IOServiceService {
 				oService = new OService();
 				oService.setName(xService.getName());
 
-				roleService.createOrUpdateRole(xService.getName(), ERowMod.ADMIN, false);
+				roleService.createOrUpdateRole(xService.getName(), ERowMode.ADMIN, ERoleMode.MAIN);
 
 				logger.info("OService not found and created: {}", xService.getName());
 			} else {
