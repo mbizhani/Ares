@@ -71,7 +71,7 @@ public class OServiceInstanceService implements IOServiceInstanceService, IMisse
 
 			Role role = roleService.loadByName(roleName);
 			if (role == null) {
-				role = roleService.createOrUpdateRole(roleName, ERowMode.ADMIN, ERoleMode.MAIN);
+				role = roleService.createOrUpdate(roleName, ERowMode.ADMIN, ERoleMode.MAIN);
 			}
 
 			if (entity.getAllowedRoles() == null) {

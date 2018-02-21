@@ -35,6 +35,11 @@
 		<task type="org.devocative.ares.service.terminal.CloseIdleConnectionsDTask" cronExpression="0 0/7 * * * ?"/>
 	</tasks>
 
+	<roles>
+		<role name="SysAdmin"
+			  permissions="OServerAdd,OServerEdit,OServiceInstanceAdd,OServiceInstanceEdit,OSIUserAdd,OSIUserEdit"/>
+	</roles>
+
 	<dPages>
 		<dPage type="org.devocative.ares.web.dpage.TerminalConsoleDPage"
 			   title="KEY:dPage.ars.TerminalConsole"
@@ -54,21 +59,21 @@
 			   title="KEY:dPage.ars.OServerList"
 			   uri="/servers"
 			   inMenu="true"
-			   roles="Admin"
+			   roles="Admin,SysAdmin"
 				/>
 
 		<dPage type="org.devocative.ares.web.dpage.oservice.OServiceInstanceListDPage"
 			   title="KEY:dPage.ars.OServiceInstanceList"
 			   uri="/instances"
 			   inMenu="true"
-			   roles="Admin"
+			   roles="Admin,SysAdmin"
 				/>
 
 		<dPage type="org.devocative.ares.web.dpage.oservice.OSIUserListDPage"
 			   title="KEY:dPage.ars.OSIUserList"
 			   uri="/users"
 			   inMenu="true"
-			   roles="Admin"
+			   roles="Admin,SysAdmin"
 				/>
 
 		<dPage type="org.devocative.ares.web.dpage.command.CommandListDPage"
@@ -82,7 +87,7 @@
 			   title="KEY:dPage.ars.PrepCommandList"
 			   uri="/prpcmds"
 			   inMenu="true"
-			   roles="Admin"
+			   roles="Admin,SysAdmin"
 				/>
 
 		<dPage type="org.devocative.ares.web.dpage.command.CommandLogListDPage"
