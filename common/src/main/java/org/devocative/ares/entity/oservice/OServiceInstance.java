@@ -14,7 +14,7 @@ import java.util.List;
 @Table(name = "t_ars_service_inst", uniqueConstraints = {
 	@UniqueConstraint(name = "uk_ars_serviceInst", columnNames = {"f_server", "f_service", "c_name"})
 })
-public class OServiceInstance implements ICreationDate, ICreatorUser, IModificationDate, IModifierUser {
+public class OServiceInstance implements IRowMode, IRoleRowAccess, ICreationDate, ICreatorUser, IModificationDate, IModifierUser {
 	private static final long serialVersionUID = 2007755808784442971L;
 
 	@Id
@@ -70,6 +70,10 @@ public class OServiceInstance implements ICreationDate, ICreatorUser, IModificat
 	private List<Role> allowedRoles;
 
 	// --------------- CREATE / MODIFY
+
+	@Embedded
+	@AttributeOverride(name = "id", column = @Column(name = "e_mod", nullable = false))
+	private ERowMode rowMode;
 
 	@NotAudited
 	@Column(name = "d_creation", nullable = false, columnDefinition = "date")
@@ -181,6 +185,7 @@ public class OServiceInstance implements ICreationDate, ICreatorUser, IModificat
 		this.allowedUsers = allowedUsers;
 	}
 
+	@Override
 	public List<Role> getAllowedRoles() {
 		return allowedRoles;
 	}
@@ -190,6 +195,16 @@ public class OServiceInstance implements ICreationDate, ICreatorUser, IModificat
 	}
 
 	// --------------- CREATE / MODIFY
+
+	@Override
+	public ERowMode getRowMode() {
+		return rowMode;
+	}
+
+	@Override
+	public void setRowMode(ERowMode rowMode) {
+		this.rowMode = rowMode;
+	}
 
 	@Override
 	public Date getCreationDate() {

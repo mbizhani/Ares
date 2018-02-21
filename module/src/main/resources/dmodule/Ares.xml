@@ -38,6 +38,7 @@
 	<roles>
 		<role name="SysAdmin"
 			  permissions="OServerAdd,OServerEdit,OServiceInstanceAdd,OServiceInstanceEdit,OSIUserAdd,OSIUserEdit"/>
+		<role name="SysView"/>
 	</roles>
 
 	<dPages>
@@ -59,14 +60,14 @@
 			   title="KEY:dPage.ars.OServerList"
 			   uri="/servers"
 			   inMenu="true"
-			   roles="Admin,SysAdmin"
+			   roles="Admin,SysAdmin,SysView"
 				/>
 
 		<dPage type="org.devocative.ares.web.dpage.oservice.OServiceInstanceListDPage"
 			   title="KEY:dPage.ars.OServiceInstanceList"
 			   uri="/instances"
 			   inMenu="true"
-			   roles="Admin,SysAdmin"
+			   roles="Admin,SysAdmin,SysView"
 				/>
 
 		<dPage type="org.devocative.ares.web.dpage.oservice.OSIUserListDPage"

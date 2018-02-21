@@ -4,6 +4,7 @@ package org.devocative.ares.vo.filter.oservice;
 import org.devocative.adroit.vo.RangeVO;
 import org.devocative.ares.entity.OServer;
 import org.devocative.ares.entity.oservice.OService;
+import org.devocative.demeter.entity.ERowMode;
 import org.devocative.demeter.entity.Role;
 import org.devocative.demeter.entity.User;
 import org.devocative.demeter.iservice.persistor.Filterer;
@@ -22,6 +23,7 @@ public class OServiceInstanceFVO implements Serializable {
 	private List<OService> service;
 	private List<User> allowedUsers;
 	private List<Role> allowedRoles;
+	private List<ERowMode> rowMode;
 	private RangeVO<Date> creationDate;
 	private List<User> creatorUser;
 	private RangeVO<Date> modificationDate;
@@ -75,6 +77,14 @@ public class OServiceInstanceFVO implements Serializable {
 
 	public void setAllowedRoles(List<Role> allowedRoles) {
 		this.allowedRoles = allowedRoles;
+	}
+
+	public List<ERowMode> getRowMode() {
+		return rowMode;
+	}
+
+	public void setRowMode(List<ERowMode> rowMode) {
+		this.rowMode = rowMode;
 	}
 
 	public RangeVO<Date> getCreationDate() {

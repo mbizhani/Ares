@@ -12,6 +12,7 @@ import org.devocative.ares.entity.oservice.OServiceInstance;
 import org.devocative.ares.iservice.oservice.IOServiceInstanceService;
 import org.devocative.ares.vo.filter.oservice.OServiceInstanceFVO;
 import org.devocative.ares.web.AresIcon;
+import org.devocative.demeter.entity.ERowMode;
 import org.devocative.demeter.web.DPage;
 import org.devocative.demeter.web.component.DAjaxButton;
 import org.devocative.demeter.web.component.grid.OEditAjaxColumn;
@@ -101,27 +102,30 @@ public class OServiceInstanceListDPage extends DPage implements IGridDataSource<
 
 		WFloatTable floatTable = new WFloatTable("floatTable");
 		floatTable.add(new WTextInput("name")
-			.setLabel(new ResourceModel("OServiceInstance.name")));
+			.setLabel(new ResourceModel("OServiceInstance.name", "name")));
 		floatTable.add(new WNumberRangeInput("port", Integer.class)
-			.setLabel(new ResourceModel("OServiceInstance.port")));
+			.setLabel(new ResourceModel("OServiceInstance.port", "port")));
 		floatTable.add(new WSelectionInput("server", oServiceInstanceService.getServerList(), true)
-			.setLabel(new ResourceModel("OServiceInstance.server")));
+			.setLabel(new ResourceModel("OServiceInstance.server", "server")));
 		floatTable.add(new WSelectionInput("service", oServiceInstanceService.getServiceList(), true)
-			.setLabel(new ResourceModel("OServiceInstance.service")));
+			.setLabel(new ResourceModel("OServiceInstance.service", "service")));
 		floatTable.add(new WSelectionInput("allowedUsers", oServiceInstanceService.getAllowedUsersList(), true)
-			.setLabel(new ResourceModel("OServiceInstance.allowedUsers")));
+			.setLabel(new ResourceModel("OServiceInstance.allowedUsers", "allowedUsers")));
 		floatTable.add(new WSelectionInput("allowedRoles", oServiceInstanceService.getAllowedRolesList(), true)
-			.setLabel(new ResourceModel("OServiceInstance.allowedRoles")));
+			.setLabel(new ResourceModel("OServiceInstance.allowedRoles", "allowedRoles")));
+		floatTable.add(new WSelectionInput("rowMode", ERowMode.list(), true)
+			.setLabel(new ResourceModel("entity.rowMode", "rowMode"))
+			.setVisible(getCurrentUser().isRoot()));
 		floatTable.add(new WDateRangeInput("creationDate")
 			.setTimePartVisible(true)
-			.setLabel(new ResourceModel("entity.creationDate")));
+			.setLabel(new ResourceModel("entity.creationDate", "creationDate")));
 		floatTable.add(new WSelectionInput("creatorUser", oServiceInstanceService.getCreatorUserList(), true)
-			.setLabel(new ResourceModel("entity.creatorUser")));
+			.setLabel(new ResourceModel("entity.creatorUser", "creatorUser")));
 		floatTable.add(new WDateRangeInput("modificationDate")
 			.setTimePartVisible(true)
-			.setLabel(new ResourceModel("entity.modificationDate")));
+			.setLabel(new ResourceModel("entity.modificationDate", "modificationDate")));
 		floatTable.add(new WSelectionInput("modifierUser", oServiceInstanceService.getModifierUserList(), true)
-			.setLabel(new ResourceModel("entity.modifierUser")));
+			.setLabel(new ResourceModel("entity.modifierUser", "modifierUser")));
 
 		Form<OServiceInstanceFVO> form = new Form<>("form", new CompoundPropertyModel<>(filter));
 		form.add(floatTable);
@@ -137,27 +141,30 @@ public class OServiceInstanceListDPage extends DPage implements IGridDataSource<
 		add(form);
 
 		OColumnList<OServiceInstance> columnList = new OColumnList<>();
-		columnList.add(new OPropertyColumn<>(new ResourceModel("OServiceInstance.name"), "name"));
-		columnList.add(new OPropertyColumn<OServiceInstance>(new ResourceModel("OServiceInstance.port"), "port")
+		columnList.add(new OPropertyColumn<>(new ResourceModel("OServiceInstance.name", "name"), "name"));
+		columnList.add(new OPropertyColumn<OServiceInstance>(new ResourceModel("OServiceInstance.port", "port"), "port")
 			.setFormatter(ONumberFormatter.integer())
 			.setStyle("direction:ltr"));
-		columnList.add(new OPropertyColumn<>(new ResourceModel("OServiceInstance.server"), "server"));
-		columnList.add(new OPropertyColumn<>(new ResourceModel("OServiceInstance.service"), "service"));
-		columnList.add(new OPropertyColumn<OServiceInstance>(new ResourceModel("OServiceInstance.propertyValues"), "propertyValues")
+		columnList.add(new OPropertyColumn<>(new ResourceModel("OServiceInstance.server", "server"), "server"));
+		columnList.add(new OPropertyColumn<>(new ResourceModel("OServiceInstance.service", "service"), "service"));
+		columnList.add(new OPropertyColumn<OServiceInstance>(new ResourceModel("OServiceInstance.propertyValues", "propertyValues"), "propertyValues")
 			.setWidth(OSize.fixed(300)));
-		columnList.add(new OPropertyColumn<OServiceInstance>(new ResourceModel("OServiceInstance.allowedUsers"), "allowedUsers")
+		columnList.add(new OPropertyColumn<OServiceInstance>(new ResourceModel("OServiceInstance.allowedUsers", "allowedUsers"), "allowedUsers")
 			.setWidth(OSize.fixed(200)));
-		columnList.add(new OPropertyColumn<OServiceInstance>(new ResourceModel("OServiceInstance.allowedRoles"), "allowedRoles")
+		columnList.add(new OPropertyColumn<OServiceInstance>(new ResourceModel("OServiceInstance.allowedRoles", "allowedRoles"), "allowedRoles")
 			.setWidth(OSize.fixed(200)));
-		columnList.add(new OPropertyColumn<OServiceInstance>(new ResourceModel("entity.creationDate"), "creationDate")
+		if (getCurrentUser().isRoot()) {
+			columnList.add(new OPropertyColumn<>(new ResourceModel("entity.rowMode", "rowMode"), "rowMode"));
+		}
+		columnList.add(new OPropertyColumn<OServiceInstance>(new ResourceModel("entity.creationDate", "creationDate"), "creationDate")
 			.setFormatter(ODateFormatter.getDateTimeByUserPreference())
 			.setStyle("direction:ltr"));
-		columnList.add(new OPropertyColumn<>(new ResourceModel("entity.creatorUser"), "creatorUser"));
-		columnList.add(new OPropertyColumn<OServiceInstance>(new ResourceModel("entity.modificationDate"), "modificationDate")
+		columnList.add(new OPropertyColumn<>(new ResourceModel("entity.creatorUser", "creatorUser"), "creatorUser"));
+		columnList.add(new OPropertyColumn<OServiceInstance>(new ResourceModel("entity.modificationDate", "modificationDate"), "modificationDate")
 			.setFormatter(ODateFormatter.getDateTimeByUserPreference())
 			.setStyle("direction:ltr"));
-		columnList.add(new OPropertyColumn<>(new ResourceModel("entity.modifierUser"), "modifierUser"));
-		columnList.add(new OPropertyColumn<OServiceInstance>(new ResourceModel("entity.version"), "version")
+		columnList.add(new OPropertyColumn<>(new ResourceModel("entity.modifierUser", "modifierUser"), "modifierUser"));
+		columnList.add(new OPropertyColumn<OServiceInstance>(new ResourceModel("entity.version", "version"), "version")
 			.setFormatter(ONumberFormatter.integer())
 			.setStyle("direction:ltr"));
 

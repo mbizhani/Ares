@@ -76,12 +76,12 @@ public class OServiceInstanceFormDPage extends DPage {
 
 		WFloatTable floatTable = new WFloatTable("floatTable");
 		floatTable.add(new WTextInput("name")
-			.setLabel(new ResourceModel("OServiceInstance.name")));
+			.setLabel(new ResourceModel("OServiceInstance.name", "name")));
 		floatTable.add(new WNumberInput("port", Integer.class)
-			.setLabel(new ResourceModel("OServiceInstance.port")));
+			.setLabel(new ResourceModel("OServiceInstance.port", "port")));
 		floatTable.add(new WSelectionInput("server", oServiceInstanceService.getServerList(), false)
 			.setRequired(true)
-			.setLabel(new ResourceModel("OServiceInstance.server")));
+			.setLabel(new ResourceModel("OServiceInstance.server", "server")));
 		floatTable.add(service
 			.setRequired(true)
 			.setLabel(new ResourceModel("OServiceInstance.service")));
