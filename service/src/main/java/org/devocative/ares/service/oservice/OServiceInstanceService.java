@@ -85,7 +85,7 @@ public class OServiceInstanceService implements IOServiceInstanceService, IMisse
 			entity = persistorService.merge(entity);
 			serviceInstanceCache.remove(entity.getId());
 		} catch (DBConstraintViolationException e) {
-			if (e.isConstraint("uk_ars_serviceInst")) {
+			if (e.isConstraint(OServiceInstance.UQ_CONST)) {
 				throw new AresException(AresErrorCode.DuplicateServiceInstance, entity.getName());
 			}
 		}

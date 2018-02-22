@@ -12,9 +12,11 @@ import java.util.List;
 @Audited
 @Entity
 @Table(name = "t_ars_service_inst_user", uniqueConstraints = {
-	@UniqueConstraint(name = "uk_ars_user_username", columnNames = {"c_username", "f_service_inst"})
+	@UniqueConstraint(name = OSIUser.UQ_CONST, columnNames = {"c_username", "f_service_inst"})
 })
 public class OSIUser implements IRowMode, IRoleRowAccess, ICreationDate, ICreatorUser, IModificationDate, IModifierUser {
+	public static final String UQ_CONST = "uk_ars_user_username";
+
 	private static final long serialVersionUID = 753142909119873415L;
 
 	@Id

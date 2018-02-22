@@ -12,7 +12,7 @@ import org.devocative.ares.entity.oservice.OService;
 import org.devocative.ares.entity.oservice.OServiceInstance;
 import org.devocative.ares.iservice.oservice.IOSIUserService;
 import org.devocative.ares.vo.filter.oservice.OSIUserFVO;
-import org.devocative.demeter.entity.ERoleMode;
+import org.devocative.demeter.DBConstraintViolationException;
 import org.devocative.demeter.entity.ERowMode;
 import org.devocative.demeter.entity.Role;
 import org.devocative.demeter.entity.User;
@@ -26,7 +26,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -72,33 +71,13 @@ public class OSIUserService implements IOSIUserService {
 			entity.setRowMode(ERowMode.ROLE);
 		}
 
-		// TODO the following code must be placed in Demeter HibernateInterceptor
-		UserVO currentUser = securityService.getCurrentUser();
-		if (!currentUser.isRoot() && !currentUser.isAdmin()) {
-			if (ERowMode.ROLE.equals(entity.getRowMode()) &&
-				(entity.getAllowedRoles() == null || entity.getAllowedRoles().isEmpty())) {
-
-				List<Role> roles = new ArrayList<>();
-
-				for (Role cuRole : currentUser.getRoles()) {
-					if (ERoleMode.MAIN.equals(cuRole.getRoleMode())) {
-						roles.add(cuRole);
-						break;
-					}
-				}
-				if (roles.isEmpty()) {
-					for (Role cuRole : currentUser.getRoles()) {
-						if (ERoleMode.NORMAL.equals(cuRole.getRoleMode())) {
-							roles.add(cuRole);
-							break;
-						}
-					}
-				}
-				entity.setAllowedRoles(roles);
+		try {
+			persistorService.saveOrUpdate(entity);
+		} catch (DBConstraintViolationException e) {
+			if (e.isConstraint(OSIUser.UQ_CONST)) {
+				throw new AresException(AresErrorCode.DuplicateUsername, entity.getUsername());
 			}
 		}
-
-		persistorService.saveOrUpdate(entity);
 	}
 
 	@Override

@@ -12,9 +12,11 @@ import java.util.List;
 @Audited
 @Entity
 @Table(name = "t_ars_service_inst", uniqueConstraints = {
-	@UniqueConstraint(name = "uk_ars_serviceInst", columnNames = {"f_server", "f_service", "c_name"})
+	@UniqueConstraint(name = OServiceInstance.UQ_CONST, columnNames = {"f_server", "f_service", "c_name"})
 })
 public class OServiceInstance implements IRowMode, IRoleRowAccess, ICreationDate, ICreatorUser, IModificationDate, IModifierUser {
+	public static final String UQ_CONST = "uk_ars_serviceInst";
+
 	private static final long serialVersionUID = 2007755808784442971L;
 
 	@Id
@@ -190,6 +192,7 @@ public class OServiceInstance implements IRowMode, IRoleRowAccess, ICreationDate
 		return allowedRoles;
 	}
 
+	@Override
 	public void setAllowedRoles(List<Role> allowedRoles) {
 		this.allowedRoles = allowedRoles;
 	}
