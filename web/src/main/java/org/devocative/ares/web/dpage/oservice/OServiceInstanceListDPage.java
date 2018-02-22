@@ -16,6 +16,7 @@ import org.devocative.demeter.entity.ERowMode;
 import org.devocative.demeter.web.DPage;
 import org.devocative.demeter.web.component.DAjaxButton;
 import org.devocative.demeter.web.component.grid.OEditAjaxColumn;
+import org.devocative.demeter.web.component.grid.ORowModeChangeAjaxColumn;
 import org.devocative.demeter.web.model.DEntityLazyLoadModel;
 import org.devocative.wickomp.form.WSelectionInput;
 import org.devocative.wickomp.form.WTextInput;
@@ -178,6 +179,10 @@ public class OServiceInstanceListDPage extends DPage implements IGridDataSource<
 					window.show(target);
 				}
 			});
+		}
+
+		if (getCurrentUser().isRoot()) {
+			columnList.add(new ORowModeChangeAjaxColumn<>(window));
 		}
 
 		if (hasPermission(AresPrivilegeKey.OSIUserAdd)) {
