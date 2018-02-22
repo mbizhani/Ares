@@ -153,7 +153,7 @@ public class OSIUserService implements IOSIUserService {
 
 	@Override
 	public List<Role> getAllowedRolesList() {
-		return persistorService.list(Role.class);
+		return persistorService.list("from Role ent order by ent.name");
 	}
 
 	@Override

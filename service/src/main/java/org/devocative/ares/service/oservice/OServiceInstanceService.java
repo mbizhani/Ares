@@ -138,7 +138,7 @@ public class OServiceInstanceService implements IOServiceInstanceService, IMisse
 
 	@Override
 	public List<Role> getAllowedRolesList() {
-		return persistorService.list(Role.class);
+		return persistorService.list("from Role ent order by ent.name");
 	}
 
 	@Override
