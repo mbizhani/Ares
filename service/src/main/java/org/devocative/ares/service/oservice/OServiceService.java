@@ -125,7 +125,9 @@ public class OServiceService implements IOServiceService {
 				oService = new OService();
 				oService.setName(xService.getName());
 
-				roleService.createOrUpdate(xService.getName(), ERowMode.ADMIN, ERoleMode.MAIN);
+				roleService.createOrUpdate(xService.getName(), ERowMode.ADMIN, ERoleMode.NORMAL);
+				roleService.createOrUpdate(xService.getName() + "Admin", ERowMode.ADMIN, ERoleMode.MAIN);
+				roleService.createOrUpdate(xService.getName() + "SI", ERowMode.ADMIN, ERoleMode.NORMAL);
 
 				logger.info("OService not found and created: {}", xService.getName());
 			} else {

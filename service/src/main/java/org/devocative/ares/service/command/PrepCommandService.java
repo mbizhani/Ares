@@ -43,6 +43,22 @@ public class PrepCommandService implements IPrepCommandService {
 
 	@Override
 	public void saveOrUpdate(PrepCommand entity) {
+		//TODO may need to load Service
+		String serviceName = entity.getCommand().getService().getName();
+
+		if (entity.getAllowedRoles() == null) {
+			entity.setAllowedRoles(new ArrayList<>());
+		}
+		List<Role> allowedRoles = entity.getAllowedRoles();
+
+		String[] roleNames = new String[]{serviceName, serviceName + "Admin"};
+		for (String roleName : roleNames) {
+			Role role = roleService.loadByName(roleName);
+			if (!allowedRoles.contains(role)) {
+				allowedRoles.add(role);
+			}
+		}
+
 		persistorService.saveOrUpdate(entity);
 	}
 
@@ -189,16 +205,10 @@ public class PrepCommandService implements IPrepCommandService {
 
 	@Override
 	public void saveByCommand(Command command) {
-		Role role = roleService.loadByName(command.getService().getName());
-
 		PrepCommand prepCommand = new PrepCommand();
 		prepCommand.setName(command.getName());
 		prepCommand.setCode("c" + command.getId());
 		prepCommand.setCommand(command);
-
-		if (role != null) {
-			prepCommand.setAllowedRoles(Collections.singletonList(role));
-		}
 
 		saveOrUpdate(prepCommand);
 	}

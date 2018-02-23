@@ -13,8 +13,6 @@ import org.devocative.ares.iservice.oservice.IOServiceInstanceService;
 import org.devocative.ares.vo.OServiceInstanceTargetVO;
 import org.devocative.ares.vo.filter.oservice.OServiceInstanceFVO;
 import org.devocative.demeter.DBConstraintViolationException;
-import org.devocative.demeter.entity.ERoleMode;
-import org.devocative.demeter.entity.ERowMode;
 import org.devocative.demeter.entity.Role;
 import org.devocative.demeter.entity.User;
 import org.devocative.demeter.iservice.ICacheService;
@@ -67,19 +65,20 @@ public class OServiceInstanceService implements IOServiceInstanceService, IMisse
 	@Override
 	public void saveOrUpdate(OServiceInstance entity) {
 		try {
-			String roleName = entity.getService().getName() + "-SI";
-
-			Role role = roleService.loadByName(roleName);
-			if (role == null) {
-				role = roleService.createOrUpdate(roleName, ERowMode.ADMIN, ERoleMode.MAIN);
-			}
-
 			if (entity.getAllowedRoles() == null) {
 				entity.setAllowedRoles(new ArrayList<>());
 			}
+			List<Role> allowedRoles = entity.getAllowedRoles();
 
-			if (!entity.getAllowedRoles().contains(role)) {
-				entity.getAllowedRoles().add(role);
+			String[] roleNames = new String[]{
+				entity.getService().getName() + "SI",
+				entity.getService().getName() + "Admin"};
+
+			for (String roleName : roleNames) {
+				Role role = roleService.loadByName(roleName);
+				if (!allowedRoles.contains(role)) {
+					allowedRoles.add(role);
+				}
 			}
 
 			entity = persistorService.merge(entity);

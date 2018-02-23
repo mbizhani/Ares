@@ -16,6 +16,7 @@ import org.devocative.demeter.DBConstraintViolationException;
 import org.devocative.demeter.entity.ERowMode;
 import org.devocative.demeter.entity.Role;
 import org.devocative.demeter.entity.User;
+import org.devocative.demeter.iservice.IRoleService;
 import org.devocative.demeter.iservice.ISecurityService;
 import org.devocative.demeter.iservice.persistor.EJoinMode;
 import org.devocative.demeter.iservice.persistor.IPersistorService;
@@ -26,6 +27,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -39,6 +41,9 @@ public class OSIUserService implements IOSIUserService {
 
 	@Autowired
 	private ISecurityService securityService;
+
+	@Autowired
+	private IRoleService roleService;
 
 	// ------------------------------
 
@@ -56,8 +61,10 @@ public class OSIUserService implements IOSIUserService {
 				throw new AresException(AresErrorCode.DuplicateExecutor);
 			}
 		}
+		entity.setServer(entity.getServiceInstance().getServer());
+		entity.setService(entity.getServiceInstance().getService());
 
-		String usernameRegEx = entity.getServiceInstance().getService().getUsernameRegEx();
+		String usernameRegEx = entity.getService().getUsernameRegEx();
 		if (usernameRegEx == null) {
 			usernameRegEx = ConfigUtil.getString(AresConfigKey.SIUserUsernameRegEx);
 		}
@@ -65,10 +72,21 @@ public class OSIUserService implements IOSIUserService {
 			throw new AresException(AresErrorCode.InvalidServiceInstanceUsername, usernameRegEx);
 		}
 
-		entity.setServer(entity.getServiceInstance().getServer());
-		entity.setService(entity.getServiceInstance().getService());
 		if (entity.getRowMode() == null) {
 			entity.setRowMode(ERowMode.ROLE);
+		}
+
+		if (entity.getAllowedRoles() == null) {
+			entity.setAllowedRoles(new ArrayList<>());
+		}
+		List<Role> allowedRoles = entity.getAllowedRoles();
+
+		String[] roleNames = new String[]{entity.getService().getName() + "Admin"};
+		for (String roleName : roleNames) {
+			Role role = roleService.loadByName(roleName);
+			if (!allowedRoles.contains(role)) {
+				allowedRoles.add(role);
+			}
 		}
 
 		try {
