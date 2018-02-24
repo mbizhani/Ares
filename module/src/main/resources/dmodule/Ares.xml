@@ -37,7 +37,7 @@
 
 	<roles>
 		<role name="SysAdmin"
-			  permissions="OServerAdd,OServerEdit,OServiceInstanceAdd,OServiceInstanceEdit,OSIUserAdd,OSIUserEdit"/>
+			  permissions="OServerAdd,OServerEdit,OServiceInstanceAdd,OServiceInstanceEdit,OSIUserAdd,OSIUserEdit,OSIUserShowPassword"/>
 		<role name="SysView"/>
 	</roles>
 

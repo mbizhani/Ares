@@ -144,7 +144,6 @@ public class OServiceInstanceListDPage extends DPage implements IGridDataSource<
 		OColumnList<OServiceInstance> columnList = new OColumnList<>();
 		columnList.add(new OPropertyColumn<>(new ResourceModel("OServiceInstance.name", "name"), "name"));
 		columnList.add(new OPropertyColumn<OServiceInstance>(new ResourceModel("OServiceInstance.port", "port"), "port")
-			.setFormatter(ONumberFormatter.integer())
 			.setStyle("direction:ltr"));
 		columnList.add(new OPropertyColumn<>(new ResourceModel("OServiceInstance.server", "server"), "server"));
 		columnList.add(new OPropertyColumn<>(new ResourceModel("OServiceInstance.service", "service"), "service"));

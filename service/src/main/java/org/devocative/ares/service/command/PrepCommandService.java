@@ -43,8 +43,8 @@ public class PrepCommandService implements IPrepCommandService {
 
 	@Override
 	public void saveOrUpdate(PrepCommand entity) {
-		//TODO may need to load Service
-		String serviceName = entity.getCommand().getService().getName();
+		OService service = serviceService.load(entity.getCommand().getServiceId());
+		String serviceName = service.getName();
 
 		if (entity.getAllowedRoles() == null) {
 			entity.setAllowedRoles(new ArrayList<>());

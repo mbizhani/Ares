@@ -164,7 +164,7 @@ public class OSIUserListDPage extends DPage implements IGridDataSource<OSIUser> 
 			.setFormatter(OBooleanFormatter.bool())
 			.setCellStyler((IStyler<OSIUser> & Serializable) (bean, id) -> OStyle.style(bean.getEnabled() ? "color: #32cd32" : "color: red")));
 		columnList.add(new OPropertyColumn<>(new ResourceModel("OSIUser.remoteMode", "remoteMode"), "remoteMode"));
-		//columnList.add(new OPropertyColumn<>(new ResourceModel("OSIUser.serviceInstance", "serviceInstance"), "serviceInstance"));
+		columnList.add(new OPropertyColumn<>(new ResourceModel("OSIUser.siName", "SI Name"), "serviceInstance.name"));
 		columnList.add(new OPropertyColumn<>(new ResourceModel("OSIUser.server", "server"), "server"));
 		columnList.add(new OPropertyColumn<>(new ResourceModel("OSIUser.service", "service"), "service"));
 		columnList.add(new OPropertyColumn<OSIUser>(new ResourceModel("OSIUser.allowedUsers", "allowedUsers"), "allowedUsers")

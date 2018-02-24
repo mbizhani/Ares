@@ -78,6 +78,7 @@ public class OServiceInstanceFormDPage extends DPage {
 		floatTable.add(new WTextInput("name")
 			.setLabel(new ResourceModel("OServiceInstance.name", "name")));
 		floatTable.add(new WNumberInput("port", Integer.class)
+			.removeThousandSeparator()
 			.setLabel(new ResourceModel("OServiceInstance.port", "port")));
 		floatTable.add(new WSelectionInput("server", oServiceInstanceService.getServerList(), false)
 			.setRequired(true)
