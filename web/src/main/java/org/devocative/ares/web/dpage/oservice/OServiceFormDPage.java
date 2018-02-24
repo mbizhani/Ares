@@ -1,4 +1,3 @@
-//overwrite
 package org.devocative.ares.web.dpage.oservice;
 
 import org.apache.wicket.ajax.AjaxRequestTarget;
@@ -65,6 +64,7 @@ public class OServiceFormDPage extends DPage {
 		floatTable.add(new WTextInput("connectionPattern")
 			.setLabel(new ResourceModel("OService.connectionPattern")));
 		floatTable.add(new WNumberInput("adminPort", Integer.class)
+			.removeThousandSeparator()
 			.setLabel(new ResourceModel("OService.adminPort")));
 		floatTable.add(new WTextInput("ports")
 			.setLabel(new ResourceModel("OService.ports")));

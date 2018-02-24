@@ -120,6 +120,10 @@ public class OServiceService implements IOServiceService {
 
 		XOperation xOperation = (XOperation) xstream.fromXML(in);
 		for (XService xService : xOperation.getServices()) {
+			if (xService.getName() == null) {
+				throw new RuntimeException("Invalid Service XML: No service name!");
+			}
+
 			OService oService = loadByName(xService.getName());
 			if (oService == null) {
 				oService = new OService();
@@ -134,10 +138,18 @@ public class OServiceService implements IOServiceService {
 				logger.info("OService loaded: {}", oService.getName());
 			}
 
-			oService.setConnectionPattern(xService.getConnectionPattern());
-			oService.setAdminPort(xService.getAdminPort());
-			oService.setPorts(xService.getPorts());
-			oService.setUsernameRegEx(xService.getUsernameRegEx());
+			if (xService.getConnectionPattern() != null) {
+				oService.setConnectionPattern(xService.getConnectionPattern());
+			}
+			if (xService.getAdminPort() != null) {
+				oService.setAdminPort(xService.getAdminPort());
+			}
+			if (xService.getPorts() != null) {
+				oService.setPorts(xService.getPorts());
+			}
+			if (xService.getUsernameRegEx() != null) {
+				oService.setUsernameRegEx(xService.getUsernameRegEx());
+			}
 			saveOrUpdate(oService);
 
 			if (xService.getProperties() != null) {

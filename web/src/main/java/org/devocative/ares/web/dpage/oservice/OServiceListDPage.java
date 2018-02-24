@@ -140,7 +140,6 @@ public class OServiceListDPage extends DPage implements IGridDataSource<OService
 		columnList.add(new OPropertyColumn<OService>(new ResourceModel("OService.connectionPattern"), "connectionPattern")
 			.setWidth(OSize.fixed(300)));
 		columnList.add(new OPropertyColumn<OService>(new ResourceModel("OService.adminPort"), "adminPort")
-			.setFormatter(ONumberFormatter.integer())
 			.setStyle("direction:ltr"));
 		columnList.add(new OPropertyColumn<>(new ResourceModel("OService.ports"), "ports"));
 		columnList.add(new OPropertyColumn<>(new ResourceModel("OService.usernameRegEx"), "usernameRegEx"));
