@@ -70,7 +70,8 @@ public class OSIUser implements IRowMode, IRoleRowAccess, ICreationDate, ICreato
 		joinColumns = {@JoinColumn(name = "f_siUser", nullable = false)},
 		inverseJoinColumns = {@JoinColumn(name = "f_user", nullable = false)},
 		foreignKey = @ForeignKey(name = "siUserUser2siUser"),
-		inverseForeignKey = @ForeignKey(name = "siUserUser2user")
+		inverseForeignKey = @ForeignKey(name = "siUserUser2user"),
+		uniqueConstraints = {@UniqueConstraint(name = "uk_ars_mtSiUserUser", columnNames = {"f_siUser", "f_user"})}
 	)
 	private List<User> allowedUsers;
 
@@ -80,7 +81,8 @@ public class OSIUser implements IRowMode, IRoleRowAccess, ICreationDate, ICreato
 		joinColumns = {@JoinColumn(name = "f_siUser", nullable = false)},
 		inverseJoinColumns = {@JoinColumn(name = "f_role", nullable = false)},
 		foreignKey = @ForeignKey(name = "siUserRole2siUser"),
-		inverseForeignKey = @ForeignKey(name = "siUserRole2role")
+		inverseForeignKey = @ForeignKey(name = "siUserRole2role"),
+		uniqueConstraints = {@UniqueConstraint(name = "uk_mtSiUserRole", columnNames = {"f_siUser", "f_role"})}
 	)
 	private List<Role> allowedRoles;
 

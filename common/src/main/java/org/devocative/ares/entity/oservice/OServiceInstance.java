@@ -58,7 +58,8 @@ public class OServiceInstance implements IRowMode, IRoleRowAccess, ICreationDate
 		joinColumns = {@JoinColumn(name = "f_srvcinst", nullable = false)},
 		inverseJoinColumns = {@JoinColumn(name = "f_user", nullable = false)},
 		foreignKey = @ForeignKey(name = "srvcinstUser2srvcinst"),
-		inverseForeignKey = @ForeignKey(name = "srvcinstUser2user")
+		inverseForeignKey = @ForeignKey(name = "srvcinstUser2user"),
+		uniqueConstraints = {@UniqueConstraint(name = "uk_ars_mtSrvcInstUser", columnNames = {"f_srvcinst", "f_user"})}
 	)
 	private List<User> allowedUsers;
 
@@ -67,7 +68,8 @@ public class OServiceInstance implements IRowMode, IRoleRowAccess, ICreationDate
 		joinColumns = {@JoinColumn(name = "f_srvcinst", nullable = false)},
 		inverseJoinColumns = {@JoinColumn(name = "f_role", nullable = false)},
 		foreignKey = @ForeignKey(name = "srvcinstRole2srvcinst"),
-		inverseForeignKey = @ForeignKey(name = "srvcinstRole2role")
+		inverseForeignKey = @ForeignKey(name = "srvcinstRole2role"),
+		uniqueConstraints = {@UniqueConstraint(name = "uk_ars_mtSrvcInstRole", columnNames = {"f_srvcinst", "f_role"})}
 	)
 	private List<Role> allowedRoles;
 

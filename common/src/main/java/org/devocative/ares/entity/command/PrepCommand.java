@@ -61,7 +61,8 @@ public class PrepCommand implements ICreationDate, ICreatorUser, IModificationDa
 		joinColumns = {@JoinColumn(name = "f_prp_command", nullable = false)},
 		inverseJoinColumns = {@JoinColumn(name = "f_user", nullable = false)},
 		foreignKey = @ForeignKey(name = "prpCommandUser2prpCommand"),
-		inverseForeignKey = @ForeignKey(name = "prpCommandUser2user")
+		inverseForeignKey = @ForeignKey(name = "prpCommandUser2user"),
+		uniqueConstraints = {@UniqueConstraint(name = "uk_ars_mtPrpCommandUser", columnNames = {"f_prp_command", "f_user"})}
 	)
 	private List<User> allowedUsers;
 
@@ -70,7 +71,8 @@ public class PrepCommand implements ICreationDate, ICreatorUser, IModificationDa
 		joinColumns = {@JoinColumn(name = "f_prp_command", nullable = false)},
 		inverseJoinColumns = {@JoinColumn(name = "f_role", nullable = false)},
 		foreignKey = @ForeignKey(name = "prpCommandRole2prpCommand"),
-		inverseForeignKey = @ForeignKey(name = "prpCommandRole2role")
+		inverseForeignKey = @ForeignKey(name = "prpCommandRole2role"),
+		uniqueConstraints = {@UniqueConstraint(name = "uk_mtPrpCommandRole", columnNames = {"f_prp_command", "f_role"})}
 	)
 	private List<Role> allowedRoles;
 
