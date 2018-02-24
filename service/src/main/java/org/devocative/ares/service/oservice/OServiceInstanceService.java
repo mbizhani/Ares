@@ -1,7 +1,5 @@
 package org.devocative.ares.service.oservice;
 
-import org.devocative.adroit.cache.ICache;
-import org.devocative.adroit.cache.IMissedHitHandler;
 import org.devocative.adroit.vo.KeyValueVO;
 import org.devocative.ares.AresErrorCode;
 import org.devocative.ares.AresException;
@@ -13,6 +11,7 @@ import org.devocative.ares.iservice.oservice.IOServiceInstanceService;
 import org.devocative.ares.vo.OServiceInstanceTargetVO;
 import org.devocative.ares.vo.filter.oservice.OServiceInstanceFVO;
 import org.devocative.demeter.DBConstraintViolationException;
+import org.devocative.demeter.entity.ERowMode;
 import org.devocative.demeter.entity.Role;
 import org.devocative.demeter.entity.User;
 import org.devocative.demeter.iservice.ICacheService;
@@ -30,17 +29,14 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import javax.annotation.PostConstruct;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 @Service("arsOServiceInstanceService")
-public class OServiceInstanceService implements IOServiceInstanceService, IMissedHitHandler<Long, OServiceInstance> {
+public class OServiceInstanceService implements IOServiceInstanceService {
 	private static final Logger logger = LoggerFactory.getLogger(OServiceInstanceService.class);
-
-	private ICache<Long, OServiceInstance> serviceInstanceCache;
 
 	@Autowired
 	private IPersistorService persistorService;
@@ -65,6 +61,10 @@ public class OServiceInstanceService implements IOServiceInstanceService, IMisse
 	@Override
 	public void saveOrUpdate(OServiceInstance entity) {
 		try {
+			if (entity.getRowMode() == null) {
+				entity.setRowMode(ERowMode.ROLE);
+			}
+
 			if (entity.getAllowedRoles() == null) {
 				entity.setAllowedRoles(new ArrayList<>());
 			}
@@ -82,7 +82,6 @@ public class OServiceInstanceService implements IOServiceInstanceService, IMisse
 			}
 
 			entity = persistorService.merge(entity);
-			serviceInstanceCache.remove(entity.getId());
 		} catch (DBConstraintViolationException e) {
 			if (e.isConstraint(OServiceInstance.UQ_CONST)) {
 				throw new AresException(AresErrorCode.DuplicateServiceInstance, entity.getName());
@@ -92,7 +91,13 @@ public class OServiceInstanceService implements IOServiceInstanceService, IMisse
 
 	@Override
 	public OServiceInstance load(Long id) {
-		return serviceInstanceCache.get(id);
+		OServiceInstance oServiceInstance = persistorService.get(OServiceInstance.class, id);
+
+		//NOTE: this line is called to prevent damn LazyException!!!
+		oServiceInstance.getPropertyValues().size();
+
+		updateProperties(oServiceInstance.getService(), oServiceInstance);
+		return oServiceInstance;
 	}
 
 	@Override
@@ -151,28 +156,6 @@ public class OServiceInstanceService implements IOServiceInstanceService, IMisse
 	}
 
 	// ==============================
-
-	@PostConstruct
-	public void initOServiceInstanceService() {
-		serviceInstanceCache = cacheService.create("ARS_SRV_INST", 50);
-		serviceInstanceCache.setMissedHitHandler(this);
-	}
-
-	@Override
-	public OServiceInstance loadForCache(Long key) {
-		OServiceInstance oServiceInstance = persistorService.get(OServiceInstance.class, key);
-
-		//NOTE: this line is called to prevent damn LazyException!!!
-		oServiceInstance.getPropertyValues().size();
-
-		updateProperties(oServiceInstance.getService(), oServiceInstance);
-		return oServiceInstance;
-	}
-
-	@Override
-	public void clearCache() {
-		serviceInstanceCache.clear();
-	}
 
 	@Override
 	public List<KeyValueVO<Long, String>> findListForCommandExecution(Long serviceId) {
