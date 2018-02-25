@@ -3,8 +3,8 @@
 
 		<service name="OracleDB"
 				 adminPort="1521"
-				 connectionPattern="jdbc:oracle:thin:@${target.address}:${target.port}:${target.prop.sid}">
-			<!--usernameRegEx="^[A-Za-z]+?[A-Za-z0-9. ]*?$" in 12C Multi-tenant, the user in CDB has # character -->
+				 connectionPattern="jdbc:oracle:thin:@${target.address}:${target.port}:${target.prop.sid}"
+				 usernameRegEx="^[A-Za-z]+?[A-Za-z0-9. #]*?$">  <!--in 12C Multi-tenant, the user in CDB has # character-->
 
 			<properties>
 				<property name="sid" required="true"/>
