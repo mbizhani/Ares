@@ -37,7 +37,9 @@
 
 	<roles>
 		<role name="SysAdmin"
-			  permissions="OServerAdd,OServerEdit,OServiceInstanceAdd,OServiceInstanceEdit,OSIUserAdd,OSIUserEdit,OSIUserShowPassword"/>
+			  permissions="OServerAdd,OServerEdit,OServiceInstanceAdd,OServiceInstanceEdit,OSIUserAdd,OSIUserEdit,OSIUserShowPassword,PrepCommandAdd,PrepCommandEdit"/>
+		<role name="SysUser"
+			  permissions="OServiceInstanceAdd,OServiceInstanceEdit,OSIUserAdd,OSIUserEdit,OSIUserShowPassword,PrepCommandAdd,PrepCommandEdit"/>
 		<role name="SysView"/>
 	</roles>
 
@@ -60,21 +62,21 @@
 			   title="KEY:dPage.ars.OServerList"
 			   uri="/servers"
 			   inMenu="true"
-			   roles="Admin,SysAdmin,SysView"
+			   roles="Admin,SysAdmin,SysUser,SysView"
 				/>
 
 		<dPage type="org.devocative.ares.web.dpage.oservice.OServiceInstanceListDPage"
 			   title="KEY:dPage.ars.OServiceInstanceList"
 			   uri="/instances"
 			   inMenu="true"
-			   roles="Admin,SysAdmin,SysView"
+			   roles="Admin,SysAdmin,SysUser,SysView"
 				/>
 
 		<dPage type="org.devocative.ares.web.dpage.oservice.OSIUserListDPage"
 			   title="KEY:dPage.ars.OSIUserList"
 			   uri="/users"
 			   inMenu="true"
-			   roles="Admin,SysAdmin"
+			   roles="Admin,SysAdmin,SysUser"
 				/>
 
 		<dPage type="org.devocative.ares.web.dpage.command.CommandListDPage"
@@ -88,7 +90,7 @@
 			   title="KEY:dPage.ars.PrepCommandList"
 			   uri="/prpcmds"
 			   inMenu="true"
-			   roles="Admin,SysAdmin"
+			   roles="Admin,SysAdmin,SysUser"
 				/>
 
 		<dPage type="org.devocative.ares.web.dpage.command.CommandLogListDPage"

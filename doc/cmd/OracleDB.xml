@@ -209,7 +209,7 @@ if(availSchema.length() > 1) {
 	def file = "exp.${availSchema.replace(',', '.')}.${$now()}"
 	ssh {
 		prompt "Create Export from '${availSchema}' as '${file}.dmp'"
-		cmd "su - oracle -c 'expdp ${target.username}/${target.password} schemas=${availSchema} directory=${target.prop.pumpDbDir} dumpfile=${file}.dmp logfile=${file}.log content=${Content}'"
+		cmd "su - oracle -c 'expdp ${target.username}/${target.password}@${target.prop.sid} schemas=${availSchema} directory=${target.prop.pumpDbDir} dumpfile=${file}.dmp logfile=${file}.log content=${Content}'"
 	}
 	return file
 }
@@ -244,7 +244,7 @@ if($param('DestSchemas')) {
 	def remap = generateRemap([SourceSchemas: SourceSchemas, DestSchemas: DestSchemas])
 	ssh {
 		prompt "Restoring '${remap}' from '${DumpFile}'"
-		cmd "su - oracle -c 'impdp ${target.username}/${target.password} remap_schema=${remap} ${genParams}'"
+		cmd "su - oracle -c 'impdp ${target.username}/${target.password}@${target.prop.sid} remap_schema=${remap} ${genParams}'"
 		force true
 	}
 
@@ -255,7 +255,7 @@ if($param('DestSchemas')) {
 } else {
 	ssh {
 		prompt "Restoring '${SourceSchemas}' from '${DumpFile}'"
-		cmd "su - oracle -c 'impdp ${target.username}/${target.password} ${genParams}'"
+		cmd "su - oracle -c 'impdp ${target.username}/${target.password}@${target.prop.sid} ${genParams}'"
 		force true
 	}
 }
@@ -351,63 +351,20 @@ Usernames.split(',').each {
 					<params>
 						<param name="SourceSchemas" required="true" validRef="OraIdList"/>
 						<param name="DestSchemas" validRef="OraIdList"/>
-						<param name="DestServer" type="Service"/>
-						<param name="Content" stringLiterals="ALL|DATA_ONLY|METADATA_ONLY" defaultValue="ALL"
-							   required="true"/>
-						<param name="DoBackUpDest" type="Boolean" required="true" defaultValue="true"/>
-						<param name="IgnoreTrigger" type="Boolean" required="true" defaultValue="true"/>
-					</params>
-
-					<body><![CDATA[
-if($param('DestServer'))
-	copyRemoteSchema([SourceSchemas: SourceSchemas, DestSchemas: $param('DestSchemas'), DestServer: DestServer, DoBackUpDest: DoBackUpDest, IgnoreTrigger: IgnoreTrigger, Content: Content])
-
-else {
-	if(!$param('DestSchemas'))
-		$error('Dest schemas are required in copy local')
-
-	copyLocalSchema([SourceSchemas: SourceSchemas, DestSchemas: $param('DestSchemas'), DoBackUpDest: DoBackUpDest, IgnoreTrigger: IgnoreTrigger, Content: Content])
-}
-]]></body>
-				</command>
-
-				<command name="copyLocalSchema" viewMode="Hidden">
-					<params>
-						<param name="SourceSchemas" required="true" validRef="OraIdList"/>
-						<param name="DestSchemas" required="true" validRef="OraIdList"/>
-						<param name="Content" stringLiterals="ALL|DATA_ONLY|METADATA_ONLY" defaultValue="ALL"
-							   required="true"/>
-						<param name="DoBackUpDest" type="Boolean" defaultValue="true"/>
-						<param name="IgnoreTrigger" type="Boolean" defaultValue="true"/>
-					</params>
-
-					<body><![CDATA[
-if(SourceSchemas == DestSchemas)
-	$error('Source and destination schemas must be different')
-
-def file = backupSchema([Schemas: SourceSchemas, Content: Content])
-restoreSchema([DumpFile: file, SourceSchemas: SourceSchemas, DestSchemas: DestSchemas, DoBackUp: DoBackUpDest, IgnoreTrigger: IgnoreTrigger, Content: Content])
-
-def osDir = findOsDir()
-ssh {
-	prompt "Delete source dump file: ${file}"
-	cmd "rm -f ${osDir}/${file}.dmp"
-}
-]]></body>
-				</command>
-
-				<command name="copyRemoteSchema" viewMode="Hidden">
-					<params>
-						<param name="SourceSchemas" required="true" validRef="OraIdList"/>
-						<param name="DestSchemas" validRef="OraIdList"/>
 						<param name="DestServer" type="Service" required="true"/>
 						<param name="Content" stringLiterals="ALL|DATA_ONLY|METADATA_ONLY" defaultValue="ALL"
 							   required="true"/>
 						<param name="DoBackUpDest" type="Boolean" required="true" defaultValue="true"/>
-						<param name="IgnoreTrigger" type="Boolean" required="true" defaultValue="true"/>
+						<param name="IgnoreTrigger" type="Boolean" required="true" defaultValue="false"/>
 					</params>
 
 					<body><![CDATA[
+if(target == DestServer && !$param('DestSchemas'))
+	$error('Source server & destination are the same: DestSchemas Required!')
+
+if(target == DestServer && SourceSchemas == $param('DestSchemas'))
+	$error('Source server & destination are the same: SourceSchemas & DestSchemas must be Different')
+
 SourceSchemas.split(',').each {
 	def username = it.trim()
 
@@ -443,7 +400,8 @@ $reTarget(DestServer, {
 			)' """
 	}
 
-	dropUser([Usernames: dest, DoBackup: DoBackUpDest, DoKillSession: true])
+	if(Content != 'DATA_ONLY')
+		dropUser([Usernames: dest, DoBackup: DoBackUpDest, DoKillSession: true])
 
 	def file = "net.${dest.replace(',', '.')}.${$now()}"
 	def genParams = "schemas=${SourceSchemas} directory=${target.prop.pumpDbDir} network_link=${dbLinkName} logfile=${file}.log transform=OID:n content=${Content}"
@@ -453,7 +411,7 @@ $reTarget(DestServer, {
 	if(SourceSchemas == dest) {
 		ssh {
 			prompt "Import Database from: '${srcServer}', file='${file}', schemas='${SourceSchemas}'"
-			cmd "su - oracle -c 'impdp ${target.username}/${target.password} ${genParams}'"
+			cmd "su - oracle -c 'impdp ${target.username}/${target.password}@${target.prop.sid} ${genParams}'"
 			force true
 		}
 
@@ -461,8 +419,13 @@ $reTarget(DestServer, {
 		def remap = generateRemap([SourceSchemas: SourceSchemas, DestSchemas: dest])
 		ssh {
 			prompt "Import Database from: '${srcServer}', file='${file}', remap=${remap}"
-			cmd "su - oracle -c 'impdp ${target.username}/${target.password} remap_schema=${remap} ${genParams}'"
+			cmd "su - oracle -c 'impdp ${target.username}/${target.password}@${target.prop.sid} remap_schema=${remap} ${genParams}'"
 			force true
+		}
+
+		DestSchemas.split(',').each {
+			def username = it.trim()
+			changePassword([Username: username, NewPassword: username.toLowerCase()])
 		}
 	}
 

@@ -93,4 +93,20 @@ public class OServiceInstanceTargetVO implements Serializable {
 	public String toString() {
 		return String.format("srvInst=%s osiUser=%s", serviceInstance, getUsername());
 	}
+
+	@Override
+	public boolean equals(Object o) {
+		if (this == o) return true;
+		if (!(o instanceof OServiceInstanceTargetVO)) return false;
+
+		OServiceInstanceTargetVO targetVO = (OServiceInstanceTargetVO) o;
+
+		return !(getUser() != null ? !getUser().equals(targetVO.getUser()) : targetVO.getUser() != null);
+
+	}
+
+	@Override
+	public int hashCode() {
+		return getUser() != null ? getUser().hashCode() : 0;
+	}
 }
