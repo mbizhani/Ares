@@ -77,7 +77,7 @@ if($param('Password'))
 
 db {
 	prompt "Create User: '${Username}'"
-	query """ create user "${Username}" identified by "${pass}" """
+	query """ create user ${Username} identified by "${pass.toLowerCase()}" """
 }
 
 db {
