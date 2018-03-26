@@ -77,7 +77,7 @@ if($param('Password'))
 
 db {
 	prompt "Create User: '${Username}'"
-	query """ create user ${Username} identified by "${pass.toLowerCase()}" """
+	query """ create user ${Username} identified by "${pass}" """
 }
 
 db {
@@ -223,8 +223,8 @@ if(availSchema.length() > 1) {
 						<param name="DestSchemas" validRef="OraIdList"/>
 						<param name="Content" stringLiterals="ALL|DATA_ONLY|METADATA_ONLY" defaultValue="ALL"
 							   required="true"/>
-						<param name="DoBackUp" type="Boolean" required="true" defaultValue="false"/>
-						<param name="IgnoreTrigger" type="Boolean" required="true" defaultValue="true"/>
+						<param name="DoBackUp" type="Boolean" required="true" defaultValue="true"/>
+						<param name="IgnoreTrigger" type="Boolean" required="true" defaultValue="false"/>
 					</params>
 
 					<body><![CDATA[
