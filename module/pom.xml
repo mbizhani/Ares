@@ -53,8 +53,8 @@
 
 		<dependency>
 			<groupId>com.oracle</groupId>
-			<artifactId>ojdbc6</artifactId>
-			<version>11.2.0.4.0</version>
+			<artifactId>ojdbc7</artifactId>
+			<version>12.1.0.2</version>
 			<scope>test</scope>
 		</dependency>
 
@@ -78,10 +78,6 @@
 		<testResources>
 			<testResource>
 				<directory>src/test/resources</directory>
-			</testResource>
-
-			<testResource>
-				<directory>../common/src/main/resources</directory>
 			</testResource>
 		</testResources>
 
@@ -132,12 +128,40 @@
 				</executions>
 			</plugin>
 
-			<!-- Demeter Helper Plugin -->
+			<!-- Copy SQL Resource -->
 			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-resources-plugin</artifactId>
+				<version>3.0.2</version>
+
+				<executions>
+					<execution>
+						<goals>
+							<goal>copy-resources</goal>
+						</goals>
+
+						<configuration>
+							<outputDirectory>src/test/resources</outputDirectory>
+							<overwrite>true</overwrite>
+							<resources>
+								<resource>
+									<directory>../common/src/main/resources</directory>
+									<includes>
+										<include>sql/*</include>
+									</includes>
+								</resource>
+							</resources>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+
+			<!-- Demeter Helper Plugin -->
+			<!--<plugin>
 				<groupId>org.devocative</groupId>
 				<artifactId>demeter-maven-plugin</artifactId>
 				<version>1.0-SNAPSHOT</version>
-			</plugin>
+			</plugin>-->
 
 		</plugins>
 

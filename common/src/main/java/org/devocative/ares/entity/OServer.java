@@ -60,8 +60,8 @@ public class OServer implements ICreationDate, ICreatorUser, IModificationDate, 
 	@Column(name = "c_vm_id")
 	private String vmId;
 
-	@Embedded
-	@AttributeOverride(name = "id", column = @Column(name = "e_os"))
+	@Column(name = "e_os")
+	@Convert(converter = EServerOS.Converter.class)
 	private EServerOS serverOS;
 
 	@ManyToOne(fetch = FetchType.LAZY)

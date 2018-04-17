@@ -29,8 +29,8 @@ public class OBasicData implements ICreationDate, ICreatorUser, IModificationDat
 	@Column(name = "c_name", nullable = false)
 	private String name;
 
-	@Embedded
-	@AttributeOverride(name = "id", column = @Column(name = "e_discriminator", nullable = false))
+	@Column(name = "e_discriminator", nullable = false)
+	@Convert(converter = EBasicDiscriminator.Converter.class)
 	private EBasicDiscriminator discriminator;
 
 	// --------------- CREATE / MODIFY

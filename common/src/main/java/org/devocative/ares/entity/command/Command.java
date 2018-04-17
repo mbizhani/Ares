@@ -34,8 +34,8 @@ public class Command implements ICreationDate, ICreatorUser, IModificationDate, 
 	@Column(name = "n_exec_limit")
 	private Integer execLimit;
 
-	@Embedded
-	@AttributeOverride(name = "id", column = @Column(name = "e_view_mode", nullable = false))
+	@Column(name = "e_view_mode", nullable = false)
+	@Convert(converter = EViewMode.Converter.class)
 	private EViewMode viewMode;
 
 	@Column(name = "b_confirm", nullable = false)

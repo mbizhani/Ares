@@ -1,40 +1,24 @@
 package org.devocative.ares.entity.oservice;
 
-import javax.persistence.Transient;
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
+import javax.persistence.AttributeConverter;
+import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
 
-public class ERemoteMode implements Serializable {
-	private static final long serialVersionUID = -771802110362958021L;
-
-	private static final Map<Integer, ERemoteMode> ID_TO_LIT = new LinkedHashMap<>();
-
-	// ------------------------------
-
-	public static final ERemoteMode SSH = new ERemoteMode(1, "SSH");
-	public static final ERemoteMode JDBC = new ERemoteMode(2, "JDBC");
-	//public static final ERemoteMode HTTP = new ERemoteMode(3, "HTTP"); TODO
+public enum ERemoteMode {
+	SSH(1, "SSH"),
+	JDBC(2, "JDBC");
+	//HTTP(3, "HTTP"); TODO
 
 	// ------------------------------
 
 	private Integer id;
-
-	@Transient
 	private String name;
 
 	// ------------------------------
 
-	private ERemoteMode(Integer id, String name) {
+	ERemoteMode(Integer id, String name) {
 		this.id = id;
 		this.name = name;
-
-		ID_TO_LIT.put(id, this);
-	}
-
-	public ERemoteMode() {
 	}
 
 	// ------------------------------
@@ -44,26 +28,10 @@ public class ERemoteMode implements Serializable {
 	}
 
 	public String getName() {
-		return ID_TO_LIT.get(getId()).name;
+		return name;
 	}
 
 	// ------------------------------
-
-	@Override
-	public boolean equals(Object o) {
-		if (this == o) return true;
-		if (!(o instanceof ERemoteMode)) return false;
-
-		ERemoteMode that = (ERemoteMode) o;
-
-		return !(getId() != null ? !getId().equals(that.getId()) : that.getId() != null);
-
-	}
-
-	@Override
-	public int hashCode() {
-		return getId() != null ? getId().hashCode() : 0;
-	}
 
 	@Override
 	public String toString() {
@@ -73,15 +41,36 @@ public class ERemoteMode implements Serializable {
 	// ------------------------------
 
 	public static List<ERemoteMode> list() {
-		return new ArrayList<>(ID_TO_LIT.values());
+		return Arrays.asList(values());
 	}
 
 	public static ERemoteMode findByName(String name) {
-		for (ERemoteMode remoteMode : ID_TO_LIT.values()) {
-			if(remoteMode.getName().equals(name)) {
+		for (ERemoteMode remoteMode : values()) {
+			if (remoteMode.getName().equals(name)) {
 				return remoteMode;
 			}
 		}
 		return null;
 	}
+
+	// ------------------------------
+
+	public static class Converter implements AttributeConverter<ERemoteMode, Integer> {
+		@Override
+		public Integer convertToDatabaseColumn(ERemoteMode attribute) {
+			return attribute != null ? attribute.getId() : null;
+		}
+
+		@Override
+		public ERemoteMode convertToEntityAttribute(Integer dbData) {
+			for (ERemoteMode literal : values()) {
+				if (literal.getId().equals(dbData)) {
+					return literal;
+				}
+			}
+
+			return null;
+		}
+	}
+
 }

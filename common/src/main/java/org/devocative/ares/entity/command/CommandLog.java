@@ -27,8 +27,8 @@ public class CommandLog implements ICreationDate, ICreatorUser {
 	@Column(name = "c_params", length = 1000)
 	private String params;
 
-	@Embedded
-	@AttributeOverride(name = "id", column = @Column(name = "e_result", nullable = false))
+	@Column(name = "e_result", nullable = false)
+	@Convert(converter = ECommandResult.Converter.class)
 	private ECommandResult result;
 
 	@Column(name = "n_duration")

@@ -42,8 +42,8 @@ public class OSIUser implements IRowMode, IRoleRowAccess, ICreationDate, ICreato
 	@Column(name = "b_enabled", nullable = false)
 	private Boolean enabled;
 
-	@Embedded
-	@AttributeOverride(name = "id", column = @Column(name = "e_remote_mode", nullable = false))
+	@Column(name = "e_remote_mode", nullable = false)
+	@Convert(converter = ERemoteMode.Converter.class)
 	private ERemoteMode remoteMode;
 
 	@ManyToOne(fetch = FetchType.LAZY)
@@ -88,8 +88,8 @@ public class OSIUser implements IRowMode, IRoleRowAccess, ICreationDate, ICreato
 
 	// ---------------
 
-	@Embedded
-	@AttributeOverride(name = "id", column = @Column(name = "e_mod", nullable = false))
+	@Column(name = "e_mod", nullable = false)
+	@Convert(converter = ERowMode.Converter.class)
 	private ERowMode rowMode;
 
 	@NotAudited

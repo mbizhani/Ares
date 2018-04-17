@@ -1,40 +1,25 @@
 package org.devocative.ares.entity;
 
-import javax.persistence.Transient;
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
+import javax.persistence.AttributeConverter;
+import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
 
-public class EServerOS implements Serializable {
-	private static final long serialVersionUID = -9198846977763809916L;
-
-	private static final Map<Integer, EServerOS> ID_TO_LIT = new LinkedHashMap<>();
-
-	// ------------------------------
-
-	public static final EServerOS LINUX = new EServerOS(1, "Linux");
-	public static final EServerOS ESXi = new EServerOS(2, "ESXi");
-	public static final EServerOS WINDOWS = new EServerOS(3, "Windows");
+public enum EServerOS {
+	LINUX(1, "Linux"),
+	ESXi(2, "ESXi"),
+	WINDOWS(3, "Windows"),
+	ORACLE_VM(4, "Oracle VM");
 
 	// ------------------------------
 
 	private Integer id;
-
-	@Transient
 	private String name;
 
 	// ------------------------------
 
-	private EServerOS(Integer id, String name) {
+	EServerOS(Integer id, String name) {
 		this.id = id;
 		this.name = name;
-
-		ID_TO_LIT.put(id, this);
-	}
-
-	public EServerOS() {
 	}
 
 	// ------------------------------
@@ -44,26 +29,10 @@ public class EServerOS implements Serializable {
 	}
 
 	public String getName() {
-		return ID_TO_LIT.get(getId()).name;
+		return name;
 	}
 
 	// ------------------------------
-
-	@Override
-	public boolean equals(Object o) {
-		if (this == o) return true;
-		if (!(o instanceof EServerOS)) return false;
-
-		EServerOS that = (EServerOS) o;
-
-		return !(getId() != null ? !getId().equals(that.getId()) : that.getId() != null);
-
-	}
-
-	@Override
-	public int hashCode() {
-		return getId() != null ? getId().hashCode() : 0;
-	}
 
 	@Override
 	public String toString() {
@@ -73,6 +42,25 @@ public class EServerOS implements Serializable {
 	// ------------------------------
 
 	public static List<EServerOS> list() {
-		return new ArrayList<>(ID_TO_LIT.values());
+		return Arrays.asList(values());
+	}
+
+	// ------------------------------
+
+	public static class Converter implements AttributeConverter<EServerOS, Integer> {
+		@Override
+		public Integer convertToDatabaseColumn(EServerOS attribute) {
+			return attribute != null ? attribute.getId() : null;
+		}
+
+		@Override
+		public EServerOS convertToEntityAttribute(Integer dbData) {
+			for (EServerOS literal : values()) {
+				if (literal.getId().equals(dbData)) {
+					return literal;
+				}
+			}
+			return null;
+		}
 	}
 }
