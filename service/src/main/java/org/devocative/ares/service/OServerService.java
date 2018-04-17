@@ -20,6 +20,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import javax.transaction.Transactional;
 import java.util.*;
 
 @Service("arsOServerService")
@@ -219,6 +220,7 @@ public class OServerService implements IOServerService {
 		return new KeyValueVO<>((Long) oServer[0], (String) oServer[1]);
 	}
 
+	@Transactional
 	@Override
 	public void updateVmid(Long id, String vmId) {
 		persistorService.createQueryBuilder()
@@ -226,9 +228,10 @@ public class OServerService implements IOServerService {
 			.addParam("vmId", vmId)
 			.addParam("id", id)
 			.update();
-		persistorService.commitOrRollback();
+		//TODO persistorService.commitOrRollback();
 	}
 
+	@Transactional
 	@Override
 	public List<String> updateVMServers(Long hypervisorId, String multiMatchAlg, List<Map<String, String>> servers, boolean onlyNew) {
 		logger.info("UpdateVMServers: hypervisor=[{}] multiMatchAlg=[{}] servers={}", hypervisorId, multiMatchAlg, servers);
@@ -314,7 +317,7 @@ public class OServerService implements IOServerService {
 
 		logger.info("Update hypervisor's VM: hypervisorId=[{}] no of invalid vmId = [{}]", hypervisorId, noOfInvalidVmId);
 
-		persistorService.commitOrRollback();
+		//TODO persistorService.commitOrRollback();
 
 		return result;
 	}
@@ -376,6 +379,7 @@ public class OServerService implements IOServerService {
 		}
 	}
 
+	@Transactional
 	@Override
 	public void updateServer(Long hypervisorId, String oldVmId, String newVmId, String newName) {
 		OServer oServer = persistorService.createQueryBuilder()
@@ -390,7 +394,7 @@ public class OServerService implements IOServerService {
 			oServer.setName(newName);
 			oServer.setVmId(newVmId);
 			saveOrUpdate(oServer);
-			persistorService.commitOrRollback();
+			//TODO persistorService.commitOrRollback();
 		} else {
 			throw new RuntimeException(String.format("UpdateServer: VM not found hypervisorId=[%s] vmId=[%s]", hypervisorId, oldVmId));
 		}

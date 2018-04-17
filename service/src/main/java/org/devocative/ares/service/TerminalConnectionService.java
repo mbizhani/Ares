@@ -27,6 +27,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import javax.transaction.Transactional;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -108,11 +109,11 @@ public class TerminalConnectionService implements ITerminalConnectionService, IA
 
 	// --------------- IApplicationLifecycle
 
+	@Transactional
 	@Override
 	public void init() {
 		//TODO define close reason
 		persistorService.executeUpdate("update TerminalConnection ent set ent.active=false, ent.disconnection=current_date where ent.active=true");
-		persistorService.commitOrRollback();
 	}
 
 	@Override
@@ -144,7 +145,7 @@ public class TerminalConnectionService implements ITerminalConnectionService, IA
 		connection.setActive(true);
 
 		saveOrUpdate(connection);
-		persistorService.commitOrRollback();
+		//TODO persistorService.commitOrRollback();
 
 		DTaskResult result = null;
 		TerminalConnectionVO vo = new TerminalConnectionVO(connection.getId(), initConfig, targetVOByUser);
@@ -174,6 +175,7 @@ public class TerminalConnectionService implements ITerminalConnectionService, IA
 		}
 	}
 
+	@Transactional
 	@Override
 	//TODO define close reason
 	public synchronized void closeConnection(Long connId) {
@@ -189,7 +191,7 @@ public class TerminalConnectionService implements ITerminalConnectionService, IA
 			connection.setActive(false);
 			connection.setDisconnection(new Date());
 			saveOrUpdate(connection);
-			persistorService.commitOrRollback();
+			//TODO persistorService.commitOrRollback();
 
 			logger.info("Terminal Connection Closed: id=[{}], user=[{}], conn=[{}]",
 				connId, securityService.getCurrentUser(), connection.getTarget());

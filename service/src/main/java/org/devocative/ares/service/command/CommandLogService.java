@@ -17,6 +17,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import javax.transaction.Transactional;
 import java.util.List;
 import java.util.Map;
 
@@ -90,6 +91,7 @@ public class CommandLogService implements ICommandLogService, IApplicationLifecy
 
 	// ==============================
 
+	@Transactional
 	@Override
 	public void init() {
 		persistorService
@@ -97,7 +99,6 @@ public class CommandLogService implements ICommandLogService, IApplicationLifecy
 			.addSelect("update CommandLog ent set ent.duration=-1, ent.result=:res where ent.duration is null")
 			.addParam("res", ECommandResult.UNKNOWN)
 			.update();
-		persistorService.commitOrRollback();
 	}
 
 	@Override
@@ -111,6 +112,7 @@ public class CommandLogService implements ICommandLogService, IApplicationLifecy
 
 	// ---------------
 
+	@Transactional
 	@Override
 	public Long insertLog(Long commandId, Long serviceInstanceId, Map<String, ?> params, Long prepCommandId) {
 		CommandLog log = new CommandLog();
@@ -121,11 +123,11 @@ public class CommandLogService implements ICommandLogService, IApplicationLifecy
 		log.setPrepCommandId(prepCommandId);
 
 		saveOrUpdate(log);
-		persistorService.commitOrRollback();
 
 		return log.getId();
 	}
 
+	@Transactional
 	@Override
 	public void updateLog(Long logId, Long duration, Exception error) {
 		Throwable th = error;

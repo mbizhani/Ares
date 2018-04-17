@@ -20,6 +20,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import javax.transaction.Transactional;
 import java.io.InputStream;
 import java.util.HashMap;
 import java.util.List;
@@ -105,6 +106,7 @@ public class OServiceService implements IOServiceService {
 
 	// ==============================
 
+	@Transactional
 	@Override
 	public void importFile(InputStream in) {
 		logger.info("OServiceService.importFile()");
@@ -171,7 +173,7 @@ public class OServiceService implements IOServiceService {
 			}
 		}
 
-		persistorService.commitOrRollback();
+		//TODO persistorService.commitOrRollback();
 		commandService.clearCache();
 	}
 }
