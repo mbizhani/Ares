@@ -43,7 +43,7 @@ public class PrepCommandService implements IPrepCommandService {
 
 	@Override
 	public void saveOrUpdate(PrepCommand entity) {
-		OService service = serviceService.load(entity.getCommand().getServiceId());
+		OService service = serviceService.load(entity.getCommand().getServiceIdSafely());
 		String serviceName = service.getName();
 
 		if (entity.getAllowedRoles() == null) {

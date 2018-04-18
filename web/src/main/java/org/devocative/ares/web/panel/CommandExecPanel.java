@@ -98,7 +98,7 @@ public class CommandExecPanel extends DPanel implements IAsyncResponse<CommandOu
 		super(id);
 
 		this.prepCommandId = prepCommand.getId();
-		this.commandId = prepCommand.getCommandId();
+		this.commandId = prepCommand.getCommandIdSafely();
 		this.targetServiceInstanceId = prepCommand.getServiceInstanceId();
 		if (prepCommand.getParams() != null) {
 			this.paramsAsStr.putAll(prepCommandService.convertParamsFromString(prepCommand.getParams()));
@@ -181,7 +181,7 @@ public class CommandExecPanel extends DPanel implements IAsyncResponse<CommandOu
 		add(taskBehavior);
 
 		Command command = commandService.load(commandId);
-		serviceId = command.getServiceId();
+		serviceId = command.getServiceIdSafely();
 
 		if (targetServiceInstanceId != null) {
 			OServiceInstance target = serviceInstanceService.load(targetServiceInstanceId);
@@ -322,7 +322,7 @@ public class CommandExecPanel extends DPanel implements IAsyncResponse<CommandOu
 		switch (xParam.getType()) {
 			case Guest:
 				if (paramsAsStr.containsKey(xParamName)) {
-					Long serverId = serviceInstanceService.load(targetServiceInstances.get(0).getKey()).getServerId();
+					Long serverId = serviceInstanceService.load(targetServiceInstances.get(0).getKey()).getServerIdSafely();
 					KeyValueVO<String, String> guestOf = serverService.findGuestOf(serverId, paramsAsStr.get(xParamName));
 					params.put(xParamName, guestOf);
 					fieldFormItem = new WLabelInput(xParamName);
@@ -355,7 +355,7 @@ public class CommandExecPanel extends DPanel implements IAsyncResponse<CommandOu
 								@Override
 								protected void onUpdate(AjaxRequestTarget target) {
 									KeyValueVO<Long, String> serviceInstance = (KeyValueVO<Long, String>) getComponent().getDefaultModelObject();
-									Long serverId = serviceInstanceService.load(serviceInstance.getKey()).getServerId();
+									Long serverId = serviceInstanceService.load(serviceInstance.getKey()).getServerIdSafely();
 									List<KeyValueVO<String, String>> guestsOf = serverService.findGuestsOf(serverId);
 									for (WSelectionInput guestInput : guestInputList) {
 										guestInput.updateChoices(target, guestsOf);

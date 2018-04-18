@@ -235,6 +235,10 @@ public class Command implements ICreationDate, ICreatorUser, IModificationDate, 
 		this.xCommand = xCommand;
 	}
 
+	public Long getServiceIdSafely() {
+		return getServiceId() != null ? getServiceId() :
+			getService() != null ? getService().getId() : null;
+	}
 
 	// ------------------------------
 

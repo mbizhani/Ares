@@ -114,7 +114,7 @@ public class OServiceService implements IOServiceService {
 		Map<String, Command> commandMap = new HashMap<>();
 		List<Command> list = commandService.list();
 		for (Command command : list) {
-			commandMap.put(String.format("%s_%s", command.getServiceId(), command.getName()), command);
+			commandMap.put(String.format("%s_%s", command.getServiceIdSafely(), command.getName()), command);
 		}
 
 		XStream xstream = new AdroitXStream();

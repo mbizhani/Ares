@@ -84,7 +84,7 @@ public class OServiceInstanceTargetVO implements Serializable {
 	}
 
 	public Long getServerId() {
-		return serviceInstance.getServerId();
+		return serviceInstance.getServerIdSafely();
 	}
 
 	// ---------------

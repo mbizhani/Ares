@@ -47,9 +47,6 @@ public class OServiceInstance implements IRowMode, IRoleRowAccess, ICreationDate
 	@JoinColumn(name = "f_service", nullable = false, foreignKey = @ForeignKey(name = "srvcinst2service"))
 	private OService service;
 
-	@Column(name = "f_service", nullable = false, insertable = false, updatable = false)
-	private Long serviceId;
-
 	@OneToMany(fetch = FetchType.LAZY, mappedBy = "serviceInstance", cascade = CascadeType.ALL)
 	private List<OSIPropertyValue> propertyValues;
 
@@ -169,10 +166,6 @@ public class OServiceInstance implements IRowMode, IRoleRowAccess, ICreationDate
 		this.service = service;
 	}
 
-	public Long getServiceId() {
-		return serviceId;
-	}
-
 	public List<OSIPropertyValue> getPropertyValues() {
 		return propertyValues;
 	}
@@ -269,7 +262,14 @@ public class OServiceInstance implements IRowMode, IRoleRowAccess, ICreationDate
 		this.version = version;
 	}
 
-	// ------------------------------
+	// ---------------
+
+	public Long getServerIdSafely() {
+		return getServerId() != null ? getServerId() :
+			getServer() != null ? getServer().getId() : null;
+	}
+
+	// ---------------
 
 	@Override
 	public boolean equals(Object o) {

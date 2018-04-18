@@ -251,6 +251,13 @@ public class PrepCommand implements ICreationDate, ICreatorUser, IModificationDa
 
 	// ---------------
 
+	public Long getCommandIdSafely() {
+		return getCommandId() != null ? getCommandId() :
+			getCommand() != null ? getCommand().getId() : null;
+	}
+
+	// ---------------
+
 	@Override
 	public boolean equals(Object o) {
 		if (this == o) return true;
