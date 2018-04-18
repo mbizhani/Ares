@@ -112,7 +112,7 @@ public class OSIUserService implements IOSIUserService {
 	public List<OSIUser> search(OSIUserFVO filter, long pageIndex, long pageSize) {
 		return persistorService
 			.createQueryBuilder()
-			.addSelect("select ent")
+			.addSelect("select distinct ent")
 			.addFrom(OSIUser.class, "ent")
 			.applyFilter(OSIUser.class, "ent", filter)
 			.list((pageIndex - 1) * pageSize, pageSize);
@@ -122,7 +122,7 @@ public class OSIUserService implements IOSIUserService {
 	public long count(OSIUserFVO filter) {
 		return persistorService
 			.createQueryBuilder()
-			.addSelect("select count(1)")
+			.addSelect("select count(distinct ent.id)")
 			.addFrom(OSIUser.class, "ent")
 			.applyFilter(OSIUser.class, "ent", filter)
 			.object();

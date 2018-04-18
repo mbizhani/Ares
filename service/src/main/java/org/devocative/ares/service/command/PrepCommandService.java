@@ -86,7 +86,7 @@ public class PrepCommandService implements IPrepCommandService {
 	public List<PrepCommand> search(PrepCommandFVO filter, long pageIndex, long pageSize) {
 		return persistorService
 			.createQueryBuilder()
-			.addSelect("select ent")
+			.addSelect("select distinct ent")
 			.addFrom(PrepCommand.class, "ent")
 			.applyFilter(PrepCommand.class, "ent", filter)
 			.list((pageIndex - 1) * pageSize, pageSize);
@@ -96,7 +96,7 @@ public class PrepCommandService implements IPrepCommandService {
 	public long count(PrepCommandFVO filter) {
 		return persistorService
 			.createQueryBuilder()
-			.addSelect("select count(1)")
+			.addSelect("select count(distinct ent.id)")
 			.addFrom(PrepCommand.class, "ent")
 			.applyFilter(PrepCommand.class, "ent", filter)
 			.object();

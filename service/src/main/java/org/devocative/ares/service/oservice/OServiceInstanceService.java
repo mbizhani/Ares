@@ -109,7 +109,7 @@ public class OServiceInstanceService implements IOServiceInstanceService {
 	public List<OServiceInstance> search(OServiceInstanceFVO filter, long pageIndex, long pageSize) {
 		return persistorService
 			.createQueryBuilder()
-			.addSelect("select ent")
+			.addSelect("select distinct ent")
 			.addFrom(OServiceInstance.class, "ent")
 			.applyFilter(OServiceInstance.class, "ent", filter)
 			.list((pageIndex - 1) * pageSize, pageSize);
@@ -119,7 +119,7 @@ public class OServiceInstanceService implements IOServiceInstanceService {
 	public long count(OServiceInstanceFVO filter) {
 		return persistorService
 			.createQueryBuilder()
-			.addSelect("select count(1)")
+			.addSelect("select count(distinct ent.id)")
 			.addFrom(OServiceInstance.class, "ent")
 			.applyFilter(OServiceInstance.class, "ent", filter)
 			.object();
