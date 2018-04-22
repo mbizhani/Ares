@@ -17,6 +17,9 @@ public class OServiceInstanceTargetVO implements Serializable {
 	private OSIUser user;
 	private OServiceInstance serviceInstance;
 
+	private OSIUser admin;
+	private String adminPassword;
+
 	// ------------------------------
 
 	public OServiceInstanceTargetVO(OServiceInstance serviceInstance, OSIUser user, String password, Map<String, String> prop) {
@@ -70,6 +73,24 @@ public class OServiceInstanceTargetVO implements Serializable {
 
 	public OServiceInstanceTargetVO setSudoer(boolean sudoer) {
 		this.sudoer = sudoer;
+		return this;
+	}
+
+	public OSIUser getAdmin() {
+		return admin;
+	}
+
+	public OServiceInstanceTargetVO setAdmin(OSIUser admin) {
+		this.admin = admin;
+		return this;
+	}
+
+	public String getAdminPassword() {
+		return adminPassword;
+	}
+
+	public OServiceInstanceTargetVO setAdminPassword(String adminPassword) {
+		this.adminPassword = adminPassword;
 		return this;
 	}
 

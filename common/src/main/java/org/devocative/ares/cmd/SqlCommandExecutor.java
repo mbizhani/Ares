@@ -31,10 +31,10 @@ public class SqlCommandExecutor extends AbstractCommandExecutor {
 	@Override
 	protected void execute() throws SQLException, ClassNotFoundException {
 		Object result = null;
-		Connection connection = resource.createConnection(targetVO);
+		Connection connection = resource.createConnection(targetVO, isAdmin());
 
 		logger.info("Execute query: si=[{}] sql=[{}]", targetVO, command);
-		String p = String.format("[ %s@%s ]$ %s", targetVO.getUsername(), targetVO.getName(), prompt);
+		String p = String.format("[ %s@%s ]$ %s", getProperUsername(), targetVO.getName(), prompt);
 		resource.onResult(new CommandOutput(CommandOutput.Type.PROMPT, p));
 
 		currentNps = new NamedParameterStatement(connection, command)

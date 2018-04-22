@@ -93,7 +93,7 @@ public class CommandCenter {
 
 	// ---------------
 
-	public SshResult ssh(String prompt, String cmd, Boolean force, String... stdin) {
+	public SshResult ssh(String prompt, String cmd, Boolean force, Boolean admin, String... stdin) {
 		assertToContinue();
 
 		int exitStatus = -1;
@@ -113,6 +113,10 @@ public class CommandCenter {
 			ShellCommandExecutor executor = new ShellCommandExecutor(finalTargetVO, resource, prompt, cmd, stdin);
 			if (force != null) {
 				executor.setForce(force);
+			}
+
+			if (admin != null) {
+				executor.setAdmin(admin);
 			}
 
 			resource.getCommandService().assertCurrentUser(cmd);
@@ -182,7 +186,7 @@ public class CommandCenter {
 
 	// ---------------
 
-	public Object sql(String prompt, String sql, Map<String, Object> params, Map<String, Object> filter, Boolean force) {
+	public Object sql(String prompt, String sql, Map<String, Object> params, Map<String, Object> filter, Boolean force, Boolean admin) {
 		assertToContinue();
 		CommandCenterResource resource = CommandCenterResource.get();
 
@@ -197,6 +201,10 @@ public class CommandCenter {
 			SqlCommandExecutor executor = new SqlCommandExecutor(finalTargetVO, resource, prompt, sql, params, filter);
 			if (force != null) {
 				executor.setForce(force);
+			}
+
+			if (admin != null) {
+				executor.setAdmin(admin);
 			}
 
 			resource.setCurrentExecutor(executor);

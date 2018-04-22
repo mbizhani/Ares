@@ -6,6 +6,7 @@ import org.apache.wicket.model.CompoundPropertyModel;
 import org.apache.wicket.model.Model;
 import org.apache.wicket.model.ResourceModel;
 import org.devocative.ares.entity.oservice.ERemoteMode;
+import org.devocative.ares.entity.oservice.ESIUserType;
 import org.devocative.ares.entity.oservice.OSIUser;
 import org.devocative.ares.entity.oservice.OServiceInstance;
 import org.devocative.ares.iservice.oservice.IOSIUserService;
@@ -101,9 +102,9 @@ public class OSIUserFormDPage extends DPage {
 			.setRequired(entity.getId() == null)
 			.setLabel(new ResourceModel("OSIUser.password2")));
 
-		floatTable.add(new WBooleanInput("executor")
+		floatTable.add(new WSelectionInput("type", ESIUserType.list(), false)
 			.setRequired(true)
-			.setLabel(new ResourceModel("OSIUser.executor", "executor")));
+			.setLabel(new ResourceModel("OSIUser.type", "type")));
 		floatTable.add(new WBooleanInput("enabled")
 			.setRequired(true)
 			.setLabel(new ResourceModel("OSIUser.enabled", "enabled")));

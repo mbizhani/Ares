@@ -4,6 +4,7 @@ package org.devocative.ares.vo.filter.oservice;
 import org.devocative.adroit.vo.RangeVO;
 import org.devocative.ares.entity.OServer;
 import org.devocative.ares.entity.oservice.ERemoteMode;
+import org.devocative.ares.entity.oservice.ESIUserType;
 import org.devocative.ares.entity.oservice.OService;
 import org.devocative.ares.entity.oservice.OServiceInstance;
 import org.devocative.demeter.entity.ERowMode;
@@ -20,7 +21,7 @@ public class OSIUserFVO implements Serializable {
 	private static final long serialVersionUID = -996678801L;
 
 	private String username;
-	private Boolean executor;
+	private List<ESIUserType> type;
 	private Boolean enabled;
 	private List<ERemoteMode> remoteMode;
 	private List<OServiceInstance> serviceInstance;
@@ -44,12 +45,12 @@ public class OSIUserFVO implements Serializable {
 		this.username = username;
 	}
 
-	public Boolean getExecutor() {
-		return executor;
+	public List<ESIUserType> getType() {
+		return type;
 	}
 
-	public void setExecutor(Boolean executor) {
-		this.executor = executor;
+	public void setType(List<ESIUserType> type) {
+		this.type = type;
 	}
 
 	public Boolean getEnabled() {

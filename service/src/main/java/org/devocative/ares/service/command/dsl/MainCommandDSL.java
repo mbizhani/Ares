@@ -19,10 +19,10 @@ public class MainCommandDSL {
 
 	private static final List<String> VALID_SSH_PROPERTIES = Arrays.asList(
 		"prompt", "cmd", "stdin",
-		"result", "force", "error");
+		"result", "force", "error", "admin");
 	private static final List<String> VALID_DB_PROPERTIES = Arrays.asList(
 		"prompt", "query", "params", "filters",
-		"result", "force", "error");
+		"result", "force", "error", "admin");
 
 	// ------------------------------
 
@@ -45,7 +45,9 @@ public class MainCommandDSL {
 		String cmd = clsAsMap.containsKey("cmd") ? clsAsMap.get("cmd").toString() : null;
 		Boolean force = clsAsMap.containsKey("force") ? (Boolean) clsAsMap.get("force") : clsAsMap.containsKey("error");
 		String stdin = clsAsMap.containsKey("stdin") ? clsAsMap.get("stdin").toString() : null;
-		SshResult sshResult = commandCenter.ssh(prompt, cmd, force, stdin);
+		Boolean admin = clsAsMap.containsKey("admin") ? (Boolean) clsAsMap.get("admin") : null;
+
+		SshResult sshResult = commandCenter.ssh(prompt, cmd, force, admin, stdin);
 		if (sshResult.getExitStatus() == 0 && clsAsMap.containsKey("result")) {
 			Closure result = (Closure) clsAsMap.get("result");
 			return result.call(sshResult);
@@ -80,7 +82,9 @@ public class MainCommandDSL {
 		Map<String, Object> params = clsAsMap.containsKey("params") ? (Map<String, Object>) clsAsMap.get("params") : null;
 		Map<String, Object> filters = clsAsMap.containsKey("filters") ? (Map<String, Object>) clsAsMap.get("filters") : null;
 		Boolean force = clsAsMap.containsKey("force") ? (Boolean) clsAsMap.get("force") : null;
-		Object queryResult = commandCenter.sql(prompt, query, params, filters, force);
+		Boolean admin = clsAsMap.containsKey("admin") ? (Boolean) clsAsMap.get("admin") : null;
+
+		Object queryResult = commandCenter.sql(prompt, query, params, filters, force, admin);
 		if (clsAsMap.containsKey("result")) {
 			Closure result = (Closure) clsAsMap.get("result");
 			return result.call(queryResult);

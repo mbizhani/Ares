@@ -98,30 +98,59 @@ public class CommandCenterResource {
 		resultCallBack.onResult(lineOfResult);
 	}
 
-	public Session createSession(OServiceInstanceTargetVO targetVO) throws JSchException {
+	public Session createSession(OServiceInstanceTargetVO targetVO, boolean admin) throws JSchException {
+		Long key = admin ? targetVO.getAdmin().getId() : targetVO.getUser().getId();
 
-		if (!SSH.containsKey(targetVO.getId())) {
+		if (!SSH.containsKey(key)) {
 			logger.info("Try to get SSH connection: {} by user {}", targetVO.getName(), targetVO.getUsername());
 			resultCallBack.onResult(new CommandOutput(CommandOutput.Type.PROMPT, "connecting ..."));
 
-			Session session = J_SCH.getSession(targetVO.getUsername(), targetVO.getAddress(), targetVO.getPort());
-			session.setPassword(targetVO.getPassword());
+			String username = targetVO.getUsername();
+			String password = targetVO.getPassword();
+
+			if (admin) {
+				if (targetVO.getAdmin() == null) {
+					throw new RuntimeException("No SSH Admin Executor for " + targetVO.getName());
+				}
+
+				username = targetVO.getAdmin().getUsername();
+				password = targetVO.getAdminPassword();
+			}
+
+
+			Session session = J_SCH.getSession(username, targetVO.getAddress(), targetVO.getPort());
+			session.setPassword(password);
 			session.setConfig("StrictHostKeyChecking", "no");
 			session.connect(30000); // making a connection with timeout.
-			SSH.put(targetVO.getId(), session);
+			SSH.put(key, session);
 		}
 
-		return SSH.get(targetVO.getId());
+		return SSH.get(key);
 	}
 
-	public Connection createConnection(OServiceInstanceTargetVO targetVO) throws ClassNotFoundException, SQLException {
-		if (!DB_CONN.containsKey(targetVO.getId())) {
+	public Connection createConnection(OServiceInstanceTargetVO targetVO, boolean admin) throws ClassNotFoundException, SQLException {
+		Long key = admin ? targetVO.getAdmin().getId() : targetVO.getUser().getId();
+
+		if (!DB_CONN.containsKey(key)) {
 			Class.forName(targetVO.getProp().get("driver"));
-			Connection connection = DriverManager.getConnection(targetVO.getConnection(), targetVO.getUsername(), targetVO.getPassword());
-			DB_CONN.put(targetVO.getId(), connection);
+
+			String username = targetVO.getUsername();
+			String password = targetVO.getPassword();
+
+			if (admin) {
+				if (targetVO.getAdmin() == null) {
+					throw new RuntimeException("No SQL Admin Executor for " + targetVO.getName());
+				}
+
+				username = targetVO.getAdmin().getUsername();
+				password = targetVO.getAdminPassword();
+			}
+
+			Connection connection = DriverManager.getConnection(targetVO.getConnection(), username, password);
+			DB_CONN.put(key, connection);
 		}
 
-		return DB_CONN.get(targetVO.getId());
+		return DB_CONN.get(key);
 	}
 
 	private void closeAll() {

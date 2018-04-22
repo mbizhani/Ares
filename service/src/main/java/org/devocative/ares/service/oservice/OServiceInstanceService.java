@@ -1,5 +1,6 @@
 package org.devocative.ares.service.oservice;
 
+import org.devocative.adroit.obuilder.ObjectBuilder;
 import org.devocative.adroit.vo.KeyValueVO;
 import org.devocative.ares.AresErrorCode;
 import org.devocative.ares.AresException;
@@ -14,7 +15,6 @@ import org.devocative.demeter.DBConstraintViolationException;
 import org.devocative.demeter.entity.ERowMode;
 import org.devocative.demeter.entity.Role;
 import org.devocative.demeter.entity.User;
-import org.devocative.demeter.iservice.ICacheService;
 import org.devocative.demeter.iservice.IRoleService;
 import org.devocative.demeter.iservice.ISecurityService;
 import org.devocative.demeter.iservice.persistor.EJoinMode;
@@ -46,9 +46,6 @@ public class OServiceInstanceService implements IOServiceInstanceService {
 
 	@Autowired
 	private IStringTemplateService stringTemplateService;
-
-	@Autowired
-	private ICacheService cacheService;
 
 	@Autowired
 	private ISecurityService securityService;
@@ -231,9 +228,9 @@ public class OServiceInstanceService implements IOServiceInstanceService {
 
 	@Override
 	public OServiceInstanceTargetVO getTargetVO(Long serviceInstanceId) {
-		OSIUser executorForSI = siUserService.findExecutorForSI(serviceInstanceId);
+		final Map<ESIUserType, OSIUser> executorForSI = siUserService.findExecutorForSI(serviceInstanceId);
 
-		if (executorForSI == null) {
+		if (executorForSI.isEmpty()) {
 			throw new AresException(AresErrorCode.ExecutorUserNotFound);
 		}
 
@@ -243,15 +240,15 @@ public class OServiceInstanceService implements IOServiceInstanceService {
 	@Override
 	public OServiceInstanceTargetVO getTargetVOByUser(Long osiUserId) {
 		OSIUser user = siUserService.load(osiUserId);
-		return createTargetVO(user);
+		return createTargetVO(ObjectBuilder.<ESIUserType, OSIUser>createDefaultMap().put(user.getType(), user).get());
 	}
 
 	@Override
 	public OServiceInstanceTargetVO getTargetVOByServer(Long serviceInstanceId, ERemoteMode remoteMode) {
 		OServiceInstance serviceInstance = load(serviceInstanceId);
-		OSIUser executor = siUserService.findExecutor(serviceInstance.getServer().getId(), remoteMode);
+		final Map<ESIUserType, OSIUser> executor = siUserService.findExecutor(serviceInstance.getServer().getId(), remoteMode);
 
-		if (executor == null) {
+		if (executor.isEmpty()) {
 			throw new AresException(AresErrorCode.ExecutorUserNotFound);
 		}
 
@@ -281,7 +278,8 @@ public class OServiceInstanceService implements IOServiceInstanceService {
 
 	// ------------------------------
 
-	private OServiceInstanceTargetVO createTargetVO(OSIUser user) {
+	private OServiceInstanceTargetVO createTargetVO(Map<ESIUserType, OSIUser> userMap) {
+		OSIUser user = userMap.getOrDefault(ESIUserType.Executor, userMap.get(ESIUserType.Admin));
 		OServiceInstance serviceInstance = load(user.getServiceInstanceId());
 
 		Map<String, String> props = new HashMap<>();
@@ -307,6 +305,12 @@ public class OServiceInstanceService implements IOServiceInstanceService {
 			IStringTemplate template = stringTemplateService.create(serviceInstance.getService().getConnectionPattern(), TemplateEngineType.GroovyTemplate);
 			String connection = (String) template.process(params);
 			targetVO.setConnection(connection);
+		}
+
+		if (userMap.containsKey(ESIUserType.Admin)) {
+			OSIUser admin = userMap.get(ESIUserType.Admin);
+			targetVO.setAdmin(admin);
+			targetVO.setAdminPassword(siUserService.getPassword(admin));
 		}
 
 		return targetVO;

@@ -36,11 +36,12 @@ public class OSIUser implements IRowMode, IRoleRowAccess, ICreationDate, ICreato
 	@Column(name = "c_password", nullable = false)
 	private String password;
 
-	@Column(name = "b_executor", nullable = false)
-	private Boolean executor;
+	@Column(name = "e_type", nullable = false)
+	@Convert(converter = ESIUserType.Converter.class)
+	private ESIUserType type = ESIUserType.Normal;
 
 	@Column(name = "b_enabled", nullable = false)
-	private Boolean enabled;
+	private Boolean enabled = true;
 
 	@Column(name = "e_remote_mode", nullable = false)
 	@Convert(converter = ERemoteMode.Converter.class)
@@ -161,12 +162,12 @@ public class OSIUser implements IRowMode, IRoleRowAccess, ICreationDate, ICreato
 		this.password = password;
 	}
 
-	public Boolean getExecutor() {
-		return executor;
+	public ESIUserType getType() {
+		return type;
 	}
 
-	public void setExecutor(Boolean executor) {
-		this.executor = executor;
+	public void setType(ESIUserType type) {
+		this.type = type;
 	}
 
 	public Boolean getEnabled() {

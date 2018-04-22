@@ -8,6 +8,7 @@ import org.apache.wicket.model.Model;
 import org.apache.wicket.model.ResourceModel;
 import org.devocative.ares.AresPrivilegeKey;
 import org.devocative.ares.entity.oservice.ERemoteMode;
+import org.devocative.ares.entity.oservice.ESIUserType;
 import org.devocative.ares.entity.oservice.OSIUser;
 import org.devocative.ares.iservice.oservice.IOSIUserService;
 import org.devocative.ares.vo.filter.oservice.OSIUserFVO;
@@ -112,8 +113,8 @@ public class OSIUserListDPage extends DPage implements IGridDataSource<OSIUser> 
 		WFloatTable floatTable = new WFloatTable("floatTable");
 		floatTable.add(new WTextInput("username")
 			.setLabel(new ResourceModel("OSIUser.username", "username")));
-		floatTable.add(new WBooleanInput("executor")
-			.setLabel(new ResourceModel("OSIUser.executor", "executor")));
+		floatTable.add(new WSelectionInput("type", ESIUserType.list(), true)
+			.setLabel(new ResourceModel("OSIUser.type", "type")));
 		floatTable.add(new WBooleanInput("enabled")
 			.setLabel(new ResourceModel("OSIUser.enabled", "enabled")));
 		floatTable.add(new WSelectionInput("remoteMode", ERemoteMode.list(), true)
@@ -157,9 +158,24 @@ public class OSIUserListDPage extends DPage implements IGridDataSource<OSIUser> 
 
 		OColumnList<OSIUser> columnList = new OColumnList<>();
 		columnList.add(new OPropertyColumn<>(new ResourceModel("OSIUser.username", "username"), "username"));
-		columnList.add(new OPropertyColumn<OSIUser>(new ResourceModel("OSIUser.executor", "executor"), "executor")
-			.setFormatter(OBooleanFormatter.bool())
-			.setCellStyler((IStyler<OSIUser> & Serializable) (bean, id) -> OStyle.style(bean.getExecutor() ? "color: #32cd32" : null)));
+		columnList.add(new OPropertyColumn<OSIUser>(new ResourceModel("OSIUser.type", "type"), "type")
+			.setCellStyler((IStyler<OSIUser> & Serializable) (bean, id) -> {
+				String color;
+				switch (bean.getType()) {
+					case Normal:
+						color = "inherit";
+						break;
+					case Executor:
+						color = "#32cd32";
+						break;
+					case Admin:
+						color = "red";
+						break;
+					default:
+						color = "inherit";
+				}
+				return OStyle.style("color: " + color);
+			}));
 		columnList.add(new OPropertyColumn<OSIUser>(new ResourceModel("OSIUser.enabled", "enabled"), "enabled")
 			.setFormatter(OBooleanFormatter.bool())
 			.setCellStyler((IStyler<OSIUser> & Serializable) (bean, id) -> OStyle.style(bean.getEnabled() ? "color: #32cd32" : "color: red")));

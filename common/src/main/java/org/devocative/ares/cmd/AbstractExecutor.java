@@ -12,7 +12,8 @@ public abstract class AbstractExecutor implements Runnable {
 
 	// ---------------
 
-	private boolean force;
+	private boolean force = false;
+	private boolean admin = false;
 	private Object result;
 	private Exception exception;
 
@@ -45,6 +46,15 @@ public abstract class AbstractExecutor implements Runnable {
 		return this;
 	}
 
+	public boolean isAdmin() {
+		return admin;
+	}
+
+	public AbstractExecutor setAdmin(boolean admin) {
+		this.admin = admin;
+		return this;
+	}
+
 	public final Exception getException() {
 		return exception;
 	}
@@ -61,6 +71,10 @@ public abstract class AbstractExecutor implements Runnable {
 
 	protected final void setResult(Object result) {
 		this.result = result;
+	}
+
+	protected final String getProperUsername() {
+		return isAdmin() ? targetVO.getAdmin().getUsername() + "(A)" : targetVO.getUsername();
 	}
 
 	// ------------------------------

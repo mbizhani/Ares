@@ -482,7 +482,7 @@
 				<field name="password">
 					<finfo hasList="false" hasFVO="false"/>
 				</field>
-				<field name="executor">
+				<field name="type">
 					<finfo/>
 				</field>
 				<field name="enabled">

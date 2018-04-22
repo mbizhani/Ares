@@ -6,10 +6,7 @@ import org.devocative.ares.AresConfigKey;
 import org.devocative.ares.AresErrorCode;
 import org.devocative.ares.AresException;
 import org.devocative.ares.entity.OServer;
-import org.devocative.ares.entity.oservice.ERemoteMode;
-import org.devocative.ares.entity.oservice.OSIUser;
-import org.devocative.ares.entity.oservice.OService;
-import org.devocative.ares.entity.oservice.OServiceInstance;
+import org.devocative.ares.entity.oservice.*;
 import org.devocative.ares.iservice.oservice.IOSIUserService;
 import org.devocative.ares.vo.filter.oservice.OSIUserFVO;
 import org.devocative.demeter.DBConstraintViolationException;
@@ -27,10 +24,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @Service("arsOSIUserService")
 public class OSIUserService implements IOSIUserService {
@@ -49,11 +43,12 @@ public class OSIUserService implements IOSIUserService {
 
 	@Override
 	public void saveOrUpdate(OSIUser entity) {
-		if (entity.getId() == null && entity.getExecutor()) {
+		if (entity.getId() == null && entity.getType() != ESIUserType.Normal) {
 			Long count = persistorService.createQueryBuilder()
 				.addSelect("select count(1)")
 				.addFrom(OSIUser.class, "ent")
-				.addWhere("and ent.executor = true and ent.serviceInstance = :si")
+				.addWhere("and ent.type = :type and ent.serviceInstance = :si")
+				.addParam("type", entity.getType())
 				.addParam("si", entity.getServiceInstance())
 				.object();
 
@@ -196,39 +191,38 @@ public class OSIUserService implements IOSIUserService {
 	}
 
 	@Override
-	public OSIUser findExecutorForSI(Long serviceInstId) {
+	public Map<ESIUserType, OSIUser> findExecutorForSI(Long serviceInstId) {
 		List<OSIUser> list = persistorService.createQueryBuilder()
 			.addFrom(OSIUser.class, "ent")
-			.addWhere("and ent.executor = true")
+			.addWhere("and ent.type in (:types)", "types", ESIUserType.listOfExec())
+			.addWhere("and ent.serviceInstance.id = :serviceInstId", "serviceInstId", serviceInstId)
 			.addWhere("and ent.enabled = true")
-			.addWhere("and ent.serviceInstance.id = :serviceInstId")
-			.addParam("serviceInstId", serviceInstId)
 			.list();
 
-		if (list.size() > 0) {
-			return list.get(0);
+		Map<ESIUserType, OSIUser> result = new HashMap<>();
+		for (OSIUser osiUser : list) {
+			result.put(osiUser.getType(), osiUser);
 		}
 
-		return null;
+		return result;
 	}
 
 	@Override
-	public OSIUser findExecutor(Long serverId, ERemoteMode remoteMode) {
+	public Map<ESIUserType, OSIUser> findExecutor(Long serverId, ERemoteMode remoteMode) {
 		List<OSIUser> list = persistorService.createQueryBuilder()
 			.addFrom(OSIUser.class, "ent")
-			.addWhere("and ent.executor = true")
+			.addWhere("and ent.type in (:types)", "types", ESIUserType.listOfExec())
+			.addWhere("and ent.server.id = :serverId", "serverId", serverId)
+			.addWhere("and ent.remoteMode = :rm", "rm", remoteMode)
 			.addWhere("and ent.enabled = true")
-			.addWhere("and ent.server.id = :serverId")
-			.addParam("serverId", serverId)
-			.addWhere("and ent.remoteMode=:remoteMode")
-			.addParam("remoteMode", remoteMode)
 			.list();
 
-		if (list.size() > 0) {
-			return list.get(0);
+		Map<ESIUserType, OSIUser> result = new HashMap<>();
+		for (OSIUser osiUser : list) {
+			result.put(osiUser.getType(), osiUser);
 		}
 
-		return null;
+		return result;
 	}
 
 	@Override
@@ -238,8 +232,7 @@ public class OSIUserService implements IOSIUserService {
 		for (ERemoteMode remoteMode : ERemoteMode.list()) {
 			List<OSIUser> list = createBaseAllowedUsers()
 				.addSelect("select ent")
-				.addWhere("and ent.remoteMode = :rm")
-				.addParam("rm", remoteMode)
+				.addWhere("and ent.remoteMode = :rm", "rm", remoteMode)
 				.setOrderBy("ent.remoteMode")
 				.list();
 

@@ -41,7 +41,7 @@ public class ShellCommandExecutor extends AbstractCommandExecutor {
 
 	@Override
 	protected void execute() throws JSchException, IOException {
-		Session session = resource.createSession(targetVO);
+		Session session = resource.createSession(targetVO, isAdmin());
 
 		String finalCmd = command;
 		if (targetVO.isSudoer() && !command.trim().startsWith("sudo")) {
@@ -57,7 +57,7 @@ public class ShellCommandExecutor extends AbstractCommandExecutor {
 		}
 
 		logger.info("Sending SSH Command: cmd=[{}] si=[{}]", prompt, targetVO);
-		String p = String.format("[ %s@%s ]$ %s", targetVO.getUsername(), targetVO.getName(), prompt);
+		String p = String.format("[ %s@%s ]$ %s", getProperUsername(), targetVO.getName(), prompt);
 		resource.onResult(new CommandOutput(CommandOutput.Type.PROMPT, p));
 
 		channelExec = (ChannelExec) session.openChannel("exec");

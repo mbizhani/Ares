@@ -30,7 +30,7 @@ public class ScpToExecutor extends AbstractExecutor {
 	protected void execute() throws JSchException, IOException {
 		logger.info("Scp file [{}] to [{}]", fileStore, targetVO.getAddress());
 
-		Session session = resource.createSession(targetVO);
+		Session session = resource.createSession(targetVO, isAdmin());
 
 		//String command = String.format("scp -p -t \"~/%s\"", fileStore.getName());
 		String command = "scp -p -t " + destDir;

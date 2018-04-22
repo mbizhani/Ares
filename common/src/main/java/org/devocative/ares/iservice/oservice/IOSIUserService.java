@@ -1,10 +1,7 @@
 package org.devocative.ares.iservice.oservice;
 
 import org.devocative.ares.entity.OServer;
-import org.devocative.ares.entity.oservice.ERemoteMode;
-import org.devocative.ares.entity.oservice.OSIUser;
-import org.devocative.ares.entity.oservice.OService;
-import org.devocative.ares.entity.oservice.OServiceInstance;
+import org.devocative.ares.entity.oservice.*;
 import org.devocative.ares.vo.filter.oservice.OSIUserFVO;
 import org.devocative.demeter.entity.Role;
 import org.devocative.demeter.entity.User;
@@ -46,9 +43,9 @@ public interface IOSIUserService extends IEntityService<OSIUser> {
 
 	String getPassword(OSIUser user);
 
-	OSIUser findExecutorForSI(Long serviceInstId);
+	Map<ESIUserType, OSIUser> findExecutorForSI(Long serviceInstId);
 
-	OSIUser findExecutor(Long serverId, ERemoteMode remoteMode);
+	Map<ESIUserType, OSIUser> findExecutor(Long serverId, ERemoteMode remoteMode);
 
 	Map<ERemoteMode, List<OSIUser>> findAllowed();
 
