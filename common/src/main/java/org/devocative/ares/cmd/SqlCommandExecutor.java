@@ -30,7 +30,6 @@ public class SqlCommandExecutor extends AbstractCommandExecutor {
 
 	@Override
 	protected void execute() throws SQLException, ClassNotFoundException {
-		Object result = null;
 		Connection connection = resource.createConnection(targetVO, isAdmin());
 
 		logger.info("Execute query: si=[{}] sql=[{}]", targetVO, command);
@@ -44,6 +43,7 @@ public class SqlCommandExecutor extends AbstractCommandExecutor {
 			currentNps.addPlugin(new FilterPlugin().addAll(filter));
 		}
 
+		Object result;
 		try {
 			if (currentNps.execute()) {
 				ResultSet rs = currentNps.getResultSet();
@@ -58,13 +58,8 @@ public class SqlCommandExecutor extends AbstractCommandExecutor {
 				logger.info("Execute non-select query: update count=[{}]", currentNps.getUpdateCount());
 				result = currentNps.getUpdateCount();
 			}
+		} finally {
 			currentNps.close();
-		} catch (SQLException e) {
-			if (isForce()) {
-				logger.warn("SqlCommandExecutor", e);
-			} else {
-				throw e;
-			}
 		}
 
 		setResult(result);

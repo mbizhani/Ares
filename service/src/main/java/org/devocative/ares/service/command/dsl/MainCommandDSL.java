@@ -11,6 +11,7 @@ import org.devocative.demeter.entity.FileStore;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.sql.SQLException;
 import java.util.*;
 
 // #TIP
@@ -84,12 +85,24 @@ public class MainCommandDSL {
 		Boolean force = clsAsMap.containsKey("force") ? (Boolean) clsAsMap.get("force") : null;
 		Boolean admin = clsAsMap.containsKey("admin") ? (Boolean) clsAsMap.get("admin") : null;
 
-		Object queryResult = commandCenter.sql(prompt, query, params, filters, force, admin);
-		if (clsAsMap.containsKey("result")) {
-			Closure result = (Closure) clsAsMap.get("result");
-			return result.call(queryResult);
-		} else {
-			return queryResult;
+		try {
+			Object queryResult = commandCenter.sql(prompt, query, params, filters, force, admin);
+			if (clsAsMap.containsKey("result")) {
+				Closure result = (Closure) clsAsMap.get("result");
+				return result.call(queryResult);
+			} else {
+				return queryResult;
+			}
+		} catch (RuntimeException e) {
+			if (e.getCause() instanceof SQLException && clsAsMap.containsKey("error")) {
+				$warn(e.getCause().getMessage());
+				Closure errorHandler = (Closure) clsAsMap.get("error");
+				return errorHandler
+					.rehydrate(new OtherCommandsWrapper(this), commandCenter.getParams(), null)
+					.call(e.getCause().getMessage());
+			}
+
+			throw e;
 		}
 	}
 
@@ -157,6 +170,11 @@ public class MainCommandDSL {
 	public void $error(CharSequence message) {
 		CommandCenter commandCenter = CommandCenter.get();
 		commandCenter.error(message.toString());
+	}
+
+	public void $warn(CharSequence message) {
+		CommandCenter commandCenter = CommandCenter.get();
+		commandCenter.warn(message.toString());
 	}
 
 	public String $now() {

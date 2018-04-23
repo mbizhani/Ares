@@ -42,6 +42,7 @@ public class CommandOutput implements Serializable {
 		LINE,
 		TABULAR,
 		ERROR,
+		WARN,
 		FINISHED
 	}
 }

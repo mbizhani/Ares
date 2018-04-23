@@ -135,6 +135,7 @@ public class CommandExecPanel extends DPanel implements IAsyncResponse<CommandOu
 			case PROMPT:
 			case LINE:
 			case ERROR:
+			case WARN:
 				String script = String.format("$('#%s').append(\"<div class='ars-cmd-%s'><span style='background-color:%s;'>%s </span> %s</div>\");",
 					log.getMarkupId(),
 					result.getType().name().toLowerCase(),

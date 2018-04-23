@@ -216,7 +216,7 @@ public class CommandCenter {
 			th.start();
 			th.join();
 
-			if (executor.hasException()) {
+			if (!executor.isForce() && executor.hasException()) {
 				throw executor.getException();
 			}
 
@@ -264,6 +264,10 @@ public class CommandCenter {
 
 	public void error(String message) {
 		throw new CommandException(message);
+	}
+
+	public void warn(String message) {
+		CommandCenterResource.get().onResult(new CommandOutput(CommandOutput.Type.WARN, "WARN: " + message));
 	}
 
 	public void reTarget(OServiceInstanceTargetVO newTargetVO) {
