@@ -22,6 +22,7 @@ ssh{
 	cmd "passwd ${Username} --stdin"
 	stdin NewPassword
 }
+
 $userPasswordUpdated(Username, NewPassword)
 ]]></body>
 				</command>
@@ -233,6 +234,20 @@ ssh {
 ssh {
 	prompt "Show File Content: ${Name}"
 	cmd "cat ${Name}"
+}
+]]></body>
+				</command>
+
+				<command name="countCore">
+					<params/>
+
+					<body><![CDATA[
+ssh {
+	prompt "Count CPU Cores"
+	cmd "cat /proc/cpuinfo | grep processor | wc -l"
+	result {
+		it.toLong()
+	}
 }
 ]]></body>
 				</command>

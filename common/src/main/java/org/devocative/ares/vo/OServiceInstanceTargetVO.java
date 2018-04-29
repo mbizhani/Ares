@@ -39,6 +39,10 @@ public class OServiceInstanceTargetVO implements Serializable {
 		return serviceInstance.toString();
 	}
 
+	public String getSiName() {
+		return serviceInstance.getName();
+	}
+
 	public String getAddress() {
 		return serviceInstance.getServer().getAddress();
 	}

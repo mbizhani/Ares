@@ -154,9 +154,12 @@ db {
 					<params/>
 
 					<body><![CDATA[
+if(!target.prop.pumpDbDir)
+	$error('No target.prop.pumpDbDir value!')
+
 db {
 	prompt 'Find OS-Directory of DB-Directory'
-	query "select directory_path from all_directories where directory_name='${target.prop.pumpDbDir}'"
+	query "select directory_path from all_directories where directory_name='${target.prop.pumpDbDir.toUpperCase()}'"
 }
 ]]></body>
 				</command>
@@ -169,16 +172,19 @@ db {
 					<body><![CDATA[
 def osDir = findOsDir()
 
+if(!osDir)
+	$error('OS directory not found!')
+
 def fileName = '*'
 if($param('Name'))
 	fileName = "*${Name}*"
 
 ssh {
 	prompt 'List Dump Files'
-	cmd """ find ${osDir} -maxdepth 1 -iname "${fileName}.dmp" -printf "%TY-%Tm-%Td %TH:%TM|%f\n" | sort -r """
+	cmd """ find ${osDir} -maxdepth 1 -iname "${fileName}.dmp" -printf "%TY-%Tm-%Td %TH:%TM|%f|%k KB\n" | sort -r """
 	result {
 		it.toTabular("[|]")
-		  .prepend("Time|DumpFile\n")
+		  .prepend("Time|DumpFile|Size\n")
 	}
 }
 ]]></body>
@@ -193,25 +199,38 @@ ssh {
 					</params>
 
 					<body><![CDATA[
-def availSchema = ''
-Schemas.split(',').each {
-	def username = it.trim()
+if(Schemas == '*') {
+	def file = "exp.${target.siName}.full.${$now()}"
 
-	if(checkUser([Username: username])) {
-		availSchema += ",${username}"
-	} else if(!Force) {
-			$error("Schema '${username}' does not exist!")
-	}
-}
-
-if(availSchema.length() > 1) {
-	availSchema = availSchema.substring(1)
-	def file = "exp.${availSchema.replace(',', '.')}.${$now()}"
 	ssh {
-		prompt "Create Export from '${availSchema}' as '${file}.dmp'"
-		cmd "su - oracle -c 'expdp ${target.username}/${target.password}@${target.prop.sid} schemas=${availSchema} directory=${target.prop.pumpDbDir} dumpfile=${file}.dmp logfile=${file}.log content=${Content}'"
+		prompt "Create Full Export as '${file}.dmp'"
+		cmd "su - oracle -c 'expdp ${target.username}/${target.password}@${target.prop.sid} full=y directory=${target.prop.pumpDbDir} dumpfile=${file}.dmp logfile=${file}.log content=${Content} compression=ALL compression_algorithm=MEDIUM'"
 	}
 	return file
+
+} else {
+	def availSchema = ''
+
+	Schemas.split(',').each {
+		def username = it.trim()
+
+		if(checkUser([Username: username])) {
+			availSchema += ",${username}"
+		} else if(!Force) {
+				$error("Schema '${username}' does not exist!")
+		}
+	}
+
+	if(availSchema.length() > 1) {
+		availSchema = availSchema.substring(1)
+		def file = "exp.${target.siName}.${availSchema.replace(',', '.')}.${$now()}"
+
+		ssh {
+			prompt "Create Export from '${availSchema}' as '${file}.dmp'"
+			cmd "su - oracle -c 'expdp ${target.username}/${target.password}@${target.prop.sid} schemas=${availSchema} directory=${target.prop.pumpDbDir} dumpfile=${file}.dmp logfile=${file}.log content=${Content}'"
+		}
+		return file
+	}
 }
 ]]></body>
 				</command>
@@ -258,32 +277,6 @@ if($param('DestSchemas')) {
 		cmd "su - oracle -c 'impdp ${target.username}/${target.password}@${target.prop.sid} ${genParams}'"
 		force true
 	}
-}
-]]></body>
-				</command>
-
-				<command name="generateRemap" viewMode="Hidden">
-					<params>
-						<param name="SourceSchemas" required="true"/>
-						<param name="DestSchemas" required="true"/>
-					</params>
-
-					<body><![CDATA[
-def srcArr = SourceSchemas.split(',')
-def dstArr = DestSchemas.split(',')
-
-if(srcArr.length != dstArr.length)
-	$error('Unequal number of schemas in source and destination')
-else {
-	def remap = "${srcArr[0].trim()}:${dstArr[0].trim()}"
-	for(def i=1; i < srcArr.length; i++) {
-		def srcSchema = srcArr[i].trim()
-		def dstSchema = dstArr[i].trim()
-		if(srcSchema.length() > 0 && dstSchema.length() > 0) {
-			remap += ",${srcSchema}:${dstSchema}"
-		}
-	}
-	return remap
 }
 ]]></body>
 				</command>
@@ -355,7 +348,8 @@ Usernames.split(',').each {
 						<param name="Content" stringLiterals="ALL|DATA_ONLY|METADATA_ONLY" defaultValue="ALL"
 							   required="true"/>
 						<param name="DoBackUpDest" type="Boolean" required="true" defaultValue="true"/>
-						<param name="IgnoreTrigger" type="Boolean" required="true" defaultValue="false"/>
+						<param name="TriggerCorrection" type="Boolean" required="false" defaultValue="false"/>
+						<param name="DoParallel" type="Boolean" required="true" defaultValue="true"/>
 					</params>
 
 					<body><![CDATA[
@@ -403,29 +397,65 @@ $reTarget(DestServer, {
 	if(Content != 'DATA_ONLY')
 		dropUser([Usernames: dest, DoBackup: DoBackUpDest, DoKillSession: true])
 
-	def file = "net.${dest.replace(',', '.')}.${$now()}"
+	def file = "net.${target.siName}.${dest.replace(',', '.')}.${$now()}"
+
 	def genParams = "schemas=${SourceSchemas} directory=${target.prop.pumpDbDir} network_link=${dbLinkName} logfile=${file}.log transform=OID:n content=${Content}"
-	if(IgnoreTrigger)
+
+	if(TriggerCorrection)
 		genParams += " exclude=trigger"
+
+	if(DoParallel) {
+		def cpu = calcParallel()
+		genParams += " parallel = ${cpu}"
+	}
 
 	if(SourceSchemas == dest) {
 		ssh {
-			prompt "Import Database from: '${srcServer}', file='${file}', schemas='${SourceSchemas}'"
+			prompt "Import Database from: '${srcServer}', log='${file}', schemas='${SourceSchemas}'"
 			cmd "su - oracle -c 'impdp ${target.username}/${target.password}@${target.prop.sid} ${genParams}'"
 			force true
 		}
 
 	} else {
 		def remap = generateRemap([SourceSchemas: SourceSchemas, DestSchemas: dest])
+
 		ssh {
 			prompt "Import Database from: '${srcServer}', file='${file}', remap=${remap}"
-			cmd "su - oracle -c 'impdp ${target.username}/${target.password}@${target.prop.sid} remap_schema=${remap} ${genParams}'"
+			cmd " su - oracle -c 'impdp ${target.username}/${target.password}@${target.prop.sid} remap_schema=${remap} ${genParams}' "
 			force true
 		}
 
 		DestSchemas.split(',').each {
 			def username = it.trim()
 			changePassword([Username: username, NewPassword: username.toLowerCase()])
+		}
+
+		if(TriggerCorrection) {
+			def sqlFile = "trg-${target.siName}.${dest.replace(',', '.')}.${$now()}.sql"
+
+			ssh {
+				prompt "Extract Triggers Source: ${remap}"
+				cmd "su - oracle -c 'impdp ${target.username}/${target.password}@${target.prop.sid} schemas=${SourceSchemas} directory=${target.prop.pumpDbDir} network_link=${dbLinkName} logfile=${file}-trg.log include=TRIGGER sqlfile=${sqlFile}'"
+			}
+
+			def osDir = findOsDir()
+			sqlFile = "${osDir}/${sqlFile}"
+
+			remap.split('[,]').each {
+				def parts = it.split('[:]')
+				def src = parts[0].toUpperCase()
+				def dst = parts[1].toUpperCase()
+
+				ssh {
+					prompt "Replace Schema Name: ${src} to ${dst} over file ${sqlFile}"
+					cmd """ sed -i "s/${src}/${dst}/" ${sqlFile} """
+				}
+			}
+
+			ssh {
+				prompt "Apply Trigger Source: ${sqlFile}"
+				cmd " su - oracle -c 'sqlplus ${target.username}/${target.password}@${target.prop.sid} @${sqlFile}' "
+			}
 		}
 	}
 
@@ -452,6 +482,294 @@ db {
 	prompt "List ${map.isEmpty() ? 'All' : 'Filtered'} Sessions"
 	query "select sid, serial# as serial, username, status, schemaname, osuser, machine, program from v\$session where 1=1 %FILTER%"
 	filters map
+}
+]]></body>
+				</command>
+
+				<!-- PDB -->
+
+				<command name="closePDB" confirm="true">
+					<params/>
+
+					<body><![CDATA[
+def isOpen = db {
+	prompt "Check whether PDB is closed"
+	query  "select count(1) as cnt from v\$pdbs where open_mode = 'MOUNTED'"
+	admin  true
+
+	result {
+		it == 0
+	}
+}
+
+if(isOpen)
+	db {
+		prompt "Close PDB"
+		query  "alter pluggable database close immediate"
+		admin  true
+	}
+else
+	$warn("Already Closed!")
+]]></body>
+				</command>
+
+				<command name="openPDB" confirm="true">
+					<params>
+						<param name="WithResetlogs" type="Boolean" required="true" defaultValue="false"/>
+					</params>
+
+					<body><![CDATA[
+def sql = "alter pluggable database open"
+
+if(WithResetlogs)
+	db {
+		prompt "Open PDB (with 'resetlogs')"
+		query  "${sql} resetlogs"
+		admin  true
+
+		error {
+			if(it.contains('ORA-39862')) { // ORA-39862: RESETLOGS option only valid after a Pluggable Database incomplete recovery
+				db {
+					prompt "Open PDB (without 'resetlogs')"
+					query  "${sql}"
+					admin true
+
+				}
+			}
+		}
+	}
+else
+	db {
+		prompt "Open PDB (without 'resetlogs')"
+		query  "${sql}"
+		admin  true
+	}
+]]></body>
+				</command>
+
+				<!--Restore Point -->
+
+				<command name="createRestorePoint" confirm="true">
+					<params/>
+
+					<body><![CDATA[
+def pointName = "${target.siName}_${$now()}"
+
+db {
+	prompt "Create Restore Point: ${pointName}"
+	query "create restore point ${pointName}"
+}
+
+return pointName
+]]></body>
+				</command>
+
+				<command name="listRestorePoint">
+					<params>
+						<param name="Valid" type="Boolean" required="true" defaultValue="true"/>
+					</params>
+
+					<body><![CDATA[
+def sql = """
+select
+	name restore_point_name,
+	time,
+	to_char(time, 'yyyy-mm-dd hh24:mi:ss', 'nls_calendar=persian') time_persian
+from v\$restore_point
+"""
+
+if(Valid)
+	sql = """
+	${sql}
+	where scn >= (select oldest_flashback_scn from v\$flashback_database_log)
+	"""
+
+db {
+	prompt "List Restore Point(s) "
+	query sql
+	admin true
+}
+]]></body>
+				</command>
+
+				<command name="flashbackRestorePoint" confirm="true">
+					<params>
+						<param name="PointName" required="true"/>
+					</params>
+
+					<body><![CDATA[
+if(!checkRestorePoint([PointName : PointName]))
+	$error("Invalid Restore Point Name: '${PointName}'")
+
+closePDB()
+
+db {
+	prompt "Flashback Restore Point: '${PointName}'"
+	query  "flashback pluggable database to restore point ${PointName}"
+	admin  true
+
+	error {
+		if(it.contains('ORA-38762')) { //ORA-38762: redo logs needed for SCN ? to SCN ?
+			def fromSCN = it.find("ORA-38762.+?for SCN (\\d+)", 1)
+			def toSCN   = it.find("ORA-38762.+?to SCN (\\d+)", 1)
+
+			$warn("fromSCN = ${fromSCN}, toSCN = ${toSCN}")
+
+			if(fromSCN) {
+
+				def seq = db {
+					prompt "Find Sequence for SCN=${fromSCN}"
+					query  """
+						select distinct sequence#
+						from v\$archived_log
+						where ${fromSCN} between first_change# and next_change#-1
+					"""
+					admin true
+				}
+
+				$warn("Found Sequence: ${seq}")
+
+				def file = "ares_${seq}_${PointName}.rman"
+
+				ssh {
+					prompt "Revert Archive Log to Sequence: ${seq}"
+					cmd """
+su - oracle -c '
+cat > ${file} << _EOF_
+connect target /
+restore archivelog from sequence ${seq};
+_EOF_
+
+cat ${file}
+
+rman cmdfile=${file}
+
+rm -f ${file}
+'
+					"""
+				}
+
+				db {
+					prompt "Flashback Restore Point: '${PointName}'"
+					query  "flashback pluggable database to restore point ${PointName}"
+					admin  true
+				}
+			} // if
+		} // if
+	} // error
+}
+
+openPDB([WithResetlogs : true])
+]]></body>
+				</command>
+
+				<!--ERP -->
+
+				<command name="erpCopySchema" confirm="true">
+					<params>
+						<param name="SourceSchemas" required="true" validRef="OraIdList"/>
+						<param name="DestSchemas" validRef="OraIdList"/>
+						<param name="DestMasterSchema"/>
+						<param name="DestServer" type="Service" required="true"/>
+						<param name="Content" stringLiterals="ALL|DATA_ONLY|METADATA_ONLY" defaultValue="ALL"
+							   required="true"/>
+						<param name="DoBackUpDest" type="Boolean" required="true" defaultValue="true"/>
+						<param name="DoParallel" type="Boolean" required="true" defaultValue="true"/>
+					</params>
+
+					<body><![CDATA[
+if($param("DestMasterSchema") && !DestSchemas.contains($param("DestMasterSchema")))
+	$error("Invalid DestMasterSchema in DestSchemas")
+
+copySchema([SourceSchemas: SourceSchemas, DestSchemas: DestSchemas, DestServer: DestServer, Content: Content, DoBackUpDest: DoBackUpDest, TriggerCorrection: true, DoParallel: DoParallel])
+
+$reTarget(DestServer, {
+
+	if($param("DestMasterSchema")) {
+		def mastSchema = DestMasterSchema.toUpperCase()
+
+		db {
+			prompt "Grant for Master Objects: ${mastSchema}"
+			query """
+				declare
+					v_usernames varchar(32000);
+				begin
+					select listagg(username,',') within group (order by username) into v_usernames
+					from dba_users
+					where regexp_like(username,'^(BISCO|FESICO|ZARAND|ZISCO|IBCCO|IBCC|SISCO|PABDANA|MIDHCO|MESCO|MANA|MIEPCO|MEMRADCO|MEMSECO|ISTCO)_MAIN.*');
+
+					for i in (select table_name from dba_tables where owner = '${mastSchema}') loop
+						execute immediate 'grant select,update,insert,delete,references on ${mastSchema}.' || i.table_name || ' to ' || v_usernames;
+						dbms_output.put_line('Select on ${mastSchema}.' || i.table_name || ' granted to users');
+					end loop;
+
+					for i in (select sequence_name from dba_sequences where sequence_owner = '${mastSchema}') loop
+						execute immediate 'grant select on ${mastSchema}.' || i.sequence_name || ' to ' || v_usernames;
+						dbms_output.put_line('Select on ${mastSchema}.' || i.sequence_name || ' granted to users');
+					end loop;
+
+					exception when others then
+						raise_application_error(-20001, 'An error was encountered - ' || sqlcode || ' -ERROR- ' || sqlerrm);
+
+				end;
+			"""
+		}
+	}
+})
+]]></body>
+				</command>
+
+				<!-- Hidden -->
+
+				<command name="generateRemap" viewMode="Hidden">
+					<params>
+						<param name="SourceSchemas" required="true"/>
+						<param name="DestSchemas" required="true"/>
+					</params>
+
+					<body><![CDATA[
+def srcArr = SourceSchemas.split(',')
+def dstArr = DestSchemas.split(',')
+
+if(srcArr.length != dstArr.length)
+	$error('Unequal number of schemas in source and destination')
+else {
+	def remap = "${srcArr[0].trim()}:${dstArr[0].trim()}"
+	for(def i=1; i < srcArr.length; i++) {
+		def srcSchema = srcArr[i].trim()
+		def dstSchema = dstArr[i].trim()
+		if(srcSchema.length() > 0 && dstSchema.length() > 0) {
+			remap += ",${srcSchema}:${dstSchema}"
+		}
+	}
+	return remap
+}
+]]></body>
+				</command>
+
+				<command name="calcParallel" viewMode="Hidden">
+					<params/>
+
+					<body><![CDATA[
+def cnt = countCore()
+return Math.round(Math.ceil(cnt / 4))
+]]></body>
+				</command>
+
+				<command name="checkRestorePoint" viewMode="Hidden">
+					<params>
+						<param name="PointName" required="true"/>
+					</params>
+
+					<body><![CDATA[
+db {
+	prompt "Check Restore Point: '${PointName}'"
+	query  "select count(1) from v\$restore_point where name = '${PointName.toUpperCase()}'"
+	admin  true
+
+	result {
+		it > 0
+	}
 }
 ]]></body>
 				</command>

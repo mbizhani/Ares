@@ -38,6 +38,7 @@ $scpTo($param('File'), '~')
 						<param name="Name"/>
 						<param name="ShowPowerStat" type="Boolean" defaultValue="false" required="true"/>
 						<param name="ShowIP" type="Boolean" defaultValue="false" required="true"/>
+						<param name="IpPrefix"/>
 						<param name="ShowVmx" type="Boolean" defaultValue="false" required="true"/>
 						<param name="CheckDef" type="Boolean" defaultValue="false" required="true"/>
 						<param name="UpdateMode" stringLiterals="None|All|OnlyNew" defaultValue="None" required="true"/>
@@ -66,7 +67,7 @@ tab.rows.each {Map vmMap ->
 	vmMap.File = vmMap.File.replaceAll('\\[.+?\\] ', '')
 
 	if(ShowIP || UpdateServer)
-		vmMap.IpAddress = vGetIP([Vmid : vmMap.Vmid])
+		vmMap.IpAddress = vGetIP([Vmid : vmMap.Vmid, IpPrefix: $param("IpPrefix")])
 
 	if(CheckDef) {
 		def oServers = $checkVMServer($param('MultiMatchAlg'), vmMap.Name, vmMap.Vmid, vmMap.IpAddress)
@@ -231,12 +232,15 @@ if(!vPowerStat([Vmid:Vmid])) {
 				<command name="vGetIP">
 					<params>
 						<param name="Vmid" type="Guest" required="true"/>
+						<param name="IpPrefix"/>
 					</params>
 
 					<body><![CDATA[
+def ipPre = $param("IpPrefix") ? $param("IpPrefix") : ""
+
 ssh {
 	prompt "Get IP: '${Vmid}'"
-	cmd """ vim-cmd vmsvc/get.guest ${Vmid} | grep -m 1 "ipAddress = \\"" """
+	cmd """ vim-cmd vmsvc/get.guest ${Vmid} | grep -m 1 "ipAddress = \\"${ipPre}" """
 	force true
 	result {
 		it.stdout
