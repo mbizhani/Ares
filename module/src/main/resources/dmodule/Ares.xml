@@ -49,6 +49,7 @@
 			   uri="/tconsole"
 			   inMenu="true"
 			   roles="User"
+			   icon="fa fa-terminal"
 				/>
 
 		<dPage type="org.devocative.ares.web.dpage.CommandConsoleDPage"
@@ -56,6 +57,7 @@
 			   uri="/cconsole"
 			   inMenu="true"
 			   roles="User"
+			   icon="fa fa-envira"
 				/>
 
 		<dPage type="org.devocative.ares.web.dpage.OServerListDPage"
@@ -63,6 +65,7 @@
 			   uri="/servers"
 			   inMenu="true"
 			   roles="Admin,SysAdmin,SysUser,SysView"
+			   icon="fa fa-server"
 				/>
 
 		<dPage type="org.devocative.ares.web.dpage.oservice.OServiceInstanceListDPage"
@@ -70,6 +73,7 @@
 			   uri="/instances"
 			   inMenu="true"
 			   roles="Admin,SysAdmin,SysUser,SysView"
+			   icon="fa fa-connectdevelop"
 				/>
 
 		<dPage type="org.devocative.ares.web.dpage.oservice.OSIUserListDPage"
@@ -77,6 +81,7 @@
 			   uri="/users"
 			   inMenu="true"
 			   roles="Admin,SysAdmin,SysUser"
+			   icon="fa fa-user-secret"
 				/>
 
 		<dPage type="org.devocative.ares.web.dpage.command.CommandListDPage"
@@ -84,6 +89,7 @@
 			   uri="/commands"
 			   inMenu="true"
 			   roles="Admin"
+			   icon="fa fa-list"
 				/>
 
 		<dPage type="org.devocative.ares.web.dpage.command.PrepCommandListDPage"
@@ -91,6 +97,7 @@
 			   uri="/prpcmds"
 			   inMenu="true"
 			   roles="Admin,SysAdmin,SysUser"
+			   icon="fa fa-list-alt"
 				/>
 
 		<dPage type="org.devocative.ares.web.dpage.command.CommandLogListDPage"
@@ -98,6 +105,7 @@
 			   uri="/cmdlogs"
 			   inMenu="true"
 			   roles="Admin"
+			   icon="fa fa-history"
 				/>
 
 		<dPage type="org.devocative.ares.web.dpage.TerminalConnectionListDPage"
@@ -105,6 +113,7 @@
 			   uri="/terminals"
 			   inMenu="true"
 			   roles="Admin"
+			   icon="fa fa-sitemap"
 				/>
 
 		<dPage type="org.devocative.ares.web.dpage.OBasicDataListDPage"
@@ -112,6 +121,7 @@
 			   uri="/basic"
 			   inMenu="true"
 			   roles="Admin"
+			   icon="fa fa-product-hunt"
 				/>
 
 		<dPage type="org.devocative.ares.web.dpage.oservice.OServiceListDPage"

@@ -9,7 +9,13 @@ public enum AresConfigKey implements IConfigKey {
 	ShellResponseResetExpiration("ars.shell.response.reset.expiration", false, Arrays.asList(true, false)),
 	GeneralCommandExecLimit("ars.cmd.limit", 15),
 	ConsiderInnerCommandForLimit("ars.cmd.limit.inner", true, Arrays.asList(true, false)),
-	SIUserUsernameRegEx("ars.siuser.username.regex", "^[A-Za-z]+?[A-Za-z0-9.]*?$")
+	SIUserUsernameRegEx("ars.siuser.username.regex", "^[A-Za-z]+?[A-Za-z0-9.]*?$"),
+
+	SendOutDelayedEnabled("ars.out.delayed.enabled", true, Arrays.asList(true, false)),
+	SendOutDelayedDuration("ars.out.delayed.duration", 50),
+	SendOutDelayedExceededSize("ars.out.exceeded.size", 1100),
+	SendOutDelayedExceededOmit("ars.out.exceeded.omit", 100),
+	SendOutDelayedExceededOmitSkip("ars.out.exceeded.omit.skip", 5)
 	;
 	// ------------------------------
 
