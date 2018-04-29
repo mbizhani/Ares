@@ -56,7 +56,7 @@ public class SqlConnectionDTask extends DTask<List<RowVO>> implements ITerminalP
 	// ------------------------------
 
 	@Override
-	public void init() throws Exception {
+	public void init() {
 		trmConnVO = (TerminalConnectionVO) getInputData();
 		lastActivityTime = System.currentTimeMillis();
 	}

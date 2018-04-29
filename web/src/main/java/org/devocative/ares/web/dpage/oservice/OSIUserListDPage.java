@@ -13,6 +13,7 @@ import org.devocative.ares.entity.oservice.OSIUser;
 import org.devocative.ares.iservice.oservice.IOSIUserService;
 import org.devocative.ares.vo.filter.oservice.OSIUserFVO;
 import org.devocative.ares.web.AresIcon;
+import org.devocative.ares.web.dpage.OServerFormDPage;
 import org.devocative.demeter.entity.ERowMode;
 import org.devocative.demeter.web.DPage;
 import org.devocative.demeter.web.component.DAjaxButton;
@@ -34,8 +35,10 @@ import org.devocative.wickomp.grid.WDataGrid;
 import org.devocative.wickomp.grid.WSortField;
 import org.devocative.wickomp.grid.column.OColumnList;
 import org.devocative.wickomp.grid.column.OPropertyColumn;
+import org.devocative.wickomp.grid.column.link.OAjaxLinkColumn;
 import org.devocative.wickomp.grid.toolbar.OExportExcelButton;
 import org.devocative.wickomp.grid.toolbar.OGridGroupingButton;
+import org.devocative.wickomp.html.Anchor;
 import org.devocative.wickomp.html.WAjaxLink;
 import org.devocative.wickomp.html.WFloatTable;
 import org.devocative.wickomp.html.icon.FontAwesome;
@@ -180,8 +183,30 @@ public class OSIUserListDPage extends DPage implements IGridDataSource<OSIUser> 
 			.setFormatter(OBooleanFormatter.bool())
 			.setCellStyler((IStyler<OSIUser> & Serializable) (bean, id) -> OStyle.style(bean.getEnabled() ? "color: #32cd32" : "color: red")));
 		columnList.add(new OPropertyColumn<>(new ResourceModel("OSIUser.remoteMode", "remoteMode"), "remoteMode"));
-		columnList.add(new OPropertyColumn<>(new ResourceModel("OSIUser.siName", "SI Name"), "serviceInstance.name"));
-		columnList.add(new OPropertyColumn<>(new ResourceModel("OSIUser.server", "server"), "server"));
+		columnList.add(new OAjaxLinkColumn<OSIUser>(new ResourceModel("OSIUser.siName", "SI Name"), "serviceInstance.name") {
+			@Override
+			public void onClick(AjaxRequestTarget target, IModel<OSIUser> rowData) {
+				window.setContent(new OServiceInstanceFormDPage(window.getContentId(), rowData.getObject().getServiceInstance())
+					.setReadOnly(!hasPermission(AresPrivilegeKey.OServiceInstanceEdit)));
+				window.show(target);
+			}
+
+			@Override
+			protected void fillAnchor(Anchor anchor, OSIUser bean, String id, int colNo, String url) {
+				if (bean.getServiceInstance().getName() == null) {
+					anchor.addChild(AresIcon.EXTERNAL_LINK.setTooltip(null));
+				}
+				super.fillAnchor(anchor, bean, id, colNo, url);
+			}
+		});
+		columnList.add(new OAjaxLinkColumn<OSIUser>(new ResourceModel("OSIUser.server", "server"), "server") {
+			@Override
+			public void onClick(AjaxRequestTarget target, IModel<OSIUser> rowData) {
+				window.setContent(new OServerFormDPage(window.getContentId(), rowData.getObject().getServer())
+					.setReadOnly(!hasPermission(AresPrivilegeKey.OServerEdit)));
+				window.show(target);
+			}
+		});
 		columnList.add(new OPropertyColumn<>(new ResourceModel("OSIUser.service", "service"), "service"));
 		columnList.add(new OPropertyColumn<OSIUser>(new ResourceModel("OSIUser.allowedUsers", "allowedUsers"), "allowedUsers")
 			.setWidth(OSize.fixed(200)));

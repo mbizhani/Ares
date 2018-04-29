@@ -89,6 +89,8 @@ public class OSIUserService implements IOSIUserService {
 		} catch (DBConstraintViolationException e) {
 			if (e.isConstraint(OSIUser.UQ_CONST)) {
 				throw new AresException(AresErrorCode.DuplicateUsername, entity.getUsername());
+			} else {
+				throw e;
 			}
 		}
 	}

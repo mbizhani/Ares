@@ -30,6 +30,8 @@ public class OServerFormDPage extends DPage {
 
 	private OServer entity;
 
+	private boolean readOnly = false;
+
 	// ------------------------------
 
 	public OServerFormDPage(String id) {
@@ -52,6 +54,13 @@ public class OServerFormDPage extends DPage {
 		this.entity = params != null && !params.isEmpty() ?
 			oServerService.load(Long.valueOf(params.get(0))) :
 			new OServer();
+	}
+
+	// ------------------------------
+
+	public OServerFormDPage setReadOnly(boolean readOnly) {
+		this.readOnly = readOnly;
+		return this;
 	}
 
 	// ------------------------------
@@ -99,7 +108,9 @@ public class OServerFormDPage extends DPage {
 					UrlUtil.redirectTo(OServerListDPage.class);
 				}
 			}
-		});
+		}.setVisible(!readOnly));
 		add(form);
+
+		setEnabled(!readOnly);
 	}
 }

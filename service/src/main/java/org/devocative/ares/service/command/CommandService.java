@@ -174,8 +174,8 @@ public class CommandService implements ICommandService, IMissedHitHandler<Long, 
 			.createQueryBuilder()
 			.addFrom(Command.class, "ent")
 			.addJoin("cfg", "ent.config", EJoinMode.LeftFetch)
-			.addWhere("and ent.id = :id")
-			.addParam("id", key)
+			.addJoin("service", "ent.service", EJoinMode.LeftFetch)
+			.addWhere("and ent.id = :id", "id", key)
 			.object();
 
 		command.setXCommand(loadXCommand(command));
@@ -391,10 +391,8 @@ public class CommandService implements ICommandService, IMissedHitHandler<Long, 
 		Long cmdId = persistorService.createQueryBuilder()
 			.addSelect("select ent.id")
 			.addFrom(Command.class, "ent")
-			.addWhere("and ent.name = :name")
-			.addParam("name", name)
-			.addWhere("and ent.service.id = :serviceId")
-			.addParam("serviceId", serviceId)
+			.addWhere("and ent.name = :name", "name", name)
+			.addWhere("and ent.service.id = :serviceId", "serviceId", serviceId)
 			.object();
 
 		if (cmdId != null) {
@@ -495,8 +493,7 @@ public class CommandService implements ICommandService, IMissedHitHandler<Long, 
 		Long cmdId = persistorService.createQueryBuilder()
 			.addSelect("select ent.id")
 			.addFrom(Command.class, "ent")
-			.addWhere("and ent.name = :name")
-			.addParam("name", name)
+			.addWhere("and ent.name = :name", "name", name)
 			.object();
 
 		if (cmdId != null) {

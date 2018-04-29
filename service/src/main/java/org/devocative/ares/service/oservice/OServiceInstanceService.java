@@ -82,6 +82,8 @@ public class OServiceInstanceService implements IOServiceInstanceService {
 		} catch (DBConstraintViolationException e) {
 			if (e.isConstraint(OServiceInstance.UQ_CONST)) {
 				throw new AresException(AresErrorCode.DuplicateServiceInstance, entity.getName());
+			} else {
+				throw e;
 			}
 		}
 	}

@@ -12,6 +12,7 @@ import org.devocative.ares.entity.oservice.OServiceInstance;
 import org.devocative.ares.iservice.oservice.IOServiceInstanceService;
 import org.devocative.ares.vo.filter.oservice.OServiceInstanceFVO;
 import org.devocative.ares.web.AresIcon;
+import org.devocative.ares.web.dpage.OServerFormDPage;
 import org.devocative.demeter.entity.ERowMode;
 import org.devocative.demeter.web.DPage;
 import org.devocative.demeter.web.component.DAjaxButton;
@@ -62,12 +63,12 @@ public class OServiceInstanceListDPage extends DPage implements IGridDataSource<
 
 	// Panel Call - New Filter
 	public OServiceInstanceListDPage(String id) {
-		this(id, Collections.<String>emptyList(), new OServiceInstanceFVO());
+		this(id, Collections.emptyList(), new OServiceInstanceFVO());
 	}
 
 	// Panel Call - Open Filter
 	public OServiceInstanceListDPage(String id, OServiceInstanceFVO filter) {
-		this(id, Collections.<String>emptyList(), filter);
+		this(id, Collections.emptyList(), filter);
 	}
 
 	// REST Call - New Filter
@@ -145,7 +146,16 @@ public class OServiceInstanceListDPage extends DPage implements IGridDataSource<
 		columnList.add(new OPropertyColumn<>(new ResourceModel("OServiceInstance.name", "name"), "name"));
 		columnList.add(new OPropertyColumn<OServiceInstance>(new ResourceModel("OServiceInstance.port", "port"), "port")
 			.setStyle("direction:ltr"));
-		columnList.add(new OPropertyColumn<>(new ResourceModel("OServiceInstance.server", "server"), "server"));
+		columnList.add(new OAjaxLinkColumn<OServiceInstance>(new ResourceModel("OServiceInstance.server", "server"), "server") {
+			@Override
+			public void onClick(AjaxRequestTarget target, IModel<OServiceInstance> rowData) {
+				window.setContent(
+					new OServerFormDPage(window.getContentId(), rowData.getObject().getServer())
+						.setReadOnly(!hasPermission(AresPrivilegeKey.OServerEdit))
+				);
+				window.show(target);
+			}
+		});
 		columnList.add(new OPropertyColumn<>(new ResourceModel("OServiceInstance.service", "service"), "service"));
 		columnList.add(new OPropertyColumn<OServiceInstance>(new ResourceModel("OServiceInstance.propertyValues", "propertyValues"), "propertyValues")
 			.setWidth(OSize.fixed(300)));

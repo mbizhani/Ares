@@ -39,6 +39,8 @@ public class OServiceInstanceFormDPage extends DPage {
 
 	private OServiceInstance entity;
 
+	private boolean readOnly = false;
+
 	private WebMarkupContainer propertyValues;
 	private List<OSIPropertyValue> propertyValuesList = new ArrayList<>();
 
@@ -64,6 +66,13 @@ public class OServiceInstanceFormDPage extends DPage {
 		this.entity = params != null && !params.isEmpty() ?
 			oServiceInstanceService.load(Long.valueOf(params.get(0))) :
 			new OServiceInstance();
+	}
+
+	// ------------------------------
+
+	public OServiceInstanceFormDPage setReadOnly(boolean readOnly) {
+		this.readOnly = readOnly;
+		return this;
 	}
 
 	// ------------------------------
@@ -141,8 +150,10 @@ public class OServiceInstanceFormDPage extends DPage {
 					UrlUtil.redirectTo(OServiceInstanceListDPage.class);
 				}
 			}
-		});
+		}.setVisible(!readOnly));
 
 		add(form);
+
+		setEnabled(!readOnly);
 	}
 }
