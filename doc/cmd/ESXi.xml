@@ -4,7 +4,7 @@
 
 			<commands>
 
-				<command name="changePassword">
+				<command name="changePassword" confirm="true">
 					<params>
 						<param name="Username" required="true"/>
 						<param name="NewPassword" required="true"/>
@@ -118,11 +118,13 @@ tab.rows.each {Map vmMap ->
 	}
 }
 
-if (UpdateServer)
-	if ($param('MultiMatchAlg'))
+if (UpdateServer) {
+	if ($param('MultiMatchAlg')) {
 		$updateVMServers(MultiMatchAlg, listOfServers, UpdateMode == 'OnlyNew')
-	else
+	} else {
 		$error("'MultiMatchAlg' is required for 'Update'")
+	}
+}
 
 return tab
 ]]></body>
@@ -144,7 +146,7 @@ ssh {
 ]]></body>
 				</command>
 
-				<command name="vPowerOn">
+				<command name="vPowerOn" confirm="true">
 					<params>
 						<param name="Vmid" type="Guest" required="true"/>
 					</params>
@@ -161,7 +163,7 @@ if(!vPowerStat([Vmid:Vmid])) {
 ]]></body>
 				</command>
 
-				<command name="vPowerOff">
+				<command name="vPowerOff" confirm="true">
 					<params>
 						<param name="Vmid" type="Guest" required="true"/>
 					</params>
@@ -178,7 +180,7 @@ if(vPowerStat([Vmid:Vmid])) {
 ]]></body>
 				</command>
 
-				<command name="vReboot">
+				<command name="vReboot" confirm="true">
 					<params>
 						<param name="Vmid" type="Guest" required="true"/>
 					</params>
@@ -195,7 +197,7 @@ if(vPowerStat([Vmid:Vmid])) {
 ]]></body>
 				</command>
 
-				<command name="vUnregister">
+				<command name="vUnregister" confirm="true">
 					<params>
 						<param name="Vmid" required="true"/>
 					</params>
@@ -212,7 +214,7 @@ if(!vPowerStat([Vmid:Vmid])) {
 ]]></body>
 				</command>
 
-				<command name="vDelete">
+				<command name="vDelete" confirm="true">
 					<params>
 						<param name="Vmid" type="Guest" required="true"/>
 					</params>
@@ -247,6 +249,118 @@ ssh {
 		  .find('\"(.+?)\"', 1)
 	}
 }
+]]></body>
+				</command>
+
+				<command name="vClone" confirm="true">
+					<params>
+						<param name="SrcVmid" type="Guest" required="true"/>
+						<param name="DestName" required="true"/>
+					</params>
+
+					<body><![CDATA[
+def srcVm = vList([Vmid: SrcVmid, ShowPowerStat: true, ShowVmx: true]).object
+
+if (srcVm.PowerStat)
+	$error("Turn off '${srcVm.Name}' before cloning!")
+
+if(vList([Name: DestName]).size == 1)
+	$error("New Server Name Exists: ${DestName}")
+
+def newVmxDir = "/vmfs/volumes/${srcVm.DataStore}/${DestName}"
+
+def newVmx = vDuplicateVmx([Vm: srcVm, DestName: DestName, New: true])
+
+$warn("Create vmx for '${DestName}' in ${newVmxDir}\n${newVmx}")
+
+ssh {
+	prompt "Create VMX for new VM"
+	cmd """
+mkdir -p "${newVmxDir}"
+cat > "${newVmxDir}/${DestName}.vmx" << _EOF_
+${newVmx}
+_EOF_
+	"""
+}
+
+def newVmdkMap = [:]
+srcVm.VMDK.each { String k, String v ->
+	def newVmdk = v.replaceAll(srcVm.Name, DestName)
+	newVmdkMap[k] = newVmdk
+}
+
+srcVm.VMDK.each {k, v ->
+	ssh {
+		prompt "Copy VMDK: '${k}', '${v}' >> '${newVmdkMap[k]}'"
+		cmd """
+			mkdir -p \$(dirname "${newVmdkMap[k]}")
+			vmkfstools -i "${v}" "${newVmdkMap[k]}"
+		"""
+	}
+}
+
+ssh {
+	prompt "Register VM: ${DestVM}"
+	cmd """
+		vim-cmd solo/registervm "${newVmxDir}/${DestVM}.vmx"
+	"""
+}
+
+vList([Name: DestName, UpdateMode: 'OnlyNew', MultiMatchAlg: 'Name'])
+
+]]></body>
+				</command>
+
+				<!-- Hidden -->
+
+				<command name="vDuplicateVmx" viewMode="Hidden">
+					<params>
+						<param name="Vm"/>
+						<param name="DestName"/>
+						<param name="MemSize" required="true" defaultValue="4096"/>
+						<param name="New" type="Boolean"/>
+					</params>
+
+					<body><![CDATA[
+def newVmxMap = Vm.INFO.clone()
+
+if(newVmxMap['vcpu.hotadd'])
+	$error("Source VM 'CPU HotAdd' Not Supported!")
+
+if(newVmxMap['mem.hotadd'])
+	$error("Source VM 'Mem HotAdd' Not Supported!")
+
+newVmxMap['displayName'] = DestName
+newVmxMap['memSize'] = MemSize
+newVmxMap['nvram'] = "${DestName}.nvram"
+
+if (newVmxMap['extendedConfigFile']) {
+	newVmxMap['extendedConfigFile'] = "${DestName}.vmxf"
+}
+
+newVmxMap.remove('migrate.hostlog')
+newVmxMap.remove('sched.swap.derivedName')
+
+if (New) {
+	newVmxMap.remove('uuid.bios')
+	newVmxMap.remove('uuid.location')
+	newVmxMap.remove('vc.uuid')
+	newVmxMap.remove('vmci0.id')
+}
+
+Vm.INFO.each { String k, String v ->
+	if (v.endsWith('.vmdk')) {
+		newVmxMap[k] = v.replaceAll(vm.Name, DestName)
+	}
+
+	if (New) {
+		if (k.matches('ethernet\\d+\\.generatedAddress.*')) {
+			newVmxMap.remove(k)
+		}
+	}
+}
+
+return newVmxMap.exportStr()
 ]]></body>
 				</command>
 

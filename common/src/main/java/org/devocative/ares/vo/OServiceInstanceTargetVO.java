@@ -36,11 +36,18 @@ public class OServiceInstanceTargetVO implements Serializable {
 	}
 
 	public String getName() {
-		return serviceInstance.toString();
+		return serviceInstance.getName();
 	}
 
-	public String getSiName() {
-		return serviceInstance.getName();
+	public String getName4file() {
+		final String name = serviceInstance.getName();
+		final String server = serviceInstance.getServer().getName();
+
+		String lastName = name == null ?
+			String.format("%s", server) :
+			String.format("%s@%s", name, server);
+
+		return lastName.replaceAll("[() *\\\\%]", "");
 	}
 
 	public String getAddress() {

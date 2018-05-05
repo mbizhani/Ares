@@ -200,7 +200,7 @@ ssh {
 
 					<body><![CDATA[
 if(Schemas == '*') {
-	def file = "exp.${target.siName}.full.${$now()}"
+	def file = "exp.${target.name4file}.full.${$now()}"
 
 	ssh {
 		prompt "Create Full Export as '${file}.dmp'"
@@ -223,7 +223,7 @@ if(Schemas == '*') {
 
 	if(availSchema.length() > 1) {
 		availSchema = availSchema.substring(1)
-		def file = "exp.${target.siName}.${availSchema.replace(',', '.')}.${$now()}"
+		def file = "exp.${target.name4file}.${availSchema.replace(',', '.')}.${$now()}"
 
 		ssh {
 			prompt "Create Export from '${availSchema}' as '${file}.dmp'"
@@ -274,7 +274,7 @@ if($param('DestSchemas')) {
 } else {
 	ssh {
 		prompt "Restoring '${SourceSchemas}' from '${DumpFile}'"
-		cmd "su - oracle -c 'impdp ${target.username}/${target.password}@${target.prop.sid} ${genParams}'"
+		cmd "su - oracle -c 'impdp ${target.username}/${target.password}@${target.prop.sid} schemas=${SourceSchemas} ${genParams}'"
 		force true
 	}
 }
@@ -397,7 +397,7 @@ $reTarget(DestServer, {
 	if(Content != 'DATA_ONLY')
 		dropUser([Usernames: dest, DoBackup: DoBackUpDest, DoKillSession: true])
 
-	def file = "net.${target.siName}.${dest.replace(',', '.')}.${$now()}"
+	def file = "net.${target.name4file}.${dest.replace(',', '.')}.${$now()}"
 
 	def genParams = "schemas=${SourceSchemas} directory=${target.prop.pumpDbDir} network_link=${dbLinkName} logfile=${file}.log transform=OID:n content=${Content}"
 
@@ -431,7 +431,7 @@ $reTarget(DestServer, {
 		}
 
 		if(TriggerCorrection) {
-			def sqlFile = "trg-${target.siName}.${dest.replace(',', '.')}.${$now()}.sql"
+			def sqlFile = "trg-${target.name4file}.${dest.replace(',', '.')}.${$now()}.sql"
 
 			ssh {
 				prompt "Extract Triggers Source: ${remap}"
@@ -553,7 +553,7 @@ else
 					<params/>
 
 					<body><![CDATA[
-def pointName = "${target.siName}_${$now()}"
+def pointName = "${target.name4file}_${$now()}"
 
 db {
 	prompt "Create Restore Point: ${pointName}"
