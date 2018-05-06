@@ -22,6 +22,7 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.ArrayBlockingQueue;
@@ -90,10 +91,13 @@ public class SqlConnectionDTask extends DTask<List<RowVO>> implements ITerminalP
 					currentNps = new NamedParameterStatement(connection, sql);
 
 					if (sql.toLowerCase().startsWith("select")) {
-						currentNps.addPlugin(new PaginationPlugin(msg.getPageIndex(), msg.getPageSize(), databaseType));
+						final long pageIndex = msg.getPageIndex();
+						final long pageSize = msg.getPageSize();
+
+						currentNps.addPlugin(new PaginationPlugin((pageIndex - 1) * pageSize + 1, pageSize + 1, databaseType));
 						ResultSet resultSet = currentNps.executeQuery();
 						QueryVO process = ResultSetProcessor.process(resultSet, EColumnNameCase.LOWER);
-						sendResult(process.toListOfMap());
+						sendResult(toListOfMap(process));
 					} else {
 						int updateCount = currentNps.executeUpdate();
 						RowVO rowVO = new RowVO();
@@ -131,7 +135,7 @@ public class SqlConnectionDTask extends DTask<List<RowVO>> implements ITerminalP
 	}
 
 	@Override
-	public void cancel() throws Exception {
+	public void cancel() {
 		queue.offer(new SqlMessageVO(SqlMessageVO.MsgType.TERMINATE));
 	}
 
@@ -200,5 +204,22 @@ public class SqlConnectionDTask extends DTask<List<RowVO>> implements ITerminalP
 		}
 		matcher.appendTail(buffer);
 		return buffer.toString().trim();
+	}
+
+	private static List<RowVO> toListOfMap(QueryVO vo) {
+		List<String> header = vo.getHeader();
+		List<List<Object>> rows = vo.getRows();
+
+		List<RowVO> list = new ArrayList<>();
+		for (List<Object> row : rows) {
+			RowVO rowAsMap = new RowVO();
+			for (int i = 0; i < header.size(); i++) {
+				String headerName = header.get(i).replaceAll("\\W", "_");
+				rowAsMap.put(headerName, row.get(i));
+			}
+			list.add(rowAsMap);
+		}
+
+		return list;
 	}
 }

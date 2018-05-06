@@ -106,7 +106,7 @@ public class SqlTerminalPanel extends DPanel implements IGridAsyncDataSource<Row
 		OGrid<RowVO> oGrid = new OGrid<>();
 		oGrid
 			.setPagingBarLayout(Arrays.asList(OPagingButtons.list, OPagingButtons.first, OPagingButtons.prev, OPagingButtons.next))
-			.setPageList(Arrays.asList(50, 75, 100, 200))
+			.setPageList(Arrays.asList(50, 75, 100))
 			.setFit(true)
 		;
 
@@ -153,7 +153,7 @@ public class SqlTerminalPanel extends DPanel implements IGridAsyncDataSource<Row
 
 	@Override
 	public void onAsyncResult(IPartialPageRequestHandler handler, List<RowVO> result) {
-		grid.pushData(handler, result, 1000);
+		grid.pushData(handler, result);
 	}
 
 	@Override
