@@ -119,6 +119,7 @@ CREATE TABLE a_t_ars_service_inst (
 	n_port          NUMBER(10, 0),
 	f_server        NUMBER(19, 0),
 	f_service       NUMBER(19, 0),
+	e_mod           NUMBER(10, 0),
 	PRIMARY KEY (r_num, f_server, f_service)
 );
 
@@ -316,6 +317,7 @@ CREATE TABLE t_ars_service_inst (
 	f_server        NUMBER(19, 0),
 	n_version       NUMBER(10, 0) NOT NULL,
 	f_service       NUMBER(19, 0) NOT NULL,
+	e_mod           NUMBER(10, 0) NOT NULL,
 	PRIMARY KEY (id)
 );
 

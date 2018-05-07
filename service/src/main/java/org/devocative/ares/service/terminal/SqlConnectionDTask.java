@@ -207,19 +207,28 @@ public class SqlConnectionDTask extends DTask<List<RowVO>> implements ITerminalP
 	}
 
 	private static List<RowVO> toListOfMap(QueryVO vo) {
-		List<String> header = vo.getHeader();
+		List<String> headers = vo.getHeader();
 		List<List<Object>> rows = vo.getRows();
 
-		List<RowVO> list = new ArrayList<>();
+		List<RowVO> result = new ArrayList<>();
 		for (List<Object> row : rows) {
 			RowVO rowAsMap = new RowVO();
-			for (int i = 0; i < header.size(); i++) {
-				String headerName = header.get(i).replaceAll("\\W", "_");
+			for (int i = 0; i < headers.size(); i++) {
+				String headerName = headers.get(i).replaceAll("\\W", "_");
 				rowAsMap.put(headerName, row.get(i));
 			}
-			list.add(rowAsMap);
+			result.add(rowAsMap);
 		}
 
-		return list;
+		if (result.isEmpty()) {
+			RowVO nullVo = new RowVO();
+			for (String header : headers) {
+				String headerName = header.replaceAll("\\W", "_");
+				nullVo.put(headerName, "-no-result-");
+			}
+			result.add(nullVo);
+		}
+
+		return result;
 	}
 }
