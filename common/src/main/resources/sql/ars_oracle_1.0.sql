@@ -408,76 +408,96 @@ ALTER TABLE t_ars_service_inst_user
 ALTER TABLE t_ars_service_prop
 	ADD CONSTRAINT uk_ars_serviceProp UNIQUE (c_name, f_service);
 
+
+ALTER TABLE mt_ars_prpCommand_role
+	ADD CONSTRAINT uk_mtPrpCommandRole UNIQUE (f_prp_command, f_role);
+
+ALTER TABLE mt_ars_prpCommand_user
+	ADD CONSTRAINT uk_ars_mtPrpCommandUser UNIQUE (f_prp_command, f_user);
+
+ALTER TABLE mt_ars_siUser_role
+	ADD CONSTRAINT uk_mtSiUserRole UNIQUE (f_siUser, f_role);
+
+ALTER TABLE mt_ars_siUser_user
+	ADD CONSTRAINT uk_ars_mtSiUserUser UNIQUE (f_siUser, f_user);
+
+ALTER TABLE mt_ars_srvcinst_role
+	ADD CONSTRAINT uk_ars_mtSrvcInstRole UNIQUE (f_srvcinst, f_role);
+
+ALTER TABLE mt_ars_srvcinst_user
+	ADD CONSTRAINT uk_ars_mtSrvcInstUser UNIQUE (f_srvcinst, f_user);
+
 ----------------------------------
 -- CREATE REFERENTIAL CONSTRAINTS
 ----------------------------------
 
 ALTER TABLE a_mt_ars_prpCommand_role
-	ADD CONSTRAINT FK_b5hdkseipp6d66x02dtjjrlfh
+	ADD CONSTRAINT FKpqn4hgiqrchxalggi4vi0chs1
 FOREIGN KEY (r_num)
 REFERENCES REVINFO;
 
 ALTER TABLE a_mt_ars_prpCommand_user
-	ADD CONSTRAINT FK_92qini1y0vu4wq39q9e22hbpn
+	ADD CONSTRAINT FK8c17hi4t89q44nwyyddvjaodb
 FOREIGN KEY (r_num)
 REFERENCES REVINFO;
+
 ALTER TABLE a_mt_ars_siUser_role
-	ADD CONSTRAINT FK_5ivgm2bpb7p78jmp3pikd69ns
+	ADD CONSTRAINT FKeypmey105tou1xn515dddkstw
 FOREIGN KEY (r_num)
 REFERENCES REVINFO;
 
 ALTER TABLE a_mt_ars_siUser_user
-	ADD CONSTRAINT FK_b1pb99uns0y1kcxn9sfmqpydv
+	ADD CONSTRAINT FK6jdka8lpuyp2p9w5qs03eo51l
 FOREIGN KEY (r_num)
 REFERENCES REVINFO;
 
 ALTER TABLE a_mt_ars_srvcinst_role
-	ADD CONSTRAINT FK_49xcp0ty1ljil5d00ors9wdba
+	ADD CONSTRAINT FK33cag762rq74p717gi1uo6usx
 FOREIGN KEY (r_num)
 REFERENCES REVINFO;
 
 ALTER TABLE a_mt_ars_srvcinst_user
-	ADD CONSTRAINT FK_bbvuuecgf1puo5wsmdhepdf37
+	ADD CONSTRAINT FKmuv98952epkqyiiikvcw5aauq
 FOREIGN KEY (r_num)
 REFERENCES REVINFO;
 
 ALTER TABLE a_t_ars_basic_data
-	ADD CONSTRAINT FK_rxpfspiu9xx6t9srlyrxxky5k
+	ADD CONSTRAINT FKooy7i5d4c2lnha98hdtegniyy
 FOREIGN KEY (r_num)
 REFERENCES REVINFO;
 
 ALTER TABLE a_t_ars_prp_command
-	ADD CONSTRAINT FK_bmhrr1tfevwvamce18t32mxft
+	ADD CONSTRAINT FKlhrimesp5tfdt51ynuaxktd8w
 FOREIGN KEY (r_num)
 REFERENCES REVINFO;
 
 ALTER TABLE a_t_ars_server
-	ADD CONSTRAINT FK_mqywlxkatiwhehl4bmnykrrn3
+	ADD CONSTRAINT FKl76uxncckiaoh1arqpsxfhuva
 FOREIGN KEY (r_num)
 REFERENCES REVINFO;
 
 ALTER TABLE a_t_ars_service
-	ADD CONSTRAINT FK_g5ldi3by8ae5pd4sjhpvbd9qo
+	ADD CONSTRAINT FKqcol19nq1oljn5ph9acd7a3b9
 FOREIGN KEY (r_num)
 REFERENCES REVINFO;
 
 ALTER TABLE a_t_ars_service_inst
-	ADD CONSTRAINT FK_65e49fl66op4x7a4ecrwlm5g7
+	ADD CONSTRAINT FKpm4th3iw5xbm5q0lanwpm7p6e
 FOREIGN KEY (r_num)
 REFERENCES REVINFO;
 
 ALTER TABLE a_t_ars_service_inst_prop_val
-	ADD CONSTRAINT FK_1prtxy0wf5ggn2qo4gub1hlp2
+	ADD CONSTRAINT FKeifejou9xm5uun88xy7veeviq
 FOREIGN KEY (r_num)
 REFERENCES REVINFO;
 
 ALTER TABLE a_t_ars_service_inst_user
-	ADD CONSTRAINT FK_4dxahhiddakajq4ypso1v01bm
+	ADD CONSTRAINT FKsbscocl3g9xp5gegxndvvbvmr
 FOREIGN KEY (r_num)
 REFERENCES REVINFO;
 
 ALTER TABLE a_t_ars_service_prop
-	ADD CONSTRAINT FK_cnqmtatqlvwhbr099uqv6x150
+	ADD CONSTRAINT FKshdxi6tk2qpmwy71a2fu7gbg5
 FOREIGN KEY (r_num)
 REFERENCES REVINFO;
 
