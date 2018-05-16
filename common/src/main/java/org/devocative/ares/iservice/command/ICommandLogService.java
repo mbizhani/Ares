@@ -33,5 +33,5 @@ public interface ICommandLogService {
 
 	Long insertLog(Long commandId, Long serviceInstanceId, Map<String, ?> params, Long prepCommandId);
 
-	void updateLog(Long logId, Long duration, Exception error);
+	void updateLog(Long logId, Long duration, String errMsg, String commandOutput);
 }

@@ -9,6 +9,7 @@ import org.devocative.ares.AresConfigKey;
 import org.devocative.ares.AresErrorCode;
 import org.devocative.ares.AresException;
 import org.devocative.ares.cmd.*;
+import org.devocative.ares.cmd.CommandOutput.Type;
 import org.devocative.ares.entity.OServer;
 import org.devocative.ares.entity.command.Command;
 import org.devocative.ares.entity.command.CommandCfgLob;
@@ -25,6 +26,7 @@ import org.devocative.ares.service.command.dsl.MainCommandDSL;
 import org.devocative.ares.service.command.dsl.OtherCommandsWrapper;
 import org.devocative.ares.vo.CommandQVO;
 import org.devocative.ares.vo.OServiceInstanceTargetVO;
+import org.devocative.ares.vo.TabularVO;
 import org.devocative.ares.vo.filter.command.CommandFVO;
 import org.devocative.ares.vo.filter.oservice.OSIUserFVO;
 import org.devocative.ares.vo.xml.XCommand;
@@ -42,16 +44,14 @@ import org.devocative.demeter.iservice.task.ITaskService;
 import org.devocative.demeter.iservice.template.IStringTemplate;
 import org.devocative.demeter.iservice.template.IStringTemplateService;
 import org.devocative.demeter.iservice.template.TemplateEngineType;
+import org.devocative.demeter.vo.UserVO;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.PostConstruct;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 @Service("arsCommandService")
@@ -254,45 +254,88 @@ public class CommandService implements ICommandService, IMissedHitHandler<Long, 
 		return start.getTaskInstance().getKey();
 	}
 
+	/*
+	Main Command Exec Method
+	 */
 	@Override
-	public Object executeCommand(CommandQVO commandQVO, ICommandResultCallBack callBack) throws Exception {
-		Long start = System.currentTimeMillis();
+	public void executeCommand(CommandQVO commandQVO, ICommandResultCallBack callBack) throws Exception {
+		final Command command = load(commandQVO.getCommandId());
+		final OServiceInstance serviceInstance = serviceInstanceService.load(commandQVO.getServiceInstanceId());
+		final Long logId = commandQVO.getLogId();
 
-		Command command = load(commandQVO.getCommandId());
-		OServiceInstance serviceInstance = serviceInstanceService.load(commandQVO.getServiceInstanceId());
+		final StringBuilder buff = new StringBuilder();
 
-		Long logId = commandQVO.getLogId();
-		if (logId == null) {
-			logger.warn("Calling command [{}] without any log id!", command);
-			logId = commandLogService.insertLog(commandQVO.getCommandId(), commandQVO.getServiceInstanceId(),
-				commandQVO.getParams(), commandQVO.getPrepCommandId());
-			commandQVO.setLogId(logId);
-			runningCommands.put(logId, true);
+		Thread thread = null;
+		if (ConfigUtil.getBoolean(AresConfigKey.SendOutDelayedEnabled)) {
+			QueuedResultCallBack queued = new QueuedResultCallBack(callBack);
+			thread = new Thread(queued, Thread.currentThread().getName() + "-OUT");
+			thread.start();
+
+			callBack = new BufferedResultCallBack(queued, buff);
+		} else {
+			callBack = new BufferedResultCallBack(callBack, buff);
 		}
 
 		CommandCenter.create();
 		CommandCenterResource.create(this, serverService, serviceInstanceService, callBack, logId);
 
-		logger.info("Start command execution: cmd=[{}] si=[{}] currentUser=[{}] logId=[{}]",
-			command.getName(), serviceInstance, securityService.getCurrentUser(), logId);
+		final Long start = System.currentTimeMillis();
+		final UserVO curUser = securityService.getCurrentUser();
 
-		Exception error = null;
+		logger.info("Start command execution: cmd=[{}] si=[{}] currentUser=[{}] logId=[{}]",
+			command.getName(), serviceInstance, curUser, logId);
+
+		String errMsg = null;
 		try {
-			return executeCommand(command, commandQVO);
+			callBack.onResult(new CommandOutput(Type.START));
+			final Object result = executeCommand(command, commandQVO);
+
+			if (result != null) {
+				if (result instanceof TabularVO) {
+					callBack.onResult(new CommandOutput(Type.TABULAR, result));
+				} else if (result instanceof ConsoleResultProcessing) {
+					ConsoleResultProcessing processing = (ConsoleResultProcessing) result;
+					TabularVO build = processing.build();
+					callBack.onResult(new CommandOutput(Type.TABULAR, build));
+				} else {
+					String resultAsStr = result.toString();
+					if (result.getClass().isArray()) {
+						Object[] arr = (Object[]) result;
+						resultAsStr = Arrays.toString(arr);
+					}
+					callBack.onResult(new CommandOutput(Type.PROMPT, String.format("Final Return: %s", resultAsStr)));
+				}
+			}
 		} catch (Exception e) {
-			error = e;
-			throw e;
+			logger.error("CommandService.executeCommand ", e);
+
+			Throwable th = e;
+			while (th.getCause() != null) {
+				th = th.getCause();
+			}
+
+			errMsg = String.format("%s (%s)",
+				th.getMessage() != null ? th.getMessage().trim() : "-",
+				th.getClass().getSimpleName());
+
+			callBack.onResult(new CommandOutput(Type.ERROR, errMsg));
 		} finally {
+			callBack.onResult(new CommandOutput(Type.FINISHED));
+
 			runningCommands.remove(logId);
 			currentExecutorForCommands.remove(logId);
 			countDownCommandExec(commandQVO.getCommandId(), commandQVO.getServiceInstanceId());
 			CommandCenterResource.close();
 			CommandCenter.close();
 
-			Long dur = ((System.currentTimeMillis() - start) / 1000);
+			final Long dur = ((System.currentTimeMillis() - start) / 1000);
 			logger.info("Finish command execution: cmd=[{}] si=[{}] currentUser=[{}] dur=[{}] logId=[{}]",
-				command.getName(), serviceInstance, securityService.getCurrentUser(), dur, logId);
-			commandLogService.updateLog(logId, dur, error);
+				command.getName(), serviceInstance, curUser, dur, logId);
+			commandLogService.updateLog(logId, dur, errMsg, buff.toString());
+
+			if (thread != null) {
+				thread.join();
+			}
 		}
 	}
 

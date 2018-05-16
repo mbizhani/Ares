@@ -39,7 +39,7 @@ public interface ICommandService extends IEntityService<Command> {
 
 	String executeCommandTask(CommandQVO commandQVO, ITaskResultCallback callback);
 
-	Object executeCommand(CommandQVO commandQVO, ICommandResultCallBack callBack) throws Exception;
+	void executeCommand(CommandQVO commandQVO, ICommandResultCallBack callBack) throws Exception;
 
 	Object callCommand(CommandQVO commandQVO) throws Exception;
 

@@ -15,6 +15,7 @@ import org.devocative.ares.vo.filter.command.CommandLogFVO;
 import org.devocative.ares.web.AresIcon;
 import org.devocative.demeter.web.DPage;
 import org.devocative.demeter.web.component.DAjaxButton;
+import org.devocative.demeter.web.component.grid.DownloadFSLinkColumn;
 import org.devocative.wickomp.WModel;
 import org.devocative.wickomp.form.WSelectionInput;
 import org.devocative.wickomp.form.WTextInput;
@@ -154,6 +155,20 @@ public class CommandLogListDPage extends DPage implements IGridDataSource<Comman
 				}
 			}.setConfirmMessage(getString("label.confirm")));
 		}
+
+		columnList.add(new DownloadFSLinkColumn<CommandLog>() {
+			private static final long serialVersionUID = 3900357108528664133L;
+
+			@Override
+			protected String getFileId(CommandLog bean) {
+				return bean.getLogFileId();
+			}
+
+			@Override
+			public boolean onCellRender(CommandLog bean, String id) {
+				return bean.getLogFileId() != null;
+			}
+		});
 
 		OGrid<CommandLog> oGrid = new OGrid<>();
 		oGrid

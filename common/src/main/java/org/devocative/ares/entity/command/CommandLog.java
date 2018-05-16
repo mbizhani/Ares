@@ -15,7 +15,9 @@ public class CommandLog implements ICreationDate, ICreatorUser {
 
 	@Id
 	@GeneratedValue(generator = "ars_command_log")
-	@org.hibernate.annotations.GenericGenerator(name = "ars_command_log", strategy = "org.hibernate.id.enhanced.SequenceStyleGenerator",
+	@org.hibernate.annotations.GenericGenerator(
+		name = "ars_command_log",
+		strategy = "org.hibernate.id.enhanced.SequenceStyleGenerator",
 		parameters = {
 			//@org.hibernate.annotations.Parameter(name = "optimizer", value = "pooled"),
 			@org.hibernate.annotations.Parameter(name = "initial_value", value = "1"),
@@ -54,11 +56,15 @@ public class CommandLog implements ICreationDate, ICreatorUser {
 	private Long serviceInstanceId;
 
 	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "f_prep_command", insertable = false, updatable = false, foreignKey = @ForeignKey(name = "commandLog2prepCommand"))
+	@JoinColumn(name = "f_prep_command", insertable = false, updatable = false,
+		foreignKey = @ForeignKey(name = "commandLog2prepCommand"))
 	private PrepCommand prepCommand;
 
 	@Column(name = "f_prep_command")
 	private Long prepCommandId;
+
+	@Column(name = "c_log_file_id")
+	private String logFileId;
 
 	// --------------- CREATE / MODIFY
 
@@ -153,6 +159,14 @@ public class CommandLog implements ICreationDate, ICreatorUser {
 	public CommandLog setPrepCommandId(Long prepCommandId) {
 		this.prepCommandId = prepCommandId;
 		return this;
+	}
+
+	public String getLogFileId() {
+		return logFileId;
+	}
+
+	public void setLogFileId(String logFileId) {
+		this.logFileId = logFileId;
 	}
 
 	// --------------- CREATE / MODIFY

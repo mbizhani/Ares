@@ -431,30 +431,32 @@ $reTarget(DestServer, {
 		}
 
 		if(TriggerCorrection) {
-			def sqlFile = "trg-${target.name4file}.${dest.replace(',', '.')}.${$now()}.sql"
-
-			ssh {
-				prompt "Extract Triggers Source: ${remap}"
-				cmd "su - oracle -c 'impdp ${target.username}/${target.password}@${target.prop.sid} schemas=${SourceSchemas} directory=${target.prop.pumpDbDir} network_link=${dbLinkName} logfile=${file}-trg.log include=TRIGGER sqlfile=${sqlFile}'"
-			}
-
-			def osDir = findOsDir()
-			sqlFile = "${osDir}/${sqlFile}"
-
 			remap.split('[,]').each {
 				def parts = it.split('[:]')
 				def src = parts[0].toUpperCase()
 				def dst = parts[1].toUpperCase()
 
-				ssh {
-					prompt "Replace Schema Name: ${src} to ${dst} over file ${sqlFile}"
-					cmd """ sed -i "s/${src}/${dst}/" ${sqlFile} """
-				}
-			}
+				def expFile = "trg-${target.name4file}.${dst}.${src}.${$now()}"
+				def osDir = findOsDir()
+				def sqlFile = "${osDir}/${expFile}.sql"
 
-			ssh {
-				prompt "Apply Trigger Source: ${sqlFile}"
-				cmd " su - oracle -c 'sqlplus ${target.username}/${target.password}@${target.prop.sid} @${sqlFile}' "
+				ssh {
+					prompt "Convert Trigger Script: src=${src} dest=${dst} file=${sqlFile}"
+					cmd """
+
+echo -e "\n--- Extract Triggers Source: ${src}\n"
+su - oracle -c 'impdp ${target.username}/${target.password}@${target.prop.sid} schemas=${src} directory=${target.prop.pumpDbDir} network_link=${dbLinkName} logfile=${expFile}.log include=TRIGGER sqlfile=${expFile}.sql'
+
+echo -e "\n--- Remove Schema Name: ${src}\n"
+sed -i "s/${src}.//i" ${sqlFile}
+
+echo -e "\n--- Apply Trigger to Dest: ${sqlFile}\n"
+echo -e "alter session set current_schema = ${dst};\n" > ${sqlFile}.1
+cat ${sqlFile} >> ${sqlFile}.1
+su - oracle -c 'sqlplus ${target.username}/${target.password}@${target.prop.sid} @${sqlFile}.1'
+
+					"""
+				}
 			}
 		}
 	}

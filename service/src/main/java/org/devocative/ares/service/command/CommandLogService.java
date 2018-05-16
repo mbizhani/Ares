@@ -1,5 +1,6 @@
 package org.devocative.ares.service.command;
 
+import org.devocative.adroit.CalendarUtil;
 import org.devocative.ares.entity.command.Command;
 import org.devocative.ares.entity.command.CommandLog;
 import org.devocative.ares.entity.command.ECommandResult;
@@ -8,9 +9,13 @@ import org.devocative.ares.entity.oservice.OServiceInstance;
 import org.devocative.ares.iservice.command.ICommandLogService;
 import org.devocative.ares.iservice.command.IPrepCommandService;
 import org.devocative.ares.vo.filter.command.CommandLogFVO;
+import org.devocative.demeter.entity.EFileStorage;
+import org.devocative.demeter.entity.EMimeType;
 import org.devocative.demeter.entity.User;
 import org.devocative.demeter.iservice.ApplicationLifecyclePriority;
+import org.devocative.demeter.iservice.FileStoreHandler;
 import org.devocative.demeter.iservice.IApplicationLifecycle;
+import org.devocative.demeter.iservice.IFileStoreService;
 import org.devocative.demeter.iservice.persistor.IPersistorService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -18,8 +23,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.zip.GZIPOutputStream;
 
 @Service("arsCommandLogService")
 public class CommandLogService implements ICommandLogService, IApplicationLifecycle {
@@ -30,6 +40,9 @@ public class CommandLogService implements ICommandLogService, IApplicationLifecy
 
 	@Autowired
 	private IPrepCommandService prepCommandService;
+
+	@Autowired
+	private IFileStoreService fileStoreService;
 
 	// ------------------------------
 
@@ -129,27 +142,32 @@ public class CommandLogService implements ICommandLogService, IApplicationLifecy
 
 	@Transactional
 	@Override
-	public void updateLog(Long logId, Long duration, Exception error) {
-		Throwable th = error;
-		String errMsg = null;
+	public void updateLog(Long logId, Long duration, String errMsg, String commandOutput) {
+		CommandLog log = load(logId);
+		String logFileId = null;
 
-		if (th != null) {
-			while (th.getCause() != null) {
-				th = th.getCause();
-			}
-			errMsg = String.format("%s (%s)",
-				th.getMessage() != null ? th.getMessage().trim() : "-",
-				th.getClass().getSimpleName());
+		try {
+			ByteArrayOutputStream baos = new ByteArrayOutputStream();
+			GZIPOutputStream gzip = new GZIPOutputStream(baos);
+			gzip.write(commandOutput.getBytes());
+			gzip.close();
+
+			final String logFileName = String.format("%s-%s.gz", log.getCommand().getName(), logId);
+			final FileStoreHandler handler = fileStoreService.create(logFileName, EFileStorage.DISK, EMimeType.GZIP,
+				CalendarUtil.add(new Date(), Calendar.DATE, 7), String.valueOf(logId));
+			handler.write(baos.toByteArray());
+			handler.close();
+
+			logFileId = handler.getFileStore().getFileId();
+		} catch (IOException e) {
+			logger.error("updateLog", e);
+		} finally {
+			log.setResult(errMsg == null ? ECommandResult.SUCCESSFUL : ECommandResult.ERROR);
+			log.setDuration(duration);
+			log.setError(errMsg);
+			log.setLogFileId(logFileId);
+
+			saveOrUpdate(log);
 		}
-
-		persistorService.createQueryBuilder()
-			.addSelect("update CommandLog ent set ent.result=:res, ent.duration=:dur, ent.error=:err")
-			.addWhere("and ent.id=:logId")
-			.addParam("res", error == null ? ECommandResult.SUCCESSFUL : ECommandResult.ERROR)
-			.addParam("dur", duration)
-			.addParam("err", errMsg)
-			.addParam("logId", logId)
-			.update()
-		;
 	}
 }

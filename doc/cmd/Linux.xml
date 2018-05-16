@@ -252,6 +252,74 @@ ssh {
 ]]></body>
 				</command>
 
+				<command name="installLogstash">
+					<params>
+						<param name="IndexName" required="true"/>
+					</params>
+
+					<body><![CDATA[
+ssh {
+	prompt "Install"
+	cmd """
+
+yum makecache
+
+yum -y install logstash
+
+sed -i 's/JAVACMD=\\/usr\\/bin\\/java/JAVACMD=\\/usr\\/local\\/java\\/jdk\\/bin\\/java/' /etc/logstash/startup.options
+
+sed -i 's/LS_JAVA_OPTS=""/LS_JAVA_OPTS="-server -Xms512m -Xmx1g"/' /etc/logstash/startup.options
+
+/usr/share/logstash/bin/system-install
+
+systemctl enable logstash
+
+cp -f /etc/java/engine/truststore.jks /etc/logstash/
+
+chmod 664 /etc/logstash/truststore.jks
+
+rm -f /etc/logstash/conf.d/engine.lgst.conf
+
+cat > /etc/logstash/conf.d/engine.lgst.conf << _EOF_
+input {
+	file {
+		codec => "json"
+		type => "log4j-json"
+		path => "/var/log/java/engine/log.json"
+		start_position => "beginning"
+	}
+}
+
+filter {
+	fingerprint {
+		source => ["@timestamp","thread_name","message", "line_number"]
+		concatenate_sources => true
+		method => "MURMUR3"
+	}
+}
+
+output {
+	elasticsearch {
+		codec => "json"
+		hosts => ["elastic01-prd-dtcr-mid", "elastic02-prd-dtcr-mid"]
+		index => "lgs-${IndexName}-%{+YYYY.MM.dd}"
+		document_id => "%{fingerprint}"
+		ssl => true
+		ssl_certificate_verification => false
+		truststore => "/etc/logstash/truststore.jks"
+		truststore_password => "qazwsxedc123"
+		user => "logstash"
+		password => "logstash"
+	}
+}
+_EOF_
+
+systemctl start logstash
+	"""
+}
+]]></body>
+				</command>
+
 				<!-- ============= OS QUERY ============= -->
 
 				<command name="oQuery" viewMode="Hidden">

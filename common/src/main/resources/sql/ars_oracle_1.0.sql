@@ -240,6 +240,7 @@ CREATE TABLE t_ars_command_log (
 	e_result           NUMBER(10, 0) NOT NULL,
 	f_command          NUMBER(19, 0) NOT NULL,
 	f_service_instance NUMBER(19, 0) NOT NULL,
+	c_log_file_id      VARCHAR2(255 CHAR),
 	PRIMARY KEY (id)
 );
 
