@@ -144,7 +144,7 @@ db {
 	prompt "Check User '${Username}'"
 	query "select count(1) from all_users where username = upper('${Username}')"
 	result {
-		it > 0
+		it.singleCell > 0
 	}
 }
 ]]></body>
@@ -160,6 +160,9 @@ if(!target.prop.pumpDbDir)
 db {
 	prompt 'Find OS-Directory of DB-Directory'
 	query "select directory_path from all_directories where directory_name='${target.prop.pumpDbDir.toUpperCase()}'"
+	result {
+		it.singleCell
+	}
 }
 ]]></body>
 				</command>
@@ -217,7 +220,7 @@ if(Schemas == '*') {
 		if(checkUser([Username: username])) {
 			availSchema += ",${username}"
 		} else if(!Force) {
-				$error("Schema '${username}' does not exist!")
+			$error("Schema '${username}' does not exist!")
 		}
 	}
 
@@ -500,7 +503,7 @@ def isOpen = db {
 	admin  true
 
 	result {
-		it == 0
+		it.singleCell == 0
 	}
 }
 
@@ -546,6 +549,75 @@ else
 		query  "${sql}"
 		admin  true
 	}
+]]></body>
+				</command>
+
+				<command name="batchPDBChangePassword">
+					<params/>
+
+					<body><![CDATA[
+def maps = [
+	'%_APP':              'rMEMC0H06M',
+	'MASTER_APP':         'LCrTtwJzVk',
+
+	'MIDRP_APPSTORE':     'jzapxTZsjw',
+	'MIDRP_KEYLEAD':      'CwteQheW3f',
+	'MIDRP_NOTIFICATION': 'QMGIXtfi5c',
+	'MIDRP_ASYNC':        'A2Xp68n1NJ',
+
+	'%_ENG%':             'w0ov8qws1f',
+	'MASTER_ENG':         'ne40RsX0NC'
+]
+
+def pdbs = db {
+	prompt "List all PDBs"
+	query ''' select pdb_name from dba_pdbs where pdb_name <> 'PDB$SEED' '''
+	admin true
+}
+
+if(pdbs instanceof String) {
+	pdbs = [['pdb_name': pdbs]]
+} else {
+	pdbs = pdbs.rows
+}
+
+pdbs.each { pdbCell ->
+	def pdb = pdbCell['pdb_name']
+
+	db {
+		prompt "Alter PDB: ${pdb}"
+		query "alter session set container = ${pdb}"
+		admin true
+	}
+
+	maps.each { k,v ->
+		def users = db {
+			prompt "List schemas for PDB: pdb=${pdb} group=${k}"
+			query """
+				select username
+				from all_users
+				where
+					username like '${k}' """
+			admin true
+		}
+
+		if(users instanceof String) {
+			users = [['username': users]]
+		} else {
+			users = users.rows
+		}
+
+		users.each { userCell ->
+			def username = userCell['username']
+
+			db {
+				prompt "Alter user: pdb = ${pdb} user = ${username} group = ${k}"
+				query """alter user ${username} identified by "${v}" """
+				admin true
+			}
+		}
+	}
+}
 ]]></body>
 				</command>
 
@@ -627,6 +699,9 @@ db {
 						where ${fromSCN} between first_change# and next_change#-1
 					"""
 					admin true
+					result {
+						it.singleCell
+					}
 				}
 
 				$warn("Found Sequence: ${seq}")
@@ -770,7 +845,7 @@ db {
 	admin  true
 
 	result {
-		it > 0
+		it.singleCell > 0
 	}
 }
 ]]></body>

@@ -255,9 +255,12 @@ ssh {
 				<command name="installLogstash">
 					<params>
 						<param name="IndexName" required="true"/>
+						<param name="Environment" required="true" stringLiterals="Prd|Dev"/>
 					</params>
 
 					<body><![CDATA[
+def elasticServers = Environment == 'Prd' ? '"elastic01-prd-dtcr-mid", "elastic02-prd-dtcr-mid"' : '"elastic01-dev-dtcr-mid"'
+
 ssh {
 	prompt "Install"
 	cmd """
@@ -301,7 +304,7 @@ filter {
 output {
 	elasticsearch {
 		codec => "json"
-		hosts => ["elastic01-prd-dtcr-mid", "elastic02-prd-dtcr-mid"]
+		hosts => [${elasticServers}]
 		index => "lgs-${IndexName}-%{+YYYY.MM.dd}"
 		document_id => "%{fingerprint}"
 		ssl => true

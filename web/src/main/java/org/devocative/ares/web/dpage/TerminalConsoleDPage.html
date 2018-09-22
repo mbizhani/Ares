@@ -27,7 +27,7 @@
 
 	<script type="text/javascript">
 		$("#searchTxt").keydown(function (event) {
-			if (event.keyCode == 13) {
+			if (event.keyCode === 13) {
 				filter(event.target.value);
 				event.preventDefault();
 			}
@@ -38,7 +38,7 @@
 		});
 
 		function filter(txt) {
-			if (txt && txt != "") {
+			if (txt && txt !== "") {
 				var filter = txt.toUpperCase().split("&");
 				$("button.act").each(function () {
 					var hide = false;

@@ -186,7 +186,7 @@ public class MainCommandDSL {
 	}
 
 	public void $log(CharSequence log) {
-		logger.debug(log.toString());
+		logger.info(log.toString());
 	}
 
 	public void $sleep(Number millis) {

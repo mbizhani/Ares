@@ -48,12 +48,7 @@ public class SqlCommandExecutor extends AbstractCommandExecutor {
 			if (currentNps.execute()) {
 				ResultSet rs = currentNps.getResultSet();
 				QueryVO queryVO = ResultSetProcessor.process(rs, EColumnNameCase.LOWER);
-
-				if (queryVO.getHeader().size() == 1 && queryVO.getRows().size() == 1) {
-					result = queryVO.getRows().get(0).get(0);
-				} else {
-					result = new TabularVO<>(queryVO.getHeader(), queryVO.getRows());
-				}
+				result = new TabularVO<>(queryVO.getHeader(), queryVO.getRows());
 			} else {
 				logger.info("Execute non-select query: update count=[{}]", currentNps.getUpdateCount());
 				result = currentNps.getUpdateCount();

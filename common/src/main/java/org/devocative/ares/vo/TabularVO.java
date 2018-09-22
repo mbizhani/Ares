@@ -44,13 +44,51 @@ public class TabularVO<T> implements Serializable {
 		return listOfDataAsMap;
 	}
 
+	@Deprecated
 	public Map<String, T> getObject() {
+		return getSingleRow();
+	}
+
+	public Map<String, T> getSingleRow() {
 		if (listOfDataAsMap.size() == 0) {
 			throw new RuntimeException("No result found, filters = " + filter);
 		} else if (listOfDataAsMap.size() == 1) {
 			return listOfDataAsMap.get(0);
 		} else {
 			throw new RuntimeException("More than one result found: size = " + listOfDataAsMap.size() + ", filters = " + filter);
+		}
+	}
+
+	public T getSingleCell() {
+		if (listOfDataAsMap.size() == 0) {
+			throw new RuntimeException("No result found, filters = " + filter);
+		} else if (listOfDataAsMap.size() == 1 && listOfDataAsMap.get(0).size() == 1) {
+			return listOfDataAsMap.get(0)
+				.values()
+				.iterator()
+				.next();
+		} else {
+			throw new RuntimeException("More than one row/cell found: size = " + listOfDataAsMap.size() + ", filters = " + filter);
+		}
+	}
+
+
+	public Map<String, T> getFirstRow() {
+		if (listOfDataAsMap.size() == 0) {
+			throw new RuntimeException("No result found, filters = " + filter);
+		} else {
+			return listOfDataAsMap.get(0);
+		}
+	}
+
+	public T getFirstCell() {
+		if (listOfDataAsMap.size() > 0) {
+			return listOfDataAsMap.get(0)
+				.values()
+				.iterator()
+				.next();
+		} else {
+			throw new RuntimeException("No result found, filters = " + filter);
 		}
 	}
 
