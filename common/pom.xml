@@ -18,13 +18,11 @@
 		<dependency>
 			<groupId>org.devocative</groupId>
 			<artifactId>demeter-common</artifactId>
-			<version>${d.demeter.ver}</version>
 		</dependency>
 
 		<dependency>
 			<groupId>com.jcraft</groupId>
 			<artifactId>jsch</artifactId>
-			<version>0.1.54</version>
 		</dependency>
 	</dependencies>
 

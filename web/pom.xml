@@ -16,7 +16,7 @@
 
 	<dependencies>
 
-	<dependency>
+		<dependency>
 			<groupId>org.devocative</groupId>
 			<artifactId>ares-common</artifactId>
 			<version>1.0-SNAPSHOT</version>
@@ -25,14 +25,11 @@
 		<dependency>
 			<groupId>org.devocative</groupId>
 			<artifactId>demeter-web</artifactId>
-			<version>${d.demeter.ver}</version>
 		</dependency>
 
 		<dependency>
 			<groupId>javax.servlet</groupId>
 			<artifactId>javax.servlet-api</artifactId>
-			<version>${d.servlet.ver}</version>
-			<scope>provided</scope>
 		</dependency>
 
 	</dependencies>
