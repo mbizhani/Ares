@@ -1,12 +1,11 @@
 package org.devocative.ares.service.command;
 
-import org.devocative.adroit.CalendarUtil;
+import org.devocative.adroit.date.UniDate;
+import org.devocative.adroit.date.UniPeriod;
 import org.devocative.ares.cmd.CommandOutput;
 import org.devocative.ares.cmd.ICommandResultCallBack;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.util.Date;
 
 public class BufferedResultCallBack implements ICommandResultCallBack {
 	private static final Logger logger = LoggerFactory.getLogger(BufferedResultCallBack.class);
@@ -33,7 +32,7 @@ public class BufferedResultCallBack implements ICommandResultCallBack {
 
 					buffer
 						.append("[ 00:00:00 START - ")
-						.append(CalendarUtil.formatDate(new Date(), "yyyy-MM-dd HH:mm:ss"))
+						.append(UniDate.now().format("yyyy-MM-dd HH:mm:ss"))
 						.append("]\n");
 					break;
 				case PROMPT:
@@ -62,10 +61,8 @@ public class BufferedResultCallBack implements ICommandResultCallBack {
 	// ------------------------------
 
 	private String elapsed() {
-		long diffInSeconds = (System.currentTimeMillis() - startTime) / 1000;
-		int h = (int) (diffInSeconds / 3600);
-		int m = (int) ((diffInSeconds - h * 3600) / 60);
-		int s = (int) (diffInSeconds - h * 3600 - m * 60);
-		return String.format("%02d:%02d:%02d", h, m, s);
+		return UniPeriod
+			.of(System.currentTimeMillis(), startTime)
+			.format("H:M:S");
 	}
 }

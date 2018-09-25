@@ -12,6 +12,7 @@ import org.apache.wicket.model.CompoundPropertyModel;
 import org.apache.wicket.model.Model;
 import org.apache.wicket.model.ResourceModel;
 import org.apache.wicket.util.string.Strings;
+import org.devocative.adroit.date.UniPeriod;
 import org.devocative.adroit.vo.KeyValueVO;
 import org.devocative.ares.AresPrivilegeKey;
 import org.devocative.ares.cmd.CommandOutput;
@@ -460,11 +461,9 @@ public class CommandExecPanel extends DPanel implements IAsyncResponse<CommandOu
 	}
 
 	private String elapsed() {
-		long diffInSeconds = (System.currentTimeMillis() - startTime) / 1000;
-		int h = (int) (diffInSeconds / 3600);
-		int m = (int) ((diffInSeconds - h * 3600) / 60);
-		int s = (int) (diffInSeconds - h * 3600 - m * 60);
-		return String.format("%02d:%02d:%02d", h, m, s);
+		return UniPeriod
+			.of(System.currentTimeMillis(), startTime)
+			.format("H:M:S");
 	}
 
 	// ------------------------------

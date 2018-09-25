@@ -1,7 +1,7 @@
 package org.devocative.ares.service.command.dsl;
 
 import groovy.lang.Closure;
-import org.devocative.adroit.CalendarUtil;
+import org.devocative.adroit.date.UniDate;
 import org.devocative.ares.cmd.CommandCenter;
 import org.devocative.ares.cmd.CommandException;
 import org.devocative.ares.cmd.SshResult;
@@ -12,7 +12,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.sql.SQLException;
-import java.util.*;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 // #TIP
 public class MainCommandDSL {
@@ -182,7 +185,7 @@ public class MainCommandDSL {
 	}
 
 	public String $now(CharSequence format) {
-		return CalendarUtil.formatDate(new Date(), format.toString());
+		return UniDate.now().format(format.toString());
 	}
 
 	public void $log(CharSequence log) {

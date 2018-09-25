@@ -40,7 +40,7 @@ public class OServiceAndCommandBatchPanel extends DPanel {
 			@Override
 			protected void onSubmit(AjaxRequestTarget target) {
 				try {
-					oServiceService.importFile(file.getFileUpload().getInputStream());
+					oServiceService.importFile(file.getFileUpload().get(0).getInputStream());
 					WMessager.show("Info", "Import Successfully", target);
 				} catch (IOException e) {
 					throw new RuntimeException(e);

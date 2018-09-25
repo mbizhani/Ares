@@ -1,6 +1,7 @@
 package org.devocative.ares.service.command;
 
-import org.devocative.adroit.CalendarUtil;
+import org.devocative.adroit.date.EUniDateField;
+import org.devocative.adroit.date.UniDate;
 import org.devocative.ares.entity.command.Command;
 import org.devocative.ares.entity.command.CommandLog;
 import org.devocative.ares.entity.command.ECommandResult;
@@ -25,8 +26,6 @@ import org.springframework.stereotype.Service;
 import javax.transaction.Transactional;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.util.Calendar;
-import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.zip.GZIPOutputStream;
@@ -154,7 +153,7 @@ public class CommandLogService implements ICommandLogService, IApplicationLifecy
 
 			final String logFileName = String.format("%s-%s.gz", log.getCommand().getName(), logId);
 			final FileStoreHandler handler = fileStoreService.create(logFileName, EFileStorage.DISK, EMimeType.GZIP,
-				CalendarUtil.add(new Date(), Calendar.DATE, 7), String.valueOf(logId));
+				UniDate.now().update(EUniDateField.DATE, 7).toDate(), String.valueOf(logId));
 			handler.write(baos.toByteArray());
 			handler.close();
 

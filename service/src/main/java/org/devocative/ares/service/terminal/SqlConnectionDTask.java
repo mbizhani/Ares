@@ -1,7 +1,6 @@
 package org.devocative.ares.service.terminal;
 
 import org.devocative.adroit.sql.NamedParameterStatement;
-import org.devocative.adroit.sql.plugin.EDatabaseType;
 import org.devocative.adroit.sql.plugin.PaginationPlugin;
 import org.devocative.adroit.sql.result.EColumnNameCase;
 import org.devocative.adroit.sql.result.QueryVO;
@@ -43,7 +42,6 @@ public class SqlConnectionDTask extends DTask<List<RowVO>> implements ITerminalP
 	private BlockingQueue<SqlMessageVO> queue;
 
 	private Connection connection;
-	private EDatabaseType databaseType;
 	private NamedParameterStatement currentNps;
 
 	private AtomicBoolean running = new AtomicBoolean(false);
@@ -94,7 +92,7 @@ public class SqlConnectionDTask extends DTask<List<RowVO>> implements ITerminalP
 						final long pageIndex = msg.getPageIndex();
 						final long pageSize = msg.getPageSize();
 
-						currentNps.addPlugin(new PaginationPlugin((pageIndex - 1) * pageSize + 1, pageSize + 1, databaseType));
+						currentNps.addPlugin(PaginationPlugin.of(connection, (pageIndex - 1) * pageSize + 1, pageSize + 1));
 						ResultSet resultSet = currentNps.executeQuery();
 						QueryVO process = ResultSetProcessor.process(resultSet, EColumnNameCase.LOWER);
 						sendResult(toListOfMap(process));
@@ -131,7 +129,7 @@ public class SqlConnectionDTask extends DTask<List<RowVO>> implements ITerminalP
 		}
 		terminalConnectionService.closeConnection(getConnectionId());
 
-		logger.info("SqlConnectionDTask: closed connection", databaseType);
+		logger.info("SqlConnectionDTask: closed connection");
 	}
 
 	@Override
@@ -188,9 +186,7 @@ public class SqlConnectionDTask extends DTask<List<RowVO>> implements ITerminalP
 				trmConnVO.getTargetVO().getUsername(),
 				trmConnVO.getTargetVO().getPassword());
 
-			databaseType = PaginationPlugin.findDatabaseType(connection);
-
-			logger.info("SqlConnectionDTask: connected to DB type=[{}]", databaseType);
+			logger.info("SqlConnectionDTask: Connected to DB [{}]", trmConnVO.getTargetVO().getConnection());
 		}
 	}
 

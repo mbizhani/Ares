@@ -81,7 +81,7 @@ public class ScpToExecutor extends AbstractExecutor {
 			sent += len;
 
 			int percent = (int) (sent * 100 / fileSize);
-			if(percent % 5 == 0) {
+			if (percent % 5 == 0) {
 				if (lastSentPercent != percent) {
 					resource.onResult(new CommandOutput(CommandOutput.Type.LINE, String.format("File sent: %s %%", percent)));
 					lastSentPercent = percent;

@@ -1,10 +1,9 @@
 package org.devocative.ares.cmd;
 
-import org.devocative.adroit.CalendarUtil;
+import org.devocative.adroit.date.UniDate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Date;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -16,7 +15,7 @@ public class CCUtil {
 	}
 
 	public String now(String format) {
-		return CalendarUtil.formatDate(new Date(), format);
+		return UniDate.now().format(format);
 	}
 
 	public void sleep(long millis) {

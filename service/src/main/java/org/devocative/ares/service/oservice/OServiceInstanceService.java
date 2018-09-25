@@ -243,7 +243,7 @@ public class OServiceInstanceService implements IOServiceInstanceService {
 	public OServiceInstanceTargetVO getTargetVOByUser(Long osiUserId) {
 		OSIUser user = siUserService.load(osiUserId);
 		return createTargetVO(
-			ObjectBuilder.<ESIUserType, OSIUser>createDefaultMap()
+			ObjectBuilder.<ESIUserType, OSIUser>map()
 				//TODO the type is hardcoded as executor since createTargetVO() just select 'Executor' or 'Admin'
 				.put(ESIUserType.Executor, user)
 				.get());

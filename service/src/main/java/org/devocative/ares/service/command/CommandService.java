@@ -163,8 +163,7 @@ public class CommandService implements ICommandService, IMissedHitHandler<Long, 
 		xstream = new AdroitXStream();
 		xstream.processAnnotations(XCommand.class);
 
-		commandCache = cacheService.create("ARS_COMMAND", 50);
-		commandCache.setMissedHitHandler(this);
+		commandCache = cacheService.create("ARS_COMMAND", 50, this);
 	}
 
 	// IMissedHitHandler
