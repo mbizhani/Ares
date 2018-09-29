@@ -348,6 +348,8 @@ Usernames.split(',').each {
 						<param name="SourceSchemas" required="true" validRef="OraIdList"/>
 						<param name="DestSchemas" validRef="OraIdList"/>
 						<param name="DestServer" type="Service" required="true"/>
+						<param name="SrcTablespaces" validRef="OraIdList"/>
+						<param name="DstTablespaces" validRef="OraIdList"/>
 						<param name="Content" stringLiterals="ALL|DATA_ONLY|METADATA_ONLY" defaultValue="ALL"
 							   required="true"/>
 						<param name="DoBackUpDest" type="Boolean" required="true" defaultValue="true"/>
@@ -397,9 +399,6 @@ $reTarget(DestServer, {
 			)' """
 	}
 
-	if(Content != 'DATA_ONLY')
-		dropUser([Usernames: dest, DoBackup: DoBackUpDest, DoKillSession: true])
-
 	def file = "net.${target.name4file}.${dest.replace(',', '.')}.${$now()}"
 
 	def genParams = "schemas=${SourceSchemas} directory=${target.prop.pumpDbDir} network_link=${dbLinkName} logfile=${file}.log transform=OID:n content=${Content}"
@@ -410,6 +409,19 @@ $reTarget(DestServer, {
 	if(DoParallel) {
 		def cpu = calcParallel()
 		genParams += " parallel = ${cpu}"
+	}
+
+	if($param('SrcTablespaces') && $param('DstTablespaces')) {
+		def remap = generateRemap([SourceSchemas: SrcTablespaces, DestSchemas: DstTablespaces, Type: 'tablespaces'])
+		genParams += " remap_tablespace=${remap}"
+	} else if($param('SrcTablespaces')) {
+		$error("'DstTablespaces' is required!")
+	} else if($param('DstTablespaces')) {
+		$error("'SrcTablespaces' is required!")
+	}
+
+	if(Content != 'DATA_ONLY') {
+		dropUser([Usernames: dest, DoBackup: DoBackUpDest, DoKillSession: true])
 	}
 
 	if(SourceSchemas == dest) {
@@ -802,6 +814,7 @@ $reTarget(DestServer, {
 					<params>
 						<param name="SourceSchemas" required="true"/>
 						<param name="DestSchemas" required="true"/>
+						<param name="Type" required="true" defaultValue="schemas"/>
 					</params>
 
 					<body><![CDATA[
@@ -809,7 +822,7 @@ def srcArr = SourceSchemas.split(',')
 def dstArr = DestSchemas.split(',')
 
 if(srcArr.length != dstArr.length)
-	$error('Unequal number of schemas in source and destination')
+	$error('Unequal number of ${Type} in source and destination')
 else {
 	def remap = "${srcArr[0].trim()}:${dstArr[0].trim()}"
 	for(def i=1; i < srcArr.length; i++) {
