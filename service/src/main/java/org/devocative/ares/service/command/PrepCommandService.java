@@ -169,7 +169,7 @@ public class PrepCommandService implements IPrepCommandService {
 		UserVO currentUser = securityService.getCurrentUser();
 
 		IQueryBuilder queryBuilder = persistorService.createQueryBuilder()
-			.addSelect("select ent")
+			.addSelect("select distinct ent")
 			.addFrom(PrepCommand.class, "ent")
 			.addJoin("cmd", "ent.command")
 			.addWhere("and ent.enabled = true")

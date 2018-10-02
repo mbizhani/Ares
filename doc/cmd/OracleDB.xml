@@ -550,7 +550,6 @@ if(WithResetlogs)
 					prompt "Open PDB (without 'resetlogs')"
 					query  "${sql}"
 					admin true
-
 				}
 			}
 		}

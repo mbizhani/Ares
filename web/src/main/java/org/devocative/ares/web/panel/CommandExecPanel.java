@@ -232,18 +232,8 @@ public class CommandExecPanel extends DPanel implements IAsyncResponse<CommandOu
 				Map<String, Object> paramsClone = new HashMap<>(params);
 				KeyValueVO<Long, String> serviceInstance = (KeyValueVO<Long, String>) paramsClone.remove(TARGET_KEY);
 
-				Map<String, Object> cmdParams = new HashMap<>();
-				for (Map.Entry<String, Object> entry : paramsClone.entrySet()) {
-					if (entry.getValue() instanceof KeyValueVO) {
-						KeyValueVO vo = (KeyValueVO) entry.getValue();
-						cmdParams.put(entry.getKey(), vo.getKey());
-					} else if (entry.getValue() != null) {
-						cmdParams.put(entry.getKey(), entry.getValue());
-					}
-				}
-
 				commandDTaskKey = commandService.executeCommandTask(
-					new CommandQVO(commandId, serviceInstance.getKey(), cmdParams, prepCommandId).setOsiUserId(osiUserId),
+					new CommandQVO(commandId, serviceInstance.getKey(), processParams(paramsClone), prepCommandId).setOsiUserId(osiUserId),
 					taskBehavior);
 
 				target.appendJavaScript(String.format("$('#%s').tabs('select', 'Console');", tabs.getMarkupId()));
@@ -278,17 +268,7 @@ public class CommandExecPanel extends DPanel implements IAsyncResponse<CommandOu
 				Map<String, Object> paramsClone = new HashMap<>(params);
 				KeyValueVO<Long, String> serviceInstance = (KeyValueVO<Long, String>) paramsClone.remove(TARGET_KEY);
 
-				Map<String, Object> cmdParams = new HashMap<>();
-				for (Map.Entry<String, Object> entry : paramsClone.entrySet()) {
-					if (entry.getValue() instanceof KeyValueVO) {
-						KeyValueVO vo = (KeyValueVO) entry.getValue();
-						cmdParams.put(entry.getKey(), vo.getKey());
-					} else if (entry.getValue() != null) {
-						cmdParams.put(entry.getKey(), entry.getValue());
-					}
-				}
-
-				window.setContent(new PrepCommandFormDPage(window.getContentId(), commandId, serviceInstance.getKey(), cmdParams));
+				window.setContent(new PrepCommandFormDPage(window.getContentId(), commandId, serviceInstance.getKey(), processParams(paramsClone)));
 				window.show(target);
 			}
 		}.setVisible(hasPermission(AresPrivilegeKey.PrepCommandAdd)));
@@ -317,8 +297,23 @@ public class CommandExecPanel extends DPanel implements IAsyncResponse<CommandOu
 
 	// ------------------------------
 
+	private Map<String, Object> processParams(Map<String, Object> paramsClone) {
+		Map<String, Object> cmdParams = new HashMap<>();
+
+		for (Map.Entry<String, Object> entry : paramsClone.entrySet()) {
+			if (entry.getValue() instanceof KeyValueVO) {
+				KeyValueVO vo = (KeyValueVO) entry.getValue();
+				cmdParams.put(entry.getKey(), vo.getKey());
+			} else if (entry.getValue() != null) {
+				cmdParams.put(entry.getKey(), entry.getValue());
+			}
+		}
+
+		return cmdParams;
+	}
+
 	private FormComponent createFormItem(XParam xParam, boolean hasGuest) {
-		FormComponent fieldFormItem = null;
+		FormComponent fieldFormItem;
 		String xParamName = xParam.getName();
 
 		switch (xParam.getType()) {
@@ -364,6 +359,8 @@ public class CommandExecPanel extends DPanel implements IAsyncResponse<CommandOu
 									}
 								}
 							});
+						} else if (targetServiceInstances.size() == 1) {
+							params.put(xParamName, targetServiceInstances.get(0));
 						}
 						fieldFormItem = selectionInput;
 					} else {
@@ -375,9 +372,9 @@ public class CommandExecPanel extends DPanel implements IAsyncResponse<CommandOu
 						params.put(xParamName, new KeyValueVO<>(serviceInstance.getId(), serviceInstance.toString()));
 						fieldFormItem = new WLabelInput(xParamName);
 					} else {
-						List<KeyValueVO<Long, String>> serviceInstances = targetServiceInstances;
-						if (serviceInstances.isEmpty()) {
-							serviceInstances = serviceInstanceService.findListForCommandExecution(serviceId);
+						List<KeyValueVO<Long, String>> serviceInstances = serviceInstanceService.findListForCommandExecution(serviceId);
+						if (serviceInstances.size() == 1) {
+							params.put(xParamName, serviceInstances.get(0));
 						}
 						fieldFormItem = new WSelectionInput(xParamName, serviceInstances, false);
 					}
@@ -392,9 +389,11 @@ public class CommandExecPanel extends DPanel implements IAsyncResponse<CommandOu
 				if (paramsAsStr.containsKey(xParamName)) {
 					fieldFormItem = new WLabelInput(xParamName);
 					params.put(xParamName, Boolean.valueOf(paramsAsStr.get(xParamName)));
-				} else if (xParam.getDefaultValue() != null) {
+				} else {
 					fieldFormItem = new WBooleanInput(xParamName);
-					params.put(xParamName, xParam.getDefaultValueObject());
+					if (xParam.getDefaultValue() != null) {
+						params.put(xParamName, xParam.getDefaultValueObject());
+					}
 				}
 				break;
 
@@ -406,7 +405,7 @@ public class CommandExecPanel extends DPanel implements IAsyncResponse<CommandOu
 					} else {
 						fieldFormItem = new WSelectionInput(xParamName, Arrays.asList(parts), false);
 					}
-					params.put(xParamName, paramsAsStr.get(parts[0]));
+					params.put(xParamName, parts[0]);
 				} else if (xParam.getStringLiterals() != null) {
 					List<String> literals = Arrays.asList(xParam.getStringLiterals().split("[|]"));
 					fieldFormItem = new WSelectionInput(xParamName, literals, false);

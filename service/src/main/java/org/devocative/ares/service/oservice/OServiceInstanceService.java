@@ -159,7 +159,7 @@ public class OServiceInstanceService implements IOServiceInstanceService {
 	@Override
 	public List<KeyValueVO<Long, String>> findListForCommandExecution(Long serviceId) {
 		IQueryBuilder queryBuilder = persistorService.createQueryBuilder()
-			.addSelect("select ent.id, ent.name, ent.server.name, ent.service.name")
+			.addSelect("select distinct ent.id, ent.name, ent.server.name, ent.service.name")
 			.addFrom(OServiceInstance.class, "ent")
 			.addWhere("and ent.service.id=:serviceId")
 			.addParam("serviceId", serviceId);
